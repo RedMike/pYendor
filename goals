@@ -1,0 +1,138 @@
+Version: xx.yy.zzb
+Current: 00.04.00g
+
+xx = # major goals finished.
+yy = # minor goals finished for current major goal.
+zz = # core goals finished for current minor goal.
+b = char representing number of build.
+
+Major Goals:
+	00 - Creation
+    01 - Extension
+
+Minor Goals:
+	00	00 + Realised framework of all systems with some dummy counterparts.
+		01 + Replaced all dummy counterparts with real ones.
+		02 + System development.
+		03 + Realisation of proper inter-system protocol.
+        04 - Cleaning up dirty code.
+        05 - Begin tool development.
+
+Core Goals:
+	00	00	00 + Working graphics that include:
+					+ game window, layered;
+					+ message window, scrolling;
+					+ input windows/menus;
+					+ window manager;
+			01 + Working map system that includes:
+					+ referencing and access;
+					+ creation (not generation!);
+					+ sanity checks;
+					+ dummy generation;
+			02 + Working entity system that includes:
+					+ basic entities;
+					+ entity movement;
+					+ dummy entities;
+			03 + Working interface system that includes:
+					+ keyboard input/output
+					+ callback binding
+			04 + Working time system that includes:
+					+ basic turn scheduling
+					+ independency of entitiession
+			05 + Working application system that includes:
+					+ entity management
+					+ entity fetching
+					+ proper state management
+					+ actual menus
+					+ initialisation and destruction
+		01	00 + Sane windowing system:
+					+ functions to pop up announcements
+			01 + Map generation:
+					+ Basic map gen with algo
+			02 + Entity diversity:
+					+ Entity abilities and properties/flags
+                                        + Collision
+					+ Displaying
+			03 + Entity generation:
+					+ random genning of properties
+					+ random genning of appearance
+					+ random genning of positions
+			04 + Interface:
+					+ work on callbacks
+			05 + Time:
+					+ callback binding
+		02         + DETOUR: Debugging window
+                        00 + Menu system:
+					+ inventory, multi-select
+			01 + Map generation:
+                                        + integration with entity gen
+                        02 ? Entities:
+                                        ? various abilities (so ambiguous I
+                                            forgot what I was planning.)
+                        03 + Interface:
+                                        + camera
+                03      00 + Interface:
+                                        + Menu work. A LOT easier menus now.
+                                        + Work on keyboard interface.
+                        01 + Interaction:
+                                        + Cutscene basics setup.
+                        02 + Messaging:
+                                        + Entities that cause messages when
+                                        collided with.
+                                        + Various message functions inside base
+                        03 + Saving/Loading:
+                                        + Implement basic saving/loading
+                                        + Set main menu to have the save/load
+                                        x Save/load entities and positions
+                        04 + Entities:
+                                        + Begin work on entity classification
+                                        + Solid, static entities
+                                        + Non-solid, static entities
+                                        + Add into basic map gen (doors)
+                        05 + Mobs:
+                                        + Add npc/player stats
+                                        + Add randomly-wandering beasts
+                                        + Add simple combat with them
+                        06 + Windows:
+                                        + Add status window
+                                        + Think about splitting messages into
+                                    two windows by default (not worth it)
+                                        + Make debug window toggle-able
+                        DETOUR: Radiosity test? FAILED
+                            own algorithm didn't work, then fixing it meant it
+                            was way too slow to actually use. will revisit
+                        07 + Entities:
+                                        + Containers
+                                        + Inventory
+                                        + Picking up/dropping
+                        08 + Windows:
+                                        + Grid window
+                                        + Inventory screen (compound window!)
+                        09 + Release:
+                                        + Finish testing build
+                        10 + Map Gen:
+                                        + Add proper entity generation
+                        11 + Entities:
+                                        + Add examine window
+                                        + Dropping items
+                                        + Event items
+                                        + Arcade-like levels
+                        The next release will be done in an unordered fashion,
+                because obviously, documenting something, then cleaning it up
+                is inefficient, and I'm not sure where I need to clean up and 
+                where to improve for all of it.
+                04      xx - Documentation:
+                                        ! base.py
+                                        ! graphics.py
+                                        ! entity.py
+                                        - the rest.
+                        xx - Cleaning up messy code:
+                                        ! base.py
+                                        ~ graphics.py
+                                        ! entity.py
+                                        - the rest.
+                        xx - Improving saneness of main.py:
+                                        ! 25% done
+                                        ! 50% done
+                                        - 75% done
+                                        - Done!

@@ -1,0 +1,563 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>lib.entity.Entity</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="lib-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="remike.homelinux.org">pYendor</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="lib-module.html">Package&nbsp;lib</a> ::
+        <a href="lib.entity-module.html">Module&nbsp;entity</a> ::
+        Class&nbsp;Entity
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="lib.entity.Entity-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class Entity</h1><p class="nomargin-top"><span class="codelink"><a href="lib.entity-pysrc.html#Entity">source&nbsp;code</a></span></p>
+<dl><dt>Known Subclasses:</dt>
+<dd>
+      <ul class="subclass-list">
+<li><a href="lib.entity.NPC-class.html">NPC</a></li><li>, <a href="lib.entity.Trap-class.html">Trap</a></li><li>, <a href="lib.entity.Item-class.html">Item</a></li>  </ul>
+</dd></dl>
+
+<hr />
+<p>Base entity class.</p>
+  <p>Basically a tile with a position and various attributes. Can contain 
+  other entities and return its inventory, and can be scheduled.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="lib.entity.Entity-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">x</span>,
+        <span class="summary-sig-arg">y</span>,
+        <span class="summary-sig-arg">tile</span>)</span><br />
+      Initialisation method.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="contain"></a><span class="summary-sig-name">contain</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ent</span>)</span><br />
+      Entity has been contained, makes itself disappear.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.contain">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="removed"></a><span class="summary-sig-name">removed</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ent</span>)</span><br />
+      Entity has been removed from inventory, unhide and update position.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.removed">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getContained"></a><span class="summary-sig-name">getContained</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ent</span>)</span><br />
+      Return the internal ID of the given entity or -1.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.getContained">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="containObject"></a><span class="summary-sig-name">containObject</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ent</span>)</span><br />
+      Contain an entity in inventory and return its id.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.containObject">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="uncontainObject"></a><span class="summary-sig-name">uncontainObject</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">id</span>)</span><br />
+      Remove an entity from inventory.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.uncontainObject">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="returnInventory"></a><span class="summary-sig-name">returnInventory</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return inventory as simple list.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.returnInventory">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="gridInventory"></a><span class="summary-sig-name">gridInventory</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return inventory in format: [ id : [character, color, name, obj] ].</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.gridInventory">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getTile"></a><span class="summary-sig-name">getTile</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return tile.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.getTile">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="getAttribute"></a><span class="summary-sig-name">getAttribute</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">att</span>)</span><br />
+      Return wanted attribute, or -1.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.getAttribute">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="setAttribute"></a><span class="summary-sig-name">setAttribute</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">att</span>,
+        <span class="summary-sig-arg">val</span>)</span><br />
+      Set an attribute to given value.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.setAttribute">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="lib.entity.Entity-class.html#setCollisionCheck" class="summary-sig-name">setCollisionCheck</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">fct</span>)</span><br />
+      Set the current collision check.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.setCollisionCheck">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="lib.entity.Entity-class.html#collidedWith" class="summary-sig-name">collidedWith</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">ent</span>)</span><br />
+      Default collided checking runs events in self.events.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.collidedWith">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="relMove"></a><span class="summary-sig-name">relMove</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">dx</span>,
+        <span class="summary-sig-arg">dy</span>)</span><br />
+      Try to move in the relative direction (dx, dy).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.relMove">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="lib.entity.Entity-class.html#move" class="summary-sig-name">move</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">x</span>,
+        <span class="summary-sig-arg">y</span>)</span><br />
+      Try to move to (x, y).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.move">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="copy"></a><span class="summary-sig-name">copy</span>(<span class="summary-sig-arg">self</span>)</span><br />
+      Return a copy of the entity.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.copy">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="update"></a><span class="summary-sig-name">update</span>(<span class="summary-sig-arg">self</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="lib.entity-pysrc.html#Entity.update">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">x</span>,
+        <span class="sig-arg">y</span>,
+        <span class="sig-arg">tile</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="lib.entity-pysrc.html#Entity.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Initialisation method.</p>
+  <p>Tile can be a tuple or a tile with irrelevant x and y properties. List
+  is in the format (bgcol, char, fgcol, bgset, blocks, blocksLight). 
+  Contained objects are given an internal inventory ID. Events are by 
+  default triggered when the entity is collided with.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="setCollisionCheck"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">setCollisionCheck</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">fct</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="lib.entity-pysrc.html#Entity.setCollisionCheck">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Set the current collision check.</p>
+  <p>This function gets evaluated on every movement. On returned 1, 
+  movement is allowed. On returned 0, movement is stopped. Set to -1 for no
+  collision checking.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="collidedWith"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">collidedWith</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">ent</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="lib.entity-pysrc.html#Entity.collidedWith">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Default collided checking runs events in self.events.</p>
+  <p>Events are in format (function, (arg1, arg2, arg3)).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="move"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">move</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">x</span>,
+        <span class="sig-arg">y</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="lib.entity-pysrc.html#Entity.move">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Try to move to (x, y).</p>
+  <p>If the collision function is not -1, call. Actually move on returned 
+  1. If the move callback is not -1, call it with self and position moved 
+  to.</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="lib-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Project homepage -->
+      <th class="navbar" align="right" width="100%">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr><th class="navbar" align="center"
+            ><a class="navbar" target="_top" href="remike.homelinux.org">pYendor</a></th>
+          </tr></table></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Tue Aug  9 14:31:08 2011
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
