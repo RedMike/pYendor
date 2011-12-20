@@ -2,21 +2,21 @@ import data.libtcodpy as libtcod
 
 
 #  Interface system
-#  Mainly keyboard-based.
+#  Currently, only libtcod.
 #
 #    Binding format:
-#        {char:[function,vars]}
-#            where vars is a LIST of them.
+#        {char:[function,[var1,var2,...]]}
 
 class KeyboardListener:
+    """Libtcod-based keyboard listener."""
     
-    def __init__(self,bindings={}):
+    def __init__(self, bindings={ }):
         self.bindings = bindings
     
-    def addBinding(self,key,bind):
+    def add_binding(self,key,bind):
         self.bindings[key] = bind
     
-    def removeBinding(self,key):
+    def remove_binding(self,key):
         del self.bindings[key]
 
     def tick(self):

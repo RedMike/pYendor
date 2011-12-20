@@ -30,13 +30,15 @@ class Application:
         # All entities are scheduled in one global scheduler.
         self.scheduler = time.Scheduler()
                 
-        # Entities are kept in a dictionary. Keys are a tuple of (x, y).
+        # Entities are kept in a dictionary as an id. Keys are a tuple of (x, y).
         # This allows for fast checking for entities in tiles, and raises
         # only a slight problem in keeping them in sync. Picking a class for
         # addEntity is done via the entity manager transparently. Send a string
-        # like 'item'.
-        self.entMan = entity.EntityManager()
-        self.entityList = { }
+        # like 'item'. ID lookup is in entityList.
+        self.entity_lookup = entity.EntityLookup()
+        self.entity_list = { }
+        self.entity_pos = { }
+        self.entity_cur_id = 0
 
         # Player and camera entities are saved so that you could switch cameras
         # OR players quite easily.
@@ -44,7 +46,7 @@ class Application:
         self.camera = None
         
         # Initialise default windows with None.
-        self.win_man = graphics.WindowManager(w,h,name+'.'.join(self.version))
+        self.win_man = graphics.WindowManager(w,h,name+' '+'.'.join(self.version))
         self.game_win = None
         self.menu_win = None
         self.msg_win = None
@@ -52,120 +54,59 @@ class Application:
         
         # Initialise keyboard interface.
         self.keyboard = interface.KeyboardListener()
-        self.callback = {}
 
-        #state init
 
-        self.transitions = {}
-        self.curState = None
-        self.timePassing = 0
-
-        #cutscene init
-
-        self.cutscenes = {}
-        self.cutsceneIndicator = 0
-
-        #NOTE: >=0 means DRAWN MAPS
-        #default states
-        #  -140- wildcard
-        #   -5 - start menu start
-        #    1 - start cutscene
-        #   -55 - announcement on screen
-        self.addTransition(-55,-140,[0,()],self.dismissAnnouncement)
-        self.addTransition(-140,-50,[0,()],self.showInventory)
-
-    def defaultBindings(self,tmp=0):
+    def default_bindings(self,tmp=0):
         """Bind defaults, generally coupled with a prior clearBindings."""
         player = self.getPlayer()
-        temp = [ ['w',[player.relMove,(0,-1)]],
-                 ['s',[player.relMove,(0,1)]],
-                 ['a',[player.relMove,(-1,0)]],
-                 ['d',[player.relMove,(1,0)]],
-                 ['e',[self.playerPickup,()]],
-                 ['q',[self.transitState,(-5,)]],
-                 ['i',[self.transitState,(-50,)]] ]
-        for set in temp:
-            key = set[0]
-            bind = set[1]
-            self.addBinding(key,bind)
-            
-    #map work
-    def newLevel(self):
-        """Generates new map and places/transfers player to it."""
-        #set floor and wall BEFORE calling
-        self.genBasicMap(self.floor,self.wall,100,30,1)
-        if len(self.maps) == 1:
-            #generated first map
-            self.populateEnts()
-            self.addPlayer(4)
-        else:
-            #generated a new map
-            #TODO save old map
-            self.destroyEnts()
-            self.populateEnts()
-            self.movePlayerToSpawn()
+        if player != None:
+            temp = [ ['w',[player.move,(0,-1)]],
+                     ['s',[player.move,(0,1)]],
+                     ['a',[player.move,(-1,0)]],
+                     ['d',[player.move,(1,0)]],
+                     ['e',[self.player_pickup,()]],
+                     ['q',[self.quit,()]] ]
+            for set in temp:
+                key = set[0]
+                bind = set[1]
+                self.add_binding(key,bind)
 
-    def genBasicMap(self,floor,wall,w,h,set):
+    def new_level(self):
+        """Generates new map and places/transfers player to it."""
+        width, height, set = 100, 30, 1
+        self.generate_map(width, height, set)
+        if len(self.maps) == 1:
+            self.populate_ents()
+            self.place_player()
+        else:
+            self.destroyEnts()
+            self.populate_ents()
+            self.place_player()
+
+    def generate_map(self,w,h,set):
         """Generates new map and adds it, using BasicGenerator from map."""
-        self.addMap(file=0,map=map.BasicGenerator(floor,wall,w,h).genMap(),
+        self.add_map(file=0,map=map.BasicGenerator(w,h).gen_map(),
                     set=set)
 
-    def addMap(self,file=0,map=0,set=0):
+    def add_map(self,file=0,map=0,set=0):
         """Add map to stack from file or object."""
         if map:
             self.maps += [map]
         elif file:
-            self.loadMap(file)
+            pass
         if set:
-            self.setMap(len(self.maps)-1)
+            self.set_map(len(self.maps)-1)
 
-    #TODO add entities
-    #map loading done from file
-    #Format:
-    #  [x]!.![y]!.![r]!.![g]!.![b]!.![fr]!.![fg]!.![fb]!.![char]!.![blocks]
-    def loadMap(self,file):
-        """Load map from file."""
-        tiles = []
-        xmax = 0
-        ymax = 0
-        with open(file) as f:
-            for line in f:
-                line = line.split('!.!',10)
-                x, y, r, g, b, fr, fg, fb, char, bgset, blocks = map(int, line)
-                tiles += [[x,y,(r,g,b),char,(fr,fg,fb),bgset,blocks]]
-                if x>xmax:
-                    xmax = x
-                if y>ymax:
-                    ymax = y
-        m = map.Map(xmax,ymax)
-        m.loadTiles(tiles)
-        self.addMap(file=0,map=m,set=1)
-
-    def saveMap(self,file):
-        """Save map to a file."""
-        lines = []
-        with open(file,'w') as f:
-            for tile in self.getMap().getTiles():
-                list = [tile.x,tile.y]
-                map(list.append,tile.bgcol)
-                map(list.append,tile.fgcol)
-                list += [tile.char, tile.bgset, tile.blocks]
-                x, y, r, g, b, fr, fg, fb, char, bgset, blocks = map(str,list)
-                lines += [x+'!.!'+y+'!.!'+r+'!.!'+g+'!.!'+b+'!.!'+fr+'!.!'+
-                        fg+'!.!'+fb+'!.!'+char+'!.!'+bgset+'!.!'+blocks+'\n']
-            f.writelines(lines)
-    
-    def setMap(self,id):
+    def set_map(self,id):
         """Set map as current one."""
         if id < len(self.maps):
             self.map = id
     
-    def getMap(self):
+    def get_map(self):
         """Get current map."""
         if self.map != -1:
             return self.maps[self.map]
-        
-    #win work
+
     def addWindow(self,layer,type,w,h,x,y):
         """Add new window and return it."""
         win = self.win_man.addWindow(layer,type,w,h,x,y)
@@ -247,16 +188,16 @@ class Application:
         """Dismiss a shown announcement."""
         if self.announcement_win != -1:
             self.win_man.removeWindow(self.announcement_win)
-        self.defaultBindings()
+        self.default_bindings()
     
     #interface work
     def addBinding(self,key,bind):
         """Add a key binding."""
-        self.keyb.addBinding(key,bind)
+        self.keyb.add_binding(key,bind)
     
     def removeBinding(self,key):
         """Remove a key binding."""
-        self.keyb.removeBinding(key)
+        self.keyb.remove_binding(key)
         if key in self.callback:
             del self.callback[key]
 
@@ -272,10 +213,10 @@ class Application:
     #[x,y,ent]
     def addEntity(self,x,y,tile,type,delay=-1):
         """Create a new entity and add it to the list and schedule."""
-        ent = self.entMan.getClass(type)(x,y,tile)
+        ent = self.entMan.get_class(type)(x,y,tile)
         #self.entityList.append([ent.x,ent.y,ent])
-        ent.setAttribute('delay',delay)
-        ent.setCollisionCheck(self.checkCollision)
+        ent.set_attribute('delay',delay)
+        ent.set_collision_check(self.checkCollision)
         ent.moveCallback = self.cb_moveEntity
         self.insertEntity(x,y,ent)
         
@@ -298,9 +239,9 @@ class Application:
         self.objSched.addSchedule(obj)
         return obj
 
-    def addPlayer(self,delay):
+    def place_player(self,delay):
         """Add a player entity and set it as the current player."""
-        map = self.getMap()
+        map = self.get_map()
         tiles = map.getRightRect(0,0,3,map.height)
         tile = tiles[0]
         x = tile.x
@@ -313,7 +254,7 @@ class Application:
 
     def movePlayerToSpawn(self):
         """Move player to the starting point for a Basic map."""
-        map = self.getMap()
+        map = self.get_map()
         tiles = map.getRightRect(0,0,3,map.height)
         tile = tiles[0]
         x = tile.x
@@ -350,8 +291,8 @@ class Application:
             for j in range(y-r,y+r):
                 if (abs(i-x)<r and abs(j-y)<r) and ((i,j) in self.entityList):
                     for ent in self.entityList[(i,j)]:
-                        if (ent.getAttribute('visible') and
-                                not ent.getAttribute('hidden')):
+                        if (ent.get_attribute('visible') and
+                                not ent.get_attribute('hidden')):
                             ret += [ent]
         return ret
 
@@ -376,14 +317,14 @@ class Application:
 
     def checkCollision(self,ent,targetx,targety):
         """Default collision checker for entities."""
-        tile = self.getMap().getTile(targetx,targety)
+        tile = self.get_map().getTile(targetx,targety)
         if tile == None or tile.blocks:
             return 0
         ents = self.getEntsByPos(targetx,targety)
         ok = 1
-        if ent.getAttribute('solid') == 1:
+        if ent.get_attribute('solid') == 1:
             for entt in ents:
-                if entt.getAttribute('solid'):
+                if entt.get_attribute('solid'):
                     ok = 0
                 msgs = entt.collidedWith(ent)
                 if msgs != []:
@@ -396,7 +337,7 @@ class Application:
         pl = self.getPlayer()
         list = self.getEntsByPos(pl.x,pl.y,1)
         for ent in list[:]:
-            if ent.getAttribute('liftable'):
+            if ent.get_attribute('liftable'):
                 self.entityList[(ent.x,ent.y)].remove(ent)
             else:
                 list.remove(ent)
@@ -430,7 +371,7 @@ class Application:
         #didn't select an item, end and return
         self.win_man.window.hideWindow(self.invWin)
         self.transitState(0)
-        self.defaultBindings()
+        self.default_bindings()
 
     def cb_examineMenu(self,ret):
         """Examine menu callback function."""
@@ -442,7 +383,7 @@ class Application:
                             ' onto the floor.'])
         self.win_man.window.hideWindow(self.invWin)
         self.transitState(0)
-        self.defaultBindings()
+        self.default_bindings()
 
 
     def destroyEnts(self):
@@ -451,9 +392,9 @@ class Application:
         pl = self.getPlayer()
         self.entityList = {(pl.x,pl.y) : [pl]}
 
-    def populateEnts(self):
+    def populate_ents(self):
         """Populate the map with entities."""
-        map = self.getMap()
+        map = self.get_map()
         #let's add an end to the level first.
         tiles = map.getRect(map.width-2,map.height/2,10,1)
         tiles = tiles[0]
@@ -565,7 +506,7 @@ class Application:
         """Close a menu window."""
         self.win_man.removeWindow(self.menu_win)
         self.menu_win = -1
-        self.defaultBindings()
+        self.default_bindings()
     
     #cutscene work
     def addCutscene(self,state,list,stateTo=0,timePass=0):
@@ -584,7 +525,7 @@ class Application:
         """Deinitialising for cutscene end."""
         #print 'Exited cutscene. Onwards to state '+str(self.curState)+'.'
         self.cutsceneIndicator = 0
-        self.defaultBindings()
+        self.default_bindings()
 
     def dropEntity(self,ent):
         """Drop an entity from player."""
@@ -682,7 +623,7 @@ class Application:
         if self.curState >= 0:
             self.win_man.window.showWindow(self.game_win)
             cam = self.getCamera()
-            map = self.getMap()
+            map = self.get_map()
             if cam != None:
                 self.game_win.updateLayer(0,cam.sortTiles(map.getTiles(),100,30))
                 self.game_win.updateLayerWEnts(1,cam.sortEnts(

@@ -29,7 +29,7 @@ def startMenuCallback(ret):
     elif ret == 2:
         app.saveMap('map')
     elif ret == 3:
-        app.loadMap('map')
+        app.load_map('map')
 
 
 
@@ -75,7 +75,7 @@ app.transitState(-5)
 #main update loop
 while not app.exit:
     #debug window
-    tmp = app.getMap()
+    tmp = app.get_map()
     if tmp == None:
         tmp = 0
     else:

@@ -289,7 +289,7 @@ class LayeredGameWindow(BorderedWindow):
         self.clear()
         tiles = []
         for ent in ents:
-            if ent.getAttribute('visible'):
+            if ent.get_attribute('visible'):
                 tiles.append(ent.getTile())
         self.updateLayer(layer,tiles)
         self.updateLayers()
