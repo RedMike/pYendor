@@ -46,7 +46,7 @@ class Application:
         self.camera = None
         
         # Initialise default windows with None.
-        self.win_man = graphics.WindowManager(w,h,name+' '+'.'.join(self.version))
+        self.win_man = graphics.RootWindow(w,h,name)
         self.game_win = None
         self.menu_win = None
         self.msg_win = None
@@ -79,7 +79,7 @@ class Application:
             self.populate_ents()
             self.place_player()
         else:
-            self.destroyEnts()
+            self.destroy_ents()
             self.populate_ents()
             self.place_player()
 
@@ -104,7 +104,7 @@ class Application:
     
     def get_map(self):
         """Get current map."""
-        if self.map != -1:
+        if self.map != None:
             return self.maps[self.map]
 
     def add_window(self,layer,type,w,h,x,y):
@@ -278,7 +278,7 @@ class Application:
     def getCamera(self):
         """Returns current camera or None."""
         if self.camera == None:
-            for ent in self.objectList:
+            for ent in self.entity_list:
                 if isinstance(ent[2],object.Camera):
                      self.camera = ent[2]
                      return ent[2]
@@ -386,7 +386,7 @@ class Application:
         self.default_bindings()
 
 
-    def destroyEnts(self):
+    def destroy_ents(self):
         """Destroy all entities except for the player"""
         #TODO except inventory
         pl = self.getPlayer()
@@ -604,48 +604,22 @@ class Application:
         #self.winMan.tick()
 
 
-        #cutscenes
-        if self.curState in self.cutscenes:
-            #print 'In cutscene '+str(self.curState)
-            if self.cutsceneIndicator<=len(self.cutscenes[self.curState])-2:
-                set = self.cutscenes[self.curState][self.cutsceneIndicator]
-                #print 'Running '+str(set[0])+' with '+str(set[1])
-                set[0](set[1])
-                self.cutsceneIndicator += 1
-            else:
-                self.transitState(
-                        self.cutscenes[self.curState][self.cutsceneIndicator])
-
 
         #drawn
-        if self.curState < 0:
-            self.win_man.window.hide_window(self.game_win)
-        if self.curState >= 0:
-            self.win_man.window.show_window(self.game_win)
-            cam = self.getCamera()
-            map = self.get_map()
-            if cam != None:
-                self.game_win.updateLayer(0,cam.sortTiles(map.getTiles(),100,30))
-                self.game_win.updateLayerWEnts(1,cam.sortEnts(
+        self.win_man.show_window(self.game_win)
+        cam = self.getCamera()
+        map = self.get_map()
+        if cam != None:
+            self.game_win.update_layer(0,cam.sortTiles(map.getTiles(),100,30))
+            self.game_win.updateLayerWEnts(1,cam.sortEnts(
                         self.getVisEntsByPos(cam.x,cam.y,50),100,30))
-                self.game_win.updateLayerWEnts(2,cam.sortEnts([self.getPlayer()],
+            self.game_win.updateLayerWEnts(2,cam.sortEnts([self.getPlayer()],
                         100,30))
-        self.win_man.draw()
+        self.win_man.draw_all()
 
         #input
-        if self.curState not in self.cutscenes:
-            ret = self.keyb.tick()
-            for callback in self.callback:
-                if callback in ret:
-                    self.callback[callback](ret[callback])
-        else:
-            self.sched.sleep(0.25)
-        if self.timePassing:
-            self.sched.tick()
-
-        self.objSched.tick()
-        #self.syncEnts()
-        #print 'Turn '+str(self.sched.ticks) 
+        ret = self.keyboard.tick()
+        self.scheduler.tick()
         
     def quit(self):
         """Exit application."""

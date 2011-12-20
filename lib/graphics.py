@@ -34,6 +34,7 @@ class RootWindow(object):
 
     def __init__(self,w,h,name,font='data/font.png'):
         """Initialisation method, name shows up as the title."""
+        # FIXME font things.
         self.width = w
         self.height = h
         self.name = name
@@ -199,31 +200,24 @@ class LayeredGameWindow(BorderedWindow):
         super(LayeredGameWindow,self).__init__(w,h)
         self.layers = { }
     
-    def updateLayer(self,layer,tiles):
-        """Update a layer with a list of tiles."""
-        map = []
+    def update_layer(self,layer,tiles):
+        """Update a layer with a list of (x, y, bgcol, char, fgcol, bgset)."""
+        map = [ ]
         for tile in tiles:
-            tile = listTile(tile)
             map += [tile]
         self.layers[layer] = map
-        self.updateLayers()
+        self.update_layers()
 
-    def updateLayerWEnts(self,layer,ents):
-        """Update a layer with a list of entities."""
-        self.clear()
-        tiles = []
-        for ent in ents:
-            if ent.get_attribute('visible'):
-                tiles.append(ent.getTile())
-        self.updateLayer(layer,tiles)
-        self.updateLayers()
-
-    def updateLayers(self):
+    def update_layers(self):
         """Update all layers, then restore border."""
-        for layer in self.layers.itervalues():
-            self.update(layer)
+        s = list(self.layers.iterkeys())
+        s.sort()
+        for layer in s:
+            tiles = self.layers[layer]
+            self.update(tiles)
         self.restore_border()
-    
+
+
 class BorderedMessageWindow(BorderedWindow):
     """Main messaging window type."""
     
