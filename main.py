@@ -24,7 +24,7 @@ def startMenuCallback(ret):
         app.quit()
     elif ret == 0:
         app.newLevel()
-        app.winMan.window.showWindow(gameW)
+        app.win_man.window.showWindow(gameW)
         app.transitState(1)
     elif ret == 2:
         app.saveMap('map')

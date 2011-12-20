@@ -12,58 +12,52 @@ class Application:
     """
     Main application class.
 
-    After creating, set floor and wall to the desired tiles, add your windows,
-    set them as default, then call newLevel and showWindow to show your game
-    window. Transit state to 0, preferably, then enter the update loop. Inside
-    the update loop, while not app.exit, call app.update."""
+    After creating, set up the graphics options. Create the map or maps, then entities. Initialise any specifics.
+    Then start calling Update every time you want to update.
+
+    """
     
     version = (0, 5, 0, 'a')
     
-    def __init__(self,name,w,h):
+    def __init__(self, name, w, h):
         self.exit = 0
         
-        # Map objects are in map.py. self.map is the current map ID from
-        # self.maps. They DO NOT contain entities. Saving/loading of those
-        # must be done separately.
+        # One currently loaded map at any one time, referenced by the index it uses in self.maps. Changing maps is
+        # done using change_map to deinitialise everything needed, then reinitialise.
         self.maps = []
-        self.map = -1
+        self.map = None
         
-        # Scheduler objects are in time.py. Entities and objects are on
-        # different schedulers for god knows what reason. FIXME
-        self.sched = time.Scheduler([])
-        self.objSched = time.Scheduler([])
+        # All entities are scheduled in one global scheduler.
+        self.scheduler = time.Scheduler()
                 
         # Entities are kept in a dictionary. Keys are a tuple of (x, y).
         # This allows for fast checking for entities in tiles, and raises
         # only a slight problem in keeping them in sync. Picking a class for
         # addEntity is done via the entity manager transparently. Send a string
         # like 'item'.
-        # Objects are entity-like objects with no displaying, and on a different
-        # scheduler.
-        self.entMan = entity.EntityMan()
-        self.entityList = {}
-        self.objectList = []
+        self.entMan = entity.EntityManager()
+        self.entityList = { }
 
         # Player and camera entities are saved so that you could switch cameras
         # OR players quite easily.
         self.player = None
         self.camera = None
         
-        #graphics gen
-        self.winMan = graphics.WindowManager(w,h,name+self.version)
-        self.gameWin = -1
-        self.menuWin = -1
-        self.msgWin = -1
-        self.announcement = -1
+        # Initialise default windows with None.
+        self.win_man = graphics.WindowManager(w,h,name+'.'.join(self.version))
+        self.game_win = None
+        self.menu_win = None
+        self.msg_win = None
+        self.announcement_win = None
         
-        #interface init
-        self.keyb = interface.KeyboardListener()
+        # Initialise keyboard interface.
+        self.keyboard = interface.KeyboardListener()
         self.callback = {}
 
         #state init
-        
+
         self.transitions = {}
-        self.curState = -1
+        self.curState = None
         self.timePassing = 0
 
         #cutscene init
@@ -174,32 +168,32 @@ class Application:
     #win work
     def addWindow(self,layer,type,w,h,x,y):
         """Add new window and return it."""
-        win = self.winMan.addWindow(layer,type,w,h,x,y)
+        win = self.win_man.addWindow(layer,type,w,h,x,y)
         return win
 
     def clearLayer(self,layer):
         """Ask window manager to clear a layer."""
-        self.winMan.clearLayer(layer)
+        self.win_man.clearLayer(layer)
 
     def setGameWindow(self,w):
         """Set current game window to use."""
-        self.gameWin = w
+        self.game_win = w
 
     def setInvWindow(self,w):
         """Set current inventory window to use and hide it."""
         self.invWin = w
-        self.winMan.window.hideWindow(w)
+        self.win_man.window.hideWindow(w)
 
     def setMessageWindow(self,w):
         """Set current message window to use."""
-        self.msgWin = w
+        self.msg_win = w
 
     def addMessages(self,msgs):
         """Post messages to current message window, takes a list of strings."""
-        if self.msgWin != 0:
+        if self.msg_win != 0:
             for msg in msgs:
-                set = [self.msgWin.bgcol,msg,(255,255,255),1]
-                self.msgWin.addMessages([set])
+                set = [self.msg_win.bgcol,msg,(255,255,255),1]
+                self.msg_win.addMessages([set])
 
     def addAnnouncement(self,msgs,w=50,h=30,x=10,y=10,to=0):
         """Pop up a default announcement window with given messages."""
@@ -208,7 +202,7 @@ class Application:
         for msg in msgs:
             set = [(0,0,0),msg,(255,255,255),1]
             win.addMessages([set])
-        self.announcement = win
+        self.announcement_win = win
         self.transitState(-55)
         self.addBinding('d',[self.transitState,[to]])
         return win
@@ -239,20 +233,20 @@ class Application:
 
     def toggleWindow(self,window):
         """Toggle whether a window is visible or not."""
-        self.winMan.toggleVisible(window)
+        self.win_man.toggleVisible(window)
 
     def hideWindow(self,window):
         """Hide a window."""
-        self.winMan.hideWindow(window)
+        self.win_man.hideWindow(window)
 
     def showWindow(self,window):
         """Unhide a window."""
-        self.winMan.showWindow(window)
+        self.win_man.showWindow(window)
 
     def dismissAnnouncement(self):
         """Dismiss a shown announcement."""
-        if self.announcement != -1:
-            self.winMan.removeWindow(self.announcement)
+        if self.announcement_win != -1:
+            self.win_man.removeWindow(self.announcement_win)
         self.defaultBindings()
     
     #interface work
@@ -421,7 +415,7 @@ class Application:
         self.addBinding('d',[self.invWin.moveRight,[]])
         self.addBinding('e',[self.invWin.enter,[]])
         self.addCallback('e',self.cb_inventoryMenu)
-        self.winMan.window.showWindow(self.invWin)
+        self.win_man.window.showWindow(self.invWin)
 
         
     def cb_inventoryMenu(self,ret):
@@ -431,10 +425,10 @@ class Application:
             self.addMenu(-51,0,[['Drop ' + list[ret-1][1][2],ret],
                         ['Exit.',0]], self.cb_examineMenu)
             self.transitState(-51)
-            self.winMan.window.hideWindow(self.invWin)
+            self.win_man.window.hideWindow(self.invWin)
             return
         #didn't select an item, end and return
-        self.winMan.window.hideWindow(self.invWin)
+        self.win_man.window.hideWindow(self.invWin)
         self.transitState(0)
         self.defaultBindings()
 
@@ -446,7 +440,7 @@ class Application:
             self.dropEntity(list[ret-1][1][3])
             self.addMessages(['You drop the '+list[ret-1][1][2]+
                             ' onto the floor.'])
-        self.winMan.window.hideWindow(self.invWin)
+        self.win_man.window.hideWindow(self.invWin)
         self.transitState(0)
         self.defaultBindings()
 
@@ -463,7 +457,7 @@ class Application:
         #let's add an end to the level first.
         tiles = map.getRect(map.width-2,map.height/2,10,1)
         tiles = tiles[0]
-        tile = [self.gameWin.bgcol, 'O', (255,255,255), 1, 1, 0]
+        tile = [self.game_win.bgcol, 'O', (255,255,255), 1, 1, 0]
         portal = self.addEntity(tiles.x, tiles.y, tile, 'trap')
         portal.events = [[self.newLevel,()]]
 
@@ -556,21 +550,21 @@ class Application:
 
     def menuInit(self,choices,callback):
         """Initialise a menu window."""
-        if self.menuWin != -1:
+        if self.menu_win != -1:
             self.menuDest()
-        self.menuWin = self.addWindow(1,'cw',100,30,0,0)
-        self.menuWin.setBorder([(255,255,255),' ',(255,255,255),1])
-        self.menuWin.setChoices(choices)
+        self.menu_win = self.addWindow(1,'cw',100,30,0,0)
+        self.menu_win.setBorder([(255,255,255),' ',(255,255,255),1])
+        self.menu_win.setChoices(choices)
         self.clearBindings()
-        self.addBinding('w',[self.menuWin.moveUp,()])
-        self.addBinding('s',[self.menuWin.moveDown,()])
-        self.addBinding('d',[self.menuWin.enter,()])
+        self.addBinding('w',[self.menu_win.moveUp,()])
+        self.addBinding('s',[self.menu_win.moveDown,()])
+        self.addBinding('d',[self.menu_win.enter,()])
         self.addCallback('d',callback)
 
     def menuDest(self):
         """Close a menu window."""
-        self.winMan.removeWindow(self.menuWin)
-        self.menuWin = -1
+        self.win_man.removeWindow(self.menu_win)
+        self.menu_win = -1
         self.defaultBindings()
     
     #cutscene work
@@ -684,18 +678,18 @@ class Application:
 
         #drawn
         if self.curState < 0:
-            self.winMan.window.hideWindow(self.gameWin)
+            self.win_man.window.hideWindow(self.game_win)
         if self.curState >= 0:
-            self.winMan.window.showWindow(self.gameWin)
+            self.win_man.window.showWindow(self.game_win)
             cam = self.getCamera()
             map = self.getMap()
             if cam != None:
-                self.gameWin.updateLayer(0,cam.sortTiles(map.getTiles(),100,30))
-                self.gameWin.updateLayerWEnts(1,cam.sortEnts(
+                self.game_win.updateLayer(0,cam.sortTiles(map.getTiles(),100,30))
+                self.game_win.updateLayerWEnts(1,cam.sortEnts(
                         self.getVisEntsByPos(cam.x,cam.y,50),100,30))
-                self.gameWin.updateLayerWEnts(2,cam.sortEnts([self.getPlayer()],
+                self.game_win.updateLayerWEnts(2,cam.sortEnts([self.getPlayer()],
                         100,30))
-        self.winMan.draw()
+        self.win_man.draw()
 
         #input
         if self.curState not in self.cutscenes:

@@ -3,28 +3,48 @@ from __future__ import absolute_import
 import time
 
 class Scheduler:
-    
-    #ent = [delay,ent]
-    def __init__(self,ents):
+    """Can schedule functions to be called a few ticks in the future.
+
+    If dominant id is not set, it'll stop on the first update it finds. Queue's keys are tick numbers, value is a list
+    containing tuples of the form (function, params, delay).
+    """
+    def __init__(self):
         self.ticks = 0
-        self.queue = {}
-        for ent in ents:
-            self.addEntity(ent)
-        self.dominant = 0
+        self.queue = { }
+        self.lookup = { }
+        self.current_id = 0
+        self.dominant = None
 
-    def addFctSchedule(self,fct,delay):
-        self.queue.setdefault(self.ticks + delay,[]).append([fct])
-        
-    def addSchedule(self,ent):
-        #delay -1 == ent doesn't need regular updates
-        delay = ent.getAttribute('delay')
-        if delay != -1:
-            self.queue.setdefault(self.ticks + delay,[]).append([delay,ent])
+    def add_schedule(self, set, id=0):
+        """Returns the id you can use to cancel a scheduled task."""
+        if not id:
+            self.lookup[self.current_id] = set
+            self.current_id += 1
+        fct, obj, delay = set
+        if self.ticks + delay not in self.queue:
+            self.queue[self.ticks + delay] = []
+        self.queue[self.ticks + delay].append(set)
+        return self.current_id - 1
 
-    def setDominant(self,ent):
-        self.dominant = [ent.getAttribute('delay'),ent]
-    
+    def cancel_schedule(self, id):
+        """Cancels a schedule from running."""
+        for tick in self.queue:
+            sets = self.queue[tick]
+            for set in sets.copy():
+                if self.lookup[id] == set:
+                    sets.remove(set)
+        del self.lookup[id]
+
+    def set_dominant(self,id):
+        """Call with None in order to stop every useful tick."""
+        if id != None:
+            self.dominant = self.lookup[id]
+        else:
+            self.dominant = None
+
     def tick(self):
+        """Find the first useful tick, then run everything in it; If one of the run functions was the dominant or
+        dominant is None, stop after this, otherwise keep going."""
         done = 0
         while not done:
             sets = []
@@ -32,18 +52,13 @@ class Scheduler:
                 sets = self.queue.pop(self.ticks,[])
                 self.ticks += 1
             for set in sets:
-                if len(set)==2:
-                    ent = set[1]
-                    ent.update()
-                    self.addSchedule(ent)
-                elif len(set)==1:
-                    fct = set[0]
-                    fct()
-            if not self.dominant:
-                done = 1
-            else:
-                if self.dominant in sets:
+                # run the function
+                set[0](*set[1])
+                self.add_schedule(set,1)
+                if self.dominant == set:
                     done = 1
+            if self.dominant == None:
+                done = 1
 
     def sleep(self,sec):
         time.sleep(sec)

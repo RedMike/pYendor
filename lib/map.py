@@ -89,7 +89,7 @@ class Map:
             for j in range(h):
                 self.add_tile(x+i, y+j, tile)
 
-    def addCircle(self, x, y, r, tile):
+    def add_circle(self, x, y, r, tile):
         """Draws a circle centered on (x,y), with the diameter r."""
         r /= 2
         for i in range(-r,r):
