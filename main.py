@@ -39,11 +39,11 @@ app = base.Application("pYendor Test Game ",WIDTH,HEIGHT)
 app.floor = [0,0,FLOORBGCOL,' ',(0,0,0),1,0,0]
 app.wall = [0,0,WALLBGCOL,' ',(0,0,0),1,1,1]
 #create basic windows
-gameW = app.addWindow(0,'lgw',100,30,0,0)
-msgW = app.addWindow(0,'bmw',50,20,0,30)
-statusW = app.addWindow(0,'sw',50,10,50,30)
-debugW = app.addWindow(0,'dbw',50,10,50,40)
-invW = app.addWindow(1,'gw',30,25,1,1)
+gameW = app.add_window(0,'lgw',100,30,0,0)
+msgW = app.add_window(0,'bmw',50,20,0,30)
+statusW = app.add_window(0,'sw',50,10,50,30)
+debugW = app.add_window(0,'dbw',50,10,50,40)
+invW = app.add_window(1,'gw',30,25,1,1)
 #define basic window options
 gameW.setBorder([BORDER1BG,' ',BORDER1FG,1])
 msgW.setBorder([BORDER1BG,' ',BORDER1FG,1])

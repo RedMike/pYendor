@@ -107,7 +107,7 @@ class Application:
         if self.map != -1:
             return self.maps[self.map]
 
-    def addWindow(self,layer,type,w,h,x,y):
+    def add_window(self,layer,type,w,h,x,y):
         """Add new window and return it."""
         win = self.win_man.addWindow(layer,type,w,h,x,y)
         return win
@@ -138,7 +138,7 @@ class Application:
 
     def addAnnouncement(self,msgs,w=50,h=30,x=10,y=10,to=0):
         """Pop up a default announcement window with given messages."""
-        win = self.addWindow(1,'bmw',w,h,x,y)
+        win = self.add_window(1,'bmw',w,h,x,y)
         win.setBorder([(255,255,255),' ',(255,255,255),1])
         for msg in msgs:
             set = [(0,0,0),msg,(255,255,255),1]
@@ -160,14 +160,14 @@ class Application:
     
     def addCompoundMenu(self,choices,w=50,h=30,x=10,y=10):
         """Add a default compound menu with given choices."""
-        win = self.addWindow(1,'cpw',w,h,x,y)
+        win = self.add_window(1,'cpw',w,h,x,y)
         for choice in choices:
             win.addChoice(choice[0],choice[1])
         return win
 
     def addMultiChoice(self,choices,w=50,h=30,x=10,y=10):
         """Add a multiple choice menu with given choices."""
-        win = self.addWindow(1,'mcw',w,h,x,y)
+        win = self.add_window(1,'mcw',w,h,x,y)
         for choice in choices:
             win.addChoice(choice[0],choice[1])
         return win
@@ -493,7 +493,7 @@ class Application:
         """Initialise a menu window."""
         if self.menu_win != -1:
             self.menuDest()
-        self.menu_win = self.addWindow(1,'cw',100,30,0,0)
+        self.menu_win = self.add_window(1,'cw',100,30,0,0)
         self.menu_win.setBorder([(255,255,255),' ',(255,255,255),1])
         self.menu_win.setChoices(choices)
         self.clearBindings()
