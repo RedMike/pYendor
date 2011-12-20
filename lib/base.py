@@ -109,7 +109,7 @@ class Application:
 
     def add_window(self,layer,type,w,h,x,y):
         """Add new window and return it."""
-        win = self.win_man.addWindow(layer,type,w,h,x,y)
+        win = self.win_man.add_window(layer,type,w,h,x,y)
         return win
 
     def clearLayer(self,layer):
@@ -123,7 +123,7 @@ class Application:
     def setInvWindow(self,w):
         """Set current inventory window to use and hide it."""
         self.invWin = w
-        self.win_man.window.hideWindow(w)
+        self.win_man.window.hide_window(w)
 
     def setMessageWindow(self,w):
         """Set current message window to use."""
@@ -139,7 +139,7 @@ class Application:
     def addAnnouncement(self,msgs,w=50,h=30,x=10,y=10,to=0):
         """Pop up a default announcement window with given messages."""
         win = self.add_window(1,'bmw',w,h,x,y)
-        win.setBorder([(255,255,255),' ',(255,255,255),1])
+        win.set_border([(255,255,255),' ',(255,255,255),1])
         for msg in msgs:
             set = [(0,0,0),msg,(255,255,255),1]
             win.addMessages([set])
@@ -178,16 +178,16 @@ class Application:
 
     def hideWindow(self,window):
         """Hide a window."""
-        self.win_man.hideWindow(window)
+        self.win_man.hide_window(window)
 
     def showWindow(self,window):
         """Unhide a window."""
-        self.win_man.showWindow(window)
+        self.win_man.show_window(window)
 
     def dismissAnnouncement(self):
         """Dismiss a shown announcement."""
         if self.announcement_win != -1:
-            self.win_man.removeWindow(self.announcement_win)
+            self.win_man.remove_window(self.announcement_win)
         self.default_bindings()
     
     #interface work
@@ -356,7 +356,7 @@ class Application:
         self.addBinding('d',[self.invWin.moveRight,[]])
         self.addBinding('e',[self.invWin.enter,[]])
         self.addCallback('e',self.cb_inventoryMenu)
-        self.win_man.window.showWindow(self.invWin)
+        self.win_man.window.show_window(self.invWin)
 
         
     def cb_inventoryMenu(self,ret):
@@ -366,10 +366,10 @@ class Application:
             self.addMenu(-51,0,[['Drop ' + list[ret-1][1][2],ret],
                         ['Exit.',0]], self.cb_examineMenu)
             self.transitState(-51)
-            self.win_man.window.hideWindow(self.invWin)
+            self.win_man.window.hide_window(self.invWin)
             return
         #didn't select an item, end and return
-        self.win_man.window.hideWindow(self.invWin)
+        self.win_man.window.hide_window(self.invWin)
         self.transitState(0)
         self.default_bindings()
 
@@ -381,7 +381,7 @@ class Application:
             self.dropEntity(list[ret-1][1][3])
             self.addMessages(['You drop the '+list[ret-1][1][2]+
                             ' onto the floor.'])
-        self.win_man.window.hideWindow(self.invWin)
+        self.win_man.window.hide_window(self.invWin)
         self.transitState(0)
         self.default_bindings()
 
@@ -494,7 +494,7 @@ class Application:
         if self.menu_win != -1:
             self.menuDest()
         self.menu_win = self.add_window(1,'cw',100,30,0,0)
-        self.menu_win.setBorder([(255,255,255),' ',(255,255,255),1])
+        self.menu_win.set_border([(255,255,255),' ',(255,255,255),1])
         self.menu_win.setChoices(choices)
         self.clearBindings()
         self.addBinding('w',[self.menu_win.moveUp,()])
@@ -504,7 +504,7 @@ class Application:
 
     def menuDest(self):
         """Close a menu window."""
-        self.win_man.removeWindow(self.menu_win)
+        self.win_man.remove_window(self.menu_win)
         self.menu_win = -1
         self.default_bindings()
     
@@ -619,9 +619,9 @@ class Application:
 
         #drawn
         if self.curState < 0:
-            self.win_man.window.hideWindow(self.game_win)
+            self.win_man.window.hide_window(self.game_win)
         if self.curState >= 0:
-            self.win_man.window.showWindow(self.game_win)
+            self.win_man.window.show_window(self.game_win)
             cam = self.getCamera()
             map = self.get_map()
             if cam != None:

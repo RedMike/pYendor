@@ -83,8 +83,8 @@ class Map:
 
 if __name__ == "__main__":
     man = gr.RootWindow(300,300,'Sierpinski','data/font_pixel.png')
-    win = man.addWindow(gr.BorderedWindow,300,300,0,0)
-    win.setBorder([(255,255,255),' ',(0,0,0),1])
+    win = man.add_window(gr.BorderedWindow,300,300,0,0)
+    win.set_border([(255,255,255),' ',(0,0,0),1])
 
     m = Map()
     while 1:

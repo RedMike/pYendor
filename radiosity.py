@@ -124,8 +124,8 @@ def updateTiles(m):
 
 if __name__ == "__main__":
     man = gr.RootWindow(30,30,'Radiosity','data/font.png')
-    win = man.addWindow(gr.BorderedWindow,30,30,0,0)
-    win.setBorder([(255,255,255),' ',(0,0,0),1])
+    win = man.add_window(gr.BorderedWindow,30,30,0,0)
+    win.set_border([(255,255,255),' ',(0,0,0),1])
 
     print 'start'
 

@@ -24,7 +24,7 @@ def startMenuCallback(ret):
         app.quit()
     elif ret == 0:
         app.newLevel()
-        app.win_man.window.showWindow(gameW)
+        app.win_man.window.show_window(gameW)
         app.transitState(1)
     elif ret == 2:
         app.saveMap('map')
@@ -45,11 +45,11 @@ statusW = app.add_window(0,'sw',50,10,50,30)
 debugW = app.add_window(0,'dbw',50,10,50,40)
 invW = app.add_window(1,'gw',30,25,1,1)
 #define basic window options
-gameW.setBorder([BORDER1BG,' ',BORDER1FG,1])
-msgW.setBorder([BORDER1BG,' ',BORDER1FG,1])
-statusW.setBorder([BORDER1BG,' ',BORDER1FG,1])
-debugW.setBorder([BORDER2BG,'!',BORDER2FG,1])
-invW.setBorder([BORDER2BG,' ',BORDER2FG,1])
+gameW.set_border([BORDER1BG,' ',BORDER1FG,1])
+msgW.set_border([BORDER1BG,' ',BORDER1FG,1])
+statusW.set_border([BORDER1BG,' ',BORDER1FG,1])
+debugW.set_border([BORDER2BG,'!',BORDER2FG,1])
+invW.set_border([BORDER2BG,' ',BORDER2FG,1])
 gameW.bgcol = WALLBGCOL
 msgW.bgcol = WALLBGCOL
 statusW.bgcol = WALLBGCOL
