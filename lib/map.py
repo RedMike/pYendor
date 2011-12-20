@@ -3,181 +3,119 @@
 import random
 import data.libtcodpy as libtcod
 
-# Generator -> Map -> Tile
-# Tiles are ONLY tiles. They don't care about what is on them.
-#   The Application worries about that and sorts what gets shown,
-#   and what not.
+# Generator creates a map, then gen_map returns it.
 #
-# They do, however, have a base colour (bg) and a preferred fg,
-#   if no items are on it, that's the fg chosen.
+# Map contains a basic 2D array of tuples of the form (blocks, blocks_light), for easy referencing. TODO: "Changed" tiles
+# are stored in a new list.
+#
+# Tile is (blocks, blocks_light).
+#
+# Globals _WALL and _FLOOR to ease modification.
 
-# Tiles have:
-#    - bgcol
-#    - char
-#    - fgcol
-#    - blocks
-#    - blocksLight
-# (bgcol, char, fgcol, blocks, blocksLight)
-
-# (basic) Generator has:
-#    - floorTile
-#    - wallTile
-#    - width
-#    - height
+_WALL = (1,1)
+_FLOOR = (0,0)
 
 class Generator:
     
-    def __init__(self,floor,wall,w,h):
-        self.floor = Tile(*floor)
-        self.wall = Tile(*wall)
+    def __init__(self,w,h):
+        """Only initialises the map, doesn't generate immediately, until gen_map is called."""
         self.width = w
         self.height = h
         self.map = Map(w,h)
     
-    def genMap(self):
-        #generation algorithm
-        #floor = Tile(0,0,(200,200,200),' ',(100,100,100),1,0,0)
-        #wall = Tile(0,0,(50,50,80),'#',(0,0,0),1,1,1)
+    def gen_map(self):
+        """Returns generated map."""
+        # basic generation algorithm
         self.map.clear()
-        self.map.addRect(self.floor,2,2,10,12)
-        self.map.addRect(self.floor,25,4,12,15)
-        self.map.addRect(self.floor,10,8,20,1)
-        self.map.addRect(self.wall,32,9,2,4)
-        self.map.addRect(self.wall,5,8,2,1)
+        self.map.add_rect(2, 2, 10, 12, _FLOOR)
+        self.map.add_rect(25, 4, 12, 15, _FLOOR)
+        self.map.add_rect(10, 8, 20, 1, _FLOOR)
+        self.map.add_rect(32, 9, 2, 4, _WALL)
+        self.map.add_rect(5, 8, 2, 1, _WALL)
         return self.map
 
 class BasicGenerator(Generator):
 
-    def genMap(self):
+    def gen_map(self):
+        """Returns simple left-to-right directional map."""
         self.map.clear()
+        # initial options
         roughness = 50
-        length = 100
+        length = self.width-3
         wind = 100
-        if length>=self.width-2:
-            length = self.width-3
-        startx = 1
-        x = startx
+        # starting points
+        x = 1
         y = self.height/2-2
         height = 3
         for i in range(length):
-            self.map.addRect(self.floor,x,y,1,height)
-
-            ##extensions
-            #pillars
-            if height>6:
-                nrPillars = random.randint(0,3)
-                for i in range(nrPillars):
-                    ty = random.randint(0,height)
-                    ty += y
-                    self.map.addRect(self.wall,x,ty,1,1)
-
-            #roughness
+            # iterate until we reach the right side of the screen
+            self.map.add_rect(x, y, 1, height, _FLOOR)
+            # every so often increase or decrease the width
             if random.randint(0,100)<roughness:
-                #increase/decrease width
                 height += random.randint(-2,2)
-                if height<3:
+                if height < 3:
                     height = 3
-                if y+height>=self.height:
+                if y+height >= self.height:
                     height = self.height-y-1
-
-            #windyness
+            # every so often move the point we're at up or down
             if random.randint(0,100)<wind:
-                #move left/right
                 y += random.randint(-2,2)
-                if y<1:
+                if y < 1:
                     y = 1
-                if y+height>=self.height:
+                if y+height >= self.height:
                     y = self.height-height-1
-            
-            x+=1
+            x += 1
         return self.map
 
 
 class Map:
+    """Contains 2D array of (blocks, blocks_light), and functions to ease modification."""
     
     def __init__(self,w,h):
-        self.tiles = []
+        """Initialised with light-blocking walls."""
         self.width = w
         self.height = h
+        self.clear()
 
-
-    def addTile(self,tile):
-        if tile.x>0 and tile.x<self.width:
-            if tile.y>0 and tile.y<self.height:
-                if self.getTile(tile.x,tile.y) != None:
-                    self.tiles.remove(self.getTile(tile.x,tile.y))
-                self.tiles.append(tile.copy())
+    def add_tile(self, x, y, tile):
+        """Replaces tile with given tuple."""
+        if 0 < x < self.width:
+            if 0 < y < self.height:
+                self.tiles[x][y] = tile
     
-    def addRect(self,tile,x,y,w,h):
+    def add_rect(self, x, y, w, h, tile):
+        """Draws a rectangle starting at (x,y), (w,h) size."""
         for i in range(w):
             for j in range(h):
-                tile.x = x+i
-                tile.y = y+j
-                self.addTile(tile)
+                self.add_tile(x+i, y+j, tile)
 
-    def addCircle(self,tile,x,y,r):
-        r = r/2
+    def addCircle(self, x, y, r, tile):
+        """Draws a circle centered on (x,y), with the diameter r."""
+        r /= 2
         for i in range(-r,r):
             for j in range(-r,r):
                 if float((i*i+j*j)**(1/2.0)) < r:
-                    tile.x = i+x
-                    tile.y = j+y
-                    self.addTile(tile)
+                    self.add_tile(x+i, y+j, tile)
     
-    def getTiles(self):
-        ret = []
-        ret = self.tiles
-        return ret
+    def get_tiles(self):
+        """Returns the whole map."""
+        return self.tiles
 
-    
-    def getRect(self,x,y,r,onlyFree=0):
-        ret = []
-        for tile in self.tiles:
-            if abs(x-tile.x)<r and abs(y-tile.y)<r:
-                if (onlyFree and not tile.blocks) or (not onlyFree):
-                    ret.append(tile)
+    def get_rect(self, x, y, w, h, only_floors=0):
+        """Returns a 2D array section of the original map, starting at (x,y) with size (w,h)."""
+        ret = [[_WALL for i in range(w)] for j in range(h)]
+        for i in range(w):
+            for j in range(h):
+                if not only_floors or self.get_tile(x+i, y+j) == _FLOOR:
+                    ret[i][j] = self.get_tile(x+i, y+j)
         return ret
+    
+    def get_tile(self,x,y):
+        """Returns wall if tile not in map."""
+        if 0 < x < self.width and 0 < y < self.height:
+            return self.tiles[x][y]
+        return _WALL
 
-    def getRightRect(self,x,y,w,h):
-        ret = []
-        for tile in self.tiles:
-            if tile.x>=x and tile.y>=y and tile.x<x+w and tile.y<y+h:
-                ret.append(tile)
-        return ret
-    
-    def getTile(self,x,y):
-        ret = self.getRect(x,y,1)
-        if ret != []:
-            ret = ret[0]
-        else:
-            ret = None
-        return ret
-
-    def loadTiles(self,tiles):
-        for tile in tiles:
-            self.addTile(Tile(*tile))
-    
-    def fill(self,tile):
-        self.clear()
-        self.addRect(tile,0,0,self.width,self.height)
-        
     def clear(self):
-        self.tiles = []
-
-
-          
-class Tile:
-    
-    def __init__(self,x,y,bgcol,char,fgcol,bgset,blocks,blocksLight=0):
-        self.bgcol = bgcol
-        self.char = char
-        self.fgcol = fgcol
-        self.blocks = blocks
-        self.blocksLight = blocksLight
-        self.bgset = bgset
-        self.x = x
-        self.y = y
-    
-    def copy(self):
-        return Tile(self.x,self.y,self.bgcol,self.char,self.fgcol,self.bgset,self.blocks,self.blocksLight)
-    
+        """Defaults everything to light-blocking walls."""
+        self.tiles = [[_WALL for i in range(self.width)] for j in range(self.height)]

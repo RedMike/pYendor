@@ -17,7 +17,7 @@ class Application:
     window. Transit state to 0, preferably, then enter the update loop. Inside
     the update loop, while not app.exit, call app.update."""
     
-    version = '0.04.00g'
+    version = (0, 5, 0, 'a')
     
     def __init__(self,name,w,h):
         self.exit = 0
