@@ -72,8 +72,8 @@ class Entity:
 class Item(Entity):
     """Base non-blocking, visible, liftable and usable entity for subclassing."""
 
-    def __init__(self,x,y,tile):
-        Entity.__init__(self,x,y,tile)
+    def __init__(self,parent):
+        Entity.__init__(self,parent)
         self.set_attribute('solid',0)
         self.set_attribute('visible',1)
         self.set_attribute('collidable',0)
@@ -83,11 +83,11 @@ class Item(Entity):
 
 class NPC(Entity):
 
-    def __init__(self,x,y,tile):
+    def __init__(self,parent):
         """Base blocking, collidable, unliftable, unusable entity for subclass.
 
         Also has hp and maximum hp and alive/dead state by default."""
-        Entity.__init__(self,x,y,tile)
+        Entity.__init__(self,parent)
         self.set_attribute('solid',1)
         self.set_attribute('collidable',1)
         self.set_attribute('liftable',0)
@@ -109,9 +109,9 @@ class NPC(Entity):
 class Beast(NPC):
     """Subclassed beast entity, can be hit by player."""
 
-    def __init__(self,x,y,tile):
+    def __init__(self,parent):
         """Set name afterwards directly, or defaults to 'beast'."""
-        NPC.__init__(self,x,y,tile)
+        NPC.__init__(self,parent)
         self.name = "beast"
 
     def update(self):
@@ -127,8 +127,8 @@ class Beast(NPC):
 class Trap(Entity):
     """Base class for solid, collidable, unliftable, unusable ents for subclass."""
 
-    def __init__(self,x,y,tile):
-        Entity.__init__(self,x,y,tile)
+    def __init__(self,parent):
+        Entity.__init__(self,parent)
         self.set_attribute('solid',1)
         self.set_attribute('collidable',1)
         self.set_attribute('liftable',0)
@@ -137,8 +137,8 @@ class Trap(Entity):
 class Door(Trap):
     """Simple door class openable only by player, subclass of Trap."""
 
-    def __init__(self,x,y,tile):
-        Trap.__init__(self,x,y,tile)
+    def __init__(self,parent):
+        Trap.__init__(self,parent)
         self.open = 0
 
     def toggle(self):
@@ -152,5 +152,11 @@ class Door(Trap):
 class Player(NPC):
     """Simple player class."""
 
-    def __init__(self,x,y,tile):
-        NPC.__init__(self,x,y,tile)
+    def __init__(self,parent):
+        NPC.__init__(self,parent)
+
+class Camera(Entity):
+    """Simple camera class."""
+
+    def __init__(self, parent):
+        Entity.__init__(self,parent)

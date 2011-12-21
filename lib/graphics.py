@@ -50,7 +50,7 @@ class RootWindow(object):
         """Library-specific initialisation; Overwrite for non-libtcod."""
         libtcod.console_set_custom_font(self.font,
                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-        libtcod.console_init_root(self.width, self.height, self.name, False)
+        libtcod.console_init_root(self.width, self.height, self.name)
         libtcod.console_credits()
 
     def add_window(self, layer, type, w, h, x, y):
@@ -83,7 +83,7 @@ class RootWindow(object):
             del self.layers[id]
             del self.visibility[id]
 
-    def draw_window(self, id, x, y):
+    def draw_window(self, id):
         """Libtcod-specific drawing of window."""
         x, y = self.positions[id]
         win = self.window_list[id]
@@ -97,8 +97,7 @@ class RootWindow(object):
         for layer in l:
             for id in self.layers:
                 if self.layers[id] == layer:
-                    p = self.positions[id]
-                    self.draw_window(id, p[0], p[1])
+                    self.draw_window(id)
 
 class Window(object):
     """Basic window from which any kind of window is derived from.
@@ -111,9 +110,9 @@ class Window(object):
         self.width = w
         self.height = h
         self.bgcol = (0,0,0)
-        self.specificInit()
+        self.specific_init()
 
-    def specificInit(self):
+    def specific_init(self):
         """Library-specific console initialisation."""
         self.con = libtcod.console_new(self.width,self.height)
 
@@ -152,7 +151,7 @@ class Window(object):
         """Update window with a list of messages in format (x, y, msg)."""
         for msg in msgs:
             x, y, line = msg
-            self.print_line_rect(convert((0,0,0)), ((255,255,255)), x, y, self.width-3, 0, line)
+            self.print_line_rect(convert((0,0,0)), convert((255,255,255)), x, y, self.width-3, 0, line)
 
     def clear(self,bgcol = (0,0,0), fgcol = (255,255,255)):
         """Clear window to a color."""
@@ -176,7 +175,7 @@ class BorderedWindow(Window):
     
     def restore_border(self):
         """Restore border, called after clearing."""
-        if self.borderTile != None:
+        if self.borderTile is not None:
             tiles = [ ]
             for i in range(self.width):
                 tiles += [[i,0]+self.borderTile]
@@ -206,10 +205,10 @@ class LayeredGameWindow(BorderedWindow):
         for tile in tiles:
             map += [tile]
         self.layers[layer] = map
-        self.update_layers()
+        self.draw_layers()
 
-    def update_layers(self):
-        """Update all layers, then restore border."""
+    def draw_layers(self):
+        """Draw all layers, then restore border."""
         s = list(self.layers.iterkeys())
         s.sort()
         for layer in s:
@@ -224,24 +223,23 @@ class BorderedMessageWindow(BorderedWindow):
     def __init__(self,w,h):
         """Initialisation method."""
         super(BorderedMessageWindow,self).__init__(w,h)
-        self.messages = []
+        self.messages = [ ]
         
-    def getCurrentHeight(self):
+    def get_current_height(self):
         """Returns current height of messages in window."""
-        y = 2
+        y = 2  # padding for border
         for msg in self.messages:
-            y += self.get_line_height(2, y, self.width-4, 0, msg[1])
+            y += self.get_line_height(2, y, self.width-4, 0, msg)
         return y
-                
-    # msg = (bgcol, msg, fgcol, bgset)
-    def addMessages(self,msgs):
-        """Add messages in format (bgcol, msg, fgcol, bgset)."""
-        y = self.getCurrentHeight()
+
+    def add_messages(self,msgs):
+        """Add messages, as a list."""
+        y = self.get_current_height()
         for msg in msgs:
-            h = self.get_line_height(2, y, self.width-4, 0, msg[1])
-            while y+h>self.height-2-h:
+            h = self.get_line_height(2, y, self.width-4, 0, msg)
+            while y + h > self.height - 2:
                 del self.messages[0]
-                y = self.getCurrentHeight()
+                y = self.get_current_height()
             self.messages.append(msg)
         self.clear()
         self.update_message(self.messages)

@@ -33,11 +33,12 @@ class Application:
         # Entities are kept in a dictionary as an id. Keys are a tuple of (x, y).
         # This allows for fast checking for entities in tiles, and raises
         # only a slight problem in keeping them in sync. Picking a class for
-        # addEntity is done via the entity manager transparently. Send a string
-        # like 'item'. ID lookup is in entityList.
+        # add_entity is done via the entity manager transparently. Send a string
+        # like 'item'. ID lookup is in entity_list. Scheduling IDs are in entity_schedules
         self.entity_lookup = entity.EntityLookup()
         self.entity_list = { }
         self.entity_pos = { }
+        self.entity_schedules = { }
         self.entity_cur_id = 0
 
         # Player and camera entities are saved so that you could switch cameras
@@ -50,16 +51,16 @@ class Application:
         self.game_win = None
         self.menu_win = None
         self.msg_win = None
-        self.announcement_win = None
+        self.announce_win = None
         
         # Initialise keyboard interface.
         self.keyboard = interface.KeyboardListener()
 
 
-    def default_bindings(self,tmp=0):
+    def default_bindings(self):
         """Bind defaults, generally coupled with a prior clearBindings."""
-        player = self.getPlayer()
-        if player != None:
+        player = self.get_player()
+        if player is not None:
             temp = [ ['w',[player.move,(0,-1)]],
                      ['s',[player.move,(0,1)]],
                      ['a',[player.move,(-1,0)]],
@@ -71,21 +72,9 @@ class Application:
                 bind = set[1]
                 self.add_binding(key,bind)
 
-    def new_level(self):
-        """Generates new map and places/transfers player to it."""
-        width, height, set = 100, 30, 1
-        self.generate_map(width, height, set)
-        if len(self.maps) == 1:
-            self.populate_ents()
-            self.place_player()
-        else:
-            self.destroy_ents()
-            self.populate_ents()
-            self.place_player()
-
     def generate_map(self,w,h,set):
         """Generates new map and adds it, using BasicGenerator from map."""
-        self.add_map(file=0,map=map.BasicGenerator(w,h).gen_map(),
+        self.add_map(file=0,map=map.Generator(w,h).gen_map(),
                     set=set)
 
     def add_map(self,file=0,map=0,set=0):
@@ -123,7 +112,7 @@ class Application:
     def setInvWindow(self,w):
         """Set current inventory window to use and hide it."""
         self.invWin = w
-        self.win_man.window.hide_window(w)
+        self.win_man.hide_window(w)
 
     def setMessageWindow(self,w):
         """Set current message window to use."""
@@ -131,10 +120,10 @@ class Application:
 
     def addMessages(self,msgs):
         """Post messages to current message window, takes a list of strings."""
-        if self.msg_win != 0:
+        if self.msg_win is not None:
             for msg in msgs:
                 set = [self.msg_win.bgcol,msg,(255,255,255),1]
-                self.msg_win.addMessages([set])
+                self.msg_win.add_messages([set])
 
     def addAnnouncement(self,msgs,w=50,h=30,x=10,y=10,to=0):
         """Pop up a default announcement window with given messages."""
@@ -142,8 +131,8 @@ class Application:
         win.set_border([(255,255,255),' ',(255,255,255),1])
         for msg in msgs:
             set = [(0,0,0),msg,(255,255,255),1]
-            win.addMessages([set])
-        self.announcement_win = win
+            win.add_messages([set])
+        self.announce_win = win
         self.transitState(-55)
         self.addBinding('d',[self.transitState,[to]])
         return win
@@ -186,8 +175,8 @@ class Application:
 
     def dismissAnnouncement(self):
         """Dismiss a shown announcement."""
-        if self.announcement_win != -1:
-            self.win_man.remove_window(self.announcement_win)
+        if self.announce_win != -1:
+            self.win_man.remove_window(self.announce_win)
         self.default_bindings()
     
     #interface work
@@ -211,78 +200,40 @@ class Application:
         
     #entity work
     #[x,y,ent]
-    def addEntity(self,x,y,tile,type,delay=-1):
-        """Create a new entity and add it to the list and schedule."""
-        ent = self.entMan.get_class(type)(x,y,tile)
-        #self.entityList.append([ent.x,ent.y,ent])
+    def add_entity(self, x, y, type="entity", delay=-1):
+        """Create a new entity, gives it an ID, adds it to the entity list, schedules it, and returns its ID."""
+        ent = self.entity_lookup.get_class(type)(self)
         ent.set_attribute('delay',delay)
-        ent.set_collision_check(self.checkCollision)
-        ent.moveCallback = self.cb_moveEntity
-        self.insertEntity(x,y,ent)
-        
-        self.sched.addSchedule(ent)
-        return ent
-
-    def insertEntity(self,x,y,ent):
-        """Insert an entity at a position in the entity list."""
-        pos = (x, y)
-        if pos not in self.entityList:
-            self.entityList[pos] = [ent]
-        else:
-            self.entityList[pos] += [ent]
-
-    def addObject(self,obj,delay=1):
-        """Add an object to the list and schedule."""
-        self.objectList += [[obj.x,obj.y,obj]]
-        obj.delay = delay
-
-        self.objSched.addSchedule(obj)
-        return obj
+        id = self.entity_cur_id
+        self.entity_list[id] = ent
+        self.entity_schedules[id] = self.scheduler.add_schedule((ent.update,(),1)) # TODO fix delay here
+        self.entity_pos[id] = (x, y)
+        return id
 
     def place_player(self,delay):
-        """Add a player entity and set it as the current player."""
-        map = self.get_map()
-        tiles = map.getRightRect(0,0,3,map.height)
-        tile = tiles[0]
-        x = tile.x
-        y = tile.y
-        player = self.addEntity(x,y,[(255,0,0),'@',(0,0,255),0,0,1],
-                                'player',delay)
-        self.addObject(object.Camera(x,y,1,player))
-        self.sched.setDominant(player)
-        return player
+        """Add a player entity and camera and set it as the current player."""
+        x = 2
+        y = 15
+        pid = self.add_entity(x, y, 'player', delay)
+        cam = self.add_entity(x, y, 'camera', -1)
+        self.scheduler.set_dominant(self.entity_schedules[pid])
+        self.player = pid
+        self.camera = cam
+        return pid
 
-    def movePlayerToSpawn(self):
-        """Move player to the starting point for a Basic map."""
-        map = self.get_map()
-        tiles = map.getRightRect(0,0,3,map.height)
-        tile = tiles[0]
-        x = tile.x
-        y = tile.y
-        player = self.getPlayer()
-        col = player.collision
-        player.collision = 0
-        player.move(x,y)
-        player.collision = col
-
-    def getPlayer(self):
-        """Returns current player or None."""
-        if self.player == None:
-            for pos, ents in self.entityList.iteritems():
-                for ent in ents:
-                    if isinstance(ent,entity.Player):
-                        self.player = ent
-                        return ent
+    def get_player(self):
+        """Returns current player ID or None."""
         return self.player
 
-    def getCamera(self):
-        """Returns current camera or None."""
-        if self.camera == None:
-            for ent in self.entity_list:
-                if isinstance(ent[2],object.Camera):
-                     self.camera = ent[2]
-                     return ent[2]
+    def get_camera(self):
+        """Returns current camera ID or None."""
         return self.camera
+
+    def get_ent_pos(self, id):
+        """Returns (x,y) based on ID, or None."""
+        if id not in self.entity_list:
+            return None
+        return self.entity_pos[id]
 
     def getVisEntsByPos(self,x,y,r=1):
         """Return visible and not hidden entities around a point."""
@@ -334,7 +285,7 @@ class Application:
     #inventory stuff
     def playerPickup(self):
         """Pick up everything under the player and display messages."""
-        pl = self.getPlayer()
+        pl = self.get_player()
         list = self.getEntsByPos(pl.x,pl.y,1)
         for ent in list[:]:
             if ent.get_attribute('liftable'):
@@ -346,7 +297,7 @@ class Application:
 
     def showInventory(self):
         """Display inventory window."""
-        pl = self.getPlayer()
+        pl = self.get_player()
         list = pl.gridInventory()
         self.invWin.setItems(list)
         self.clearBindings()
@@ -361,7 +312,7 @@ class Application:
         
     def cb_inventoryMenu(self,ret):
         """Inventory menu callback function."""
-        list = self.getPlayer().gridInventory()
+        list = self.get_player().gridInventory()
         if ret != -1:
             self.addMenu(-51,0,[['Drop ' + list[ret-1][1][2],ret],
                         ['Exit.',0]], self.cb_examineMenu)
@@ -375,7 +326,7 @@ class Application:
 
     def cb_examineMenu(self,ret):
         """Examine menu callback function."""
-        pl = self.getPlayer()
+        pl = self.get_player()
         list = pl.gridInventory()
         if ret != 0:
             self.dropEntity(list[ret-1][1][3])
@@ -388,8 +339,7 @@ class Application:
 
     def destroy_ents(self):
         """Destroy all entities except for the player"""
-        #TODO except inventory
-        pl = self.getPlayer()
+        pl = self.get_player()
         self.entityList = {(pl.x,pl.y) : [pl]}
 
     def populate_ents(self):
@@ -399,7 +349,7 @@ class Application:
         tiles = map.getRect(map.width-2,map.height/2,10,1)
         tiles = tiles[0]
         tile = [self.game_win.bgcol, 'O', (255,255,255), 1, 1, 0]
-        portal = self.addEntity(tiles.x, tiles.y, tile, 'trap')
+        portal = self.add_entity(tiles.x, tiles.y, tile, 'trap')
         portal.events = [[self.newLevel,()]]
 
         #let's set up a list of various items that we'll create
@@ -441,44 +391,9 @@ class Application:
                     delay = random.randint(1,10)
 
                 tile = [bgcol,char,fgcol,bgset,blocks,blocksLight]
-                ent = self.addEntity(x,y,tile,clses[r],delay)
+                ent = self.add_entity(x,y,tile,clses[r],delay)
                 ent.name = names[r]
 
-        #doors
-#        for i in range(self.getMap().width):
-#            r = random.randint(0,10)
-#            if r == 1:
-#                tiles = self.getMap().getRightRect(i,0,1,self.getMap().height)
-#                if len(tiles) == 3:
-#                    for tile in tiles:
-#                        x = tile.x
-#                        y = tile.y
-#                        bgcol = (155,155,155)
-#                        char = '+'
-#                        fgcol = (255,125,125)
-#                        bgset = 1
-#                        tile = [bgcol, char, fgcol, bgset, 1, 1]
-#                        self.addEntity(x,y,tile,'door')
-
-        #beasts
-#        rarity = 4
-#        for i in range(self.getMap().width/rarity):
-#            x = i*rarity
-#            tiles = self.getMap().getRect(x,random.randint(5,self.getMap().height-5),10,1)
-#            if tiles != []:
-#                j = random.randint(0,len(tiles)-1)
-#                x = tiles[j].x
-#                y = tiles[j].y
-#                bgcol = (0,0,0)
-#                char = 'b'
-#                fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
-#                bgset = 0
-#                blocksLight = 0
-#                blocks = 1
-#                tile = [bgcol,char,fgcol,bgset,blocks,blocksLight]
-#                delay = random.randint(1,15)
-#                ent = self.addEntity(x,y,tile,'beast',delay=delay)
-                
     #menu work
     #default menu is added. Custom menus need functions in main.
     #addMenu(from_state,mid_state,to_state,choices,callback)
@@ -529,7 +444,7 @@ class Application:
 
     def dropEntity(self,ent):
         """Drop an entity from player."""
-        pl = self.getPlayer()
+        pl = self.get_player()
         id = pl.getContained(ent)
         pl.uncontainObject(id)
         pos = (ent.x, ent.y)
@@ -597,30 +512,40 @@ class Application:
 #                if ent.x != x or ent.y != y:
 #                    self.entityList[(x,y)].remove(ent)
 #                    self.insertEntity(x,y,ent)
-        
+
+    def update_game_window(self):
+        cam = self.get_camera()
+        map = self.get_map()
+        win = self.game_win
+        ret = self.get_ent_pos(cam)
+        if ret is None:
+            raise Exception  # TODO Make exceptions for everything.
+        x, y = ret
+        x, y = x - win.width/2, y - win.height/2
+        map = map.get_rect(x, y, win.width, win.height)
+        tiles = [ ]
+        for i in range(win.width):
+            for j in range(win.height):
+                if not map[i]:
+                    # floor
+                    tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
+                else:
+                    # wall
+                    tiles.append([i, j, (255,255,255), ' ', (0,0,0), 1])
+        win.update_layer(0,tiles)
+
+
     def update(self):
         """Update function, called every tick."""
-        #updates
-        #self.winMan.tick()
-
-
-
-        #drawn
-        self.win_man.show_window(self.game_win)
-        cam = self.getCamera()
-        map = self.get_map()
-        if cam != None:
-            self.game_win.update_layer(0,cam.sortTiles(map.getTiles(),100,30))
-            self.game_win.updateLayerWEnts(1,cam.sortEnts(
-                        self.getVisEntsByPos(cam.x,cam.y,50),100,30))
-            self.game_win.updateLayerWEnts(2,cam.sortEnts([self.getPlayer()],
-                        100,30))
+        if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
+            self.update_game_window()
         self.win_man.draw_all()
 
         #input
         ret = self.keyboard.tick()
         self.scheduler.tick()
-        
+
+
     def quit(self):
         """Exit application."""
         self.exit = 1

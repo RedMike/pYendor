@@ -18,13 +18,19 @@ class Scheduler:
     def add_schedule(self, set, id=0):
         """Returns the id you can use to cancel a scheduled task."""
         if not id:
-            self.lookup[self.current_id] = set
+            id = self.current_id
+            self.lookup[id] = set
             self.current_id += 1
-        fct, obj, delay = set
+        else:
+            for key in self.lookup:
+                if self.lookup[key] == set:
+                    id = key
+                    break
+        fct, args, delay = set
         if self.ticks + delay not in self.queue:
             self.queue[self.ticks + delay] = []
         self.queue[self.ticks + delay].append(set)
-        return self.current_id - 1
+        return id
 
     def cancel_schedule(self, id):
         """Cancels a schedule from running."""
@@ -37,7 +43,7 @@ class Scheduler:
 
     def set_dominant(self,id):
         """Call with None in order to stop every useful tick."""
-        if id != None:
+        if id is not None:
             self.dominant = self.lookup[id]
         else:
             self.dominant = None
@@ -57,7 +63,7 @@ class Scheduler:
                 self.add_schedule(set,1)
                 if self.dominant == set:
                     done = 1
-            if self.dominant == None:
+            if self.dominant is None:
                 done = 1
 
     def sleep(self,sec):
