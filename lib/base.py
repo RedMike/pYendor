@@ -1,10 +1,8 @@
-import random
 import lib.graphics as graphics
 import lib.map as map
 import lib.entity as entity
 import lib.interface as interface
 import lib.time as time
-import lib.object as object
 
 
 
@@ -48,16 +46,20 @@ class Application:
         # Initialise default windows with None.
         self.win_man = graphics.RootWindow(w,h,name)
         self.game_win = None
-        self.menu_win = None
         self.msg_win = None
-        self.announce_win = None
         
         # Initialise keyboard interface.
         self.keyboard = interface.KeyboardListener()
 
+        # Initialise menus.
+        self.menu_stack = [ ]
+
+        self.time_passing = None
 
     def default_bindings(self):
-        """Bind defaults, generally coupled with a prior clearBindings."""
+        """Bind defaults for game."""
+        self.time_passing = 1  # TODO: fix this.
+        self.clear_bindings()
         player = self.get_ent(self.get_player())
         if player is not None:
             temp = [ ['w',[player.move,(0,-1)]],
@@ -70,9 +72,21 @@ class Application:
                 bind = set[1]
                 self.add_binding(key,bind)
 
+    def menu_bindings(self, window, callback):
+        self.time_passing = 0  # TODO: Fix this.
+        self.clear_bindings()
+        temp = [ ['w', [window.move_up,()]],
+               ['s', [window.move_down,()]],
+               ['d', [callback,(window.enter,)]]
+        ]
+        for set in temp:
+            key = set[0]
+            bind = set[1]
+            self.add_binding(key,bind)
+
     def generate_map(self,w,h,set):
         """Generates new map and adds it, using BasicGenerator from map."""
-        self.add_map(file=0,map=map.BasicGenerator(w,h).gen_map(),
+        self.add_map(map=map.BasicGenerator(w,h).gen_map(),
                     set=set)
 
     def add_map(self,file=0,map=0,set=0):
@@ -135,8 +149,30 @@ class Application:
     def show_window(self,window):
         """Unhide a window."""
         self.win_man.show_window(window)
-    
-    #interface work
+
+    def add_choice_menu(self, labels, choices, callback):
+        """Add a single choice menu to the stack and sets it as active.
+
+        Callback is a function that takes one parameter. Parameter is a function called with no parameters of its own
+        that returns the index of the highlighted choice, starting from 0.
+        """
+        id = self.win_man.add_window(5, graphics.ChoiceWindow, self.win_man.width, self.win_man.height, 0, 0)
+        win = self.win_man.get_window(id)
+        win.set_label(labels)
+        win.set_choices(choices)
+        self.menu_bindings(win,callback)
+        self.menu_stack.append([id,callback])
+
+    def remove_menu(self):
+        self.win_man.remove_window(self.menu_stack[-1][0])
+        del self.menu_stack[-1]
+        if self.menu_stack:
+            id,callback = self.menu_stack[-1]
+            win = self.win_man.get_window(id)
+            self.menu_bindings(win,callback)
+        else:
+            self.default_bindings()
+
     def add_binding(self,key,bind):
         """Add a key binding."""
         self.keyboard.add_binding(key,bind)
@@ -144,13 +180,11 @@ class Application:
     def remove_binding(self,key):
         """Remove a key binding."""
         self.keyboard.remove_binding(key)
-        if key in self.callback:
-            del self.callback[key]
 
     def clear_bindings(self):
         """Clear all key bindings."""
-        self.callback = {}
-        
+        self.keyboard.clear_bindings()
+
     #entity work
     #[x,y,ent]
     def add_entity(self, x, y, type="entity", delay=1):
@@ -208,36 +242,6 @@ class Application:
             raise Exception  # TODO add exceptions!
         return self.entity_pos[id]
 
-    def getVisEntsByPos(self,x,y,r=1):
-        """Return visible and not hidden entities around a point."""
-        ret = []
-        for i in range(x-r,x+r):
-            for j in range(y-r,y+r):
-                if (abs(i-x)<r and abs(j-y)<r) and ((i,j) in self.entityList):
-                    for ent in self.entityList[(i,j)]:
-                        if (ent.get_attribute('visible') and
-                                not ent.get_attribute('hidden')):
-                            ret += [ent]
-        return ret
-
-    def getEntsByPos(self,x,y,r=1):
-        """Return all entities around a point."""
-        ret = []
-        for i in range(x-r,x+r):
-            for j in range(y-r,y+r):
-                if (abs(i-x)<r and abs(j-y)<r) and ((i,j) in self.entityList):
-                    ret += self.entityList[(i,j)]
-        return ret
-
-    def getEntsByRect(self,x,y,w,h):
-        """Return all entities inside a rectangle."""
-        ret = []
-        for i in range(x, x+w):
-            for j in range(y, y+h):
-                if (i,j) in self.entityList:
-                    ret += self.entityList[(i,j)]
-        return ret
-
     def destroy_ents(self):
         """Destroy all entities."""
         pass
@@ -292,16 +296,18 @@ class Application:
 
     def update(self):
         """Update function, called every tick."""
-        if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
-            self.update_game_window()
-        if self.msg_win is not None:
-            ticks = self.scheduler.ticks
-            self.add_messages(["Ticks: "+str(ticks)])
+        if self.time_passing:
+            if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
+                self.update_game_window()
+            if self.msg_win is not None:
+                ticks = self.scheduler.ticks
+                self.add_messages(["Ticks: "+str(ticks)])
+            self.scheduler.tick()
         self.win_man.draw_all()
 
         #input
-        ret = self.keyboard.tick()
-        self.scheduler.tick()
+        self.keyboard.tick()
+
 
 
     def quit(self):

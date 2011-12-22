@@ -101,7 +101,6 @@ class RootWindow(object):
         x, y = self.positions[id]
         win = self.window_list[id]
         libtcod.console_blit(win.con, 0, 0, win.width, win.height, 0, x, y)
-        libtcod.console_flush()
 
     def draw_all(self):
         """Draw all the layers, in order, lowest to highest."""
@@ -111,6 +110,7 @@ class RootWindow(object):
             for id in self.layers:
                 if self.layers[id] == layer:
                     self.draw_window(id)
+        libtcod.console_flush()
 
 class Window(object):
     """Basic window from which any kind of window is derived from.
@@ -123,6 +123,7 @@ class Window(object):
         self.width = w
         self.height = h
         self.bgcol = (255,0,0)
+        self.fgcol = (255,255,255)
         self.specific_init()
 
     def specific_init(self):
@@ -155,21 +156,24 @@ class Window(object):
         """Update window with tiles of the form (x,y,bgcol,char,fgcol,bgset)."""
         for tile in tiles:
             x, y, bgcol, char, fgcol, bgset = tile
-            if 0 <= x < self.width and 0 <= y < self.height:
-                bgcol = convert(bgcol)
-                fgcol = convert(fgcol)
-                self.draw_char(x,y,char,bgcol,fgcol,bgset)
+            if 0 <= x < self.width:
+                if 0 <= y < self.height:
+                    bgcol = convert(bgcol)
+                    fgcol = convert(fgcol)
+                    self.draw_char(x,y,char,bgcol,fgcol,bgset)
 
     def update_message(self,msgs):
         """Update window with a list of messages in format (x, y, msg)."""
         for msg in msgs:
             x, y, line = msg
-            self.print_line_rect(convert(self.bgcol), convert((255,255,255)), x, y, self.width-3, 0, line)
+            self.print_line_rect(convert(self.bgcol), convert(self.fgcol), x, y, self.width-3, 0, line)
 
-    def clear(self,bgcol = None, fgcol = (255,255,255)):
+    def clear(self,bgcol = None, fgcol = None):
         """Clear window to a color."""
         if bgcol is None:
             bgcol = self.bgcol
+        if fgcol is None:
+            fgcol = self.fgcol
         bgcol = convert(bgcol)
         fgcol = convert(fgcol)
         self.console_clear(bgcol,fgcol)
@@ -200,7 +204,7 @@ class BorderedWindow(Window):
                 tiles += [[self.width-1,i]+self.borderTile]
             self.update(tiles)
     
-    def clear(self,bgcol = None, fgcol = (255,255,255)):
+    def clear(self,bgcol = None, fgcol = None):
         """Clear window to a color, then restore border."""
         super(BorderedWindow,self).clear(bgcol,fgcol)
         self.restore_border()
@@ -252,7 +256,7 @@ class BorderedMessageWindow(BorderedWindow):
         """Add messages, as a list."""
         for msg in msgs:
             y = self.get_current_height()
-            h = self.get_line_height(2, y, self.width-4, 0, msg[2])
+            h = self.get_line_height(2, y, self.width-4, 0, msg)
             while y + h > self.height - 2:
                 del self.messages[0]
                 y = 2
@@ -263,183 +267,72 @@ class BorderedMessageWindow(BorderedWindow):
             self.messages.append([2, y, msg])
         self.clear()
         self.update_message(self.messages)
-    
+
+
 class ChoiceWindow(BorderedMessageWindow):
     """Main menu type, single choice from multiple ones."""
     
     def __init__(self,w,h):
         """Initialisation method."""
         super(ChoiceWindow,self).__init__(w, h)
-        self.labels = []
-        self.choices = []
-        self.highlight = -1
+        self.labels = [ ]
+        self.choices = [ ]
+        self.highlight = None
     
-    def setLabel(self,labels):
+    def set_label(self,labels):
         """Set choice displayed labels."""
         self.labels = labels
     
-    def setChoices(self,choices):
+    def set_choices(self,choices):
         """Set available choices."""
         self.choices = choices
-        if self.highlight == -1 or self.highlight>=len(self.choices):
+        if self.highlight is None or self.highlight>=len(self.choices):
             self.highlight = 0
         self.tick()
         
-    def addChoice(self,choice):
+    def add_choice(self,choice):
         """Add new choice."""
         self.choices.append(choice)
-        if self.highlight == -1:
+        if self.highlight is None:
             self.highlight = 0
         self.tick()
     
-    def setHighlight(self,id):
+    def set_highlight(self,id):
         """Set currently highlighted choice."""
-        if id<len(self.choices) and id>=0:
+        if len(self.choices) > id >= 0:
             self.highlight = id
         self.tick()
     
-    def moveUp(self):
+    def move_up(self):
         """Move currently selected choice up."""
-        self.setHighlight(self.highlight-1)
+        self.set_highlight(self.highlight-1)
     
-    def moveDown(self):
+    def move_down(self):
         """Move currently selected choice down."""
-        self.setHighlight(self.highlight+1)
+        self.set_highlight(self.highlight+1)
     
     def enter(self):
-        """Returns currently selected choice or None."""
-        if self.highlight != -1:
-            return self.choices[self.highlight][1]
-    
-    # msg = (bgcol, msg, fgcol, bgset)
-    # choice = (text, ret)
+        """Returns currently selected choice."""
+        if self.highlight is None:
+            raise Exception  # TODO: Exception!
+        return self.highlight
+
     def tick(self):
         """Internally-called updater method."""
-        self.clear()
-        msgs = []
-        for label in self.labels:
-            msgs += label
-        msgs += [[self.bgcol, '', (255,255,255), 1]]
-        msgs += [[self.bgcol, '', (255,255,255), 1]]
+        self.messages = [ ]
+        self.update_message(self.messages)
+        msgs = [ ]
+        msgs += self.labels
+        msgs += [' ']
         for id in range(len(self.choices)):
             choice = self.choices[id]
-            line = '  ' + str(id) + '.  ' + choice[0]
-            if self.highlight != id:
-                msgs += [[self.bgcol, line, (255,255,255), 1]]
+            if id != self.highlight:
+                line = '  ' + str(id) + '.  ' + choice
             else:
-                msgs += [[(255,255,255), line, (0,0,0), 1]]
-            msgs += [[self.bgcol, '', (255,255,255), 1]]
-        self.update_message(msgs)
+                line = '  X.  ' + choice
+            msgs.append(line)
+        self.add_messages(msgs)
 
-class GridWindow(BorderedMessageWindow):
-    """Main inventory window type."""
-
-    def __init__(self,w,h):
-        """Initialisation method."""
-        super(GridWindow,self).__init__(w, h+3)
-        self.items = []
-        self.names = []
-        self.tiles = []
-        self.choice = 1
-
-    def setItems(self,items):
-        """Set contained items in format (id,tile,name) and tile in format
-        (x,y,bgcol,char,fgcol,bgset); x and y are ignored."""
-        self.items = items
-        self.updateItems()
-
-    def setNames(self,names):
-        """Set display names."""
-        self.names = names
-
-    def updateItems(self):
-        """Internally-called updater for items."""
-        self.tiles = []
-        self.names = ['debug' for i in range(len(self.items))]
-        i = 3
-        j = 3
-        for item in self.items:
-            #(x, y, bgcol, char, fgcol, bgset)
-            tile = item[1]
-            c = (0,0,0)
-            if item[0] == self.choice:
-                c = (120,55,10)
-            r = [i, j, c, tile[0], tile[1], 1 ]
-            self.names[item[0]-1] = tile[2]
-            self.tiles += [r]
-
-            i += 2
-            if i>self.width-4:
-                i = 3
-                j += 2
-        #finish checkerboard
-        if len(self.tiles) != 0:
-            i = self.tiles[-1][0]
-            j = self.tiles[-1][1]
-        else:
-            i = 1
-            j = 3
-        k = len(self.items)
-        while j < self.height - 7:
-            i += 2
-            k += 1
-            if i>self.width-4:
-                j += 2
-                i = 3
-            if j >= self.height -7:
-                break
-            c = (0,0,0)
-            if self.choice == k:
-                c = (120,55,10)
-            t = [i,j,c,' ',(0,0,0),1]
-            self.tiles += [t]
-
-        for j in range(self.height-5,self.height):
-            for i in range(0,self.width):
-                r = [i, j, (0,0,0), ' ', (255,255,255), 1 ]
-                self.tiles += [r]
-        self.update(self.tiles)
-
-    def moveLeft(self):
-        """Move choice left."""
-        if self.choice>1:
-            self.choice -= 1
-        self.updateItems()
-
-    def moveRight(self):
-        """Move choice right."""
-        self.choice += 1
-        self.updateItems()
-
-    def moveUp(self):
-        """Move choice up."""
-        self.choice -= (self.width-6)/2
-        if self.choice<1:
-            self.choice = 1
-        self.updateItems()
-
-    def moveDown(self):
-        """Move choice down."""
-        self.choice += (self.width-6)/2
-        self.updateItems()
-
-    def enter(self):
-        """Return currently selected item or -1."""
-        #might not make sense, but self.choice can be on a
-        # nonexistent item
-        for it in self.items:
-            if it[0] == self.choice:
-                return it[0]
-        return -1
-
-    def update(self,tiles):
-        """Overridden update method, also draws currently selected item name."""
-        super(GridWindow,self).update(tiles)
-        if self.choice-1 < len(self.names):
-            bgcol = convert((0,0,0))
-            fgcol = convert((255,255,255))
-            self.print_line_rect(bgcol,fgcol,3,self.height-3, self.width,
-                    self.height,1,self.names[self.choice-1])
 
 class InputWindow(BorderedMessageWindow):
     """One line input window."""
@@ -468,7 +361,7 @@ class InputWindow(BorderedMessageWindow):
     
     def removeChar(self,id):
         """Remove character from input."""
-        self.input = self.input [:-1]
+        self.input = self.input[:id] + self.input[id+1:]
         self.tick()
     
     def backspace(self):
@@ -549,21 +442,6 @@ class MultiChoiceWindow(BorderedMessageWindow):
             msgs += [[self.bgcol, '', (255,255,255), 1]]
         self.update_message(msgs)
 
-class DebugWindow(BorderedWindow):
-    """Simple debug window."""
-
-    def debugTick(self,ticks,nrEnts,nrTiles):
-        """Update method not internally-called."""
-        msgs = []
-        # msg = (bgcol, msg, fgcol, bgset)
-        msgs.append([(255,0,0),'Current tick: '+
-            str(ticks),(255,255,255),1])
-        msgs.append([(  0,0,0),'Nmbr of ents: '+
-            str(nrEnts),(255,255,255),1])
-        msgs.append([(  0,0,0),'Nmr of tiles: '+
-            str(nrTiles),(255,255,255),1])
-        self.update_message(msgs)
-
 class StatusWindow(BorderedWindow):
     """Variable bar-number bar window."""
 
@@ -586,7 +464,6 @@ class StatusWindow(BorderedWindow):
     def tick(self):
         """Internally-called updater method."""
         self.clear()
-        msgs = []
         y = 2
         #bar = [label,current,maximum,(bgcol,fgcol)]
         for bar in self.bars:
