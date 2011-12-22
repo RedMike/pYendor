@@ -36,7 +36,7 @@ class Scheduler:
         """Cancels a schedule from running."""
         for tick in self.queue:
             sets = self.queue[tick]
-            for set in sets.copy():
+            for set in sets:
                 if self.lookup[id] == set:
                     sets.remove(set)
         del self.lookup[id]

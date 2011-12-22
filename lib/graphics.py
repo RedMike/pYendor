@@ -67,6 +67,10 @@ class RootWindow(object):
         """Returns window object."""
         return self.window_list[id]
 
+    def get_visible(self, id):
+        """Returns a window's visibility flag."""
+        return self.visibility[id]
+
     def hide_window(self,id):
         """Set a window's visibility flag to 0."""
         self.visibility[id] = 0
@@ -74,6 +78,15 @@ class RootWindow(object):
     def show_window(self,id):
         """Set a window's visibility flag to 1."""
         self.visibility[id] = 1
+
+    def clear_layer(self,layer):
+        for id in self.layers.iterkeys():
+            if self.layers[id] == layer:
+                self.window_list[id].clear()
+                del self.window_list[id]
+                del self.positions[id]
+                del self.layers[id]
+                del self.visibility[id]
     
     def remove_window(self,id):
         """Remove a window, by id."""

@@ -35,6 +35,8 @@ class EntityLookup:
             ret = Trap
         elif str == "door":
             ret = Door
+        elif str == "camera":
+            ret = Camera
         return ret
 
 
@@ -50,6 +52,12 @@ class Entity:
             'liftable' : 1, 'usable' : 1, 'hidden' : 0}
         self.name = "generic"
         self.parent = parent
+        self.id = None
+
+    def get_id(self):
+        if self.id is not None:
+            return self.id
+        raise Exception  # TODO: Add exceptions!
 
     def get_attribute(self, att):
         """Return wanted attribute, or None."""
@@ -63,7 +71,7 @@ class Entity:
         self.attributes[att] = val
 
     def move(self,x,y):
-        self.parent.entity_move(self,x,y)
+        self.parent.try_entity_move_relative(self.id,x,y)
 
     def update(self):
         pass
@@ -160,3 +168,7 @@ class Camera(Entity):
 
     def __init__(self, parent):
         Entity.__init__(self,parent)
+
+    def sync_camera(self, pid):
+        """Try to move to player's location."""
+        self.parent.try_entity_move_to_entity(self.id,pid)
