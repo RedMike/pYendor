@@ -34,7 +34,7 @@ class RootWindow(object):
 
     def __init__(self,w,h,name,font='data/font.png'):
         """Initialisation method, name shows up as the title."""
-        # FIXME font things.
+        # TODO: font things.
         self.width = w
         self.height = h
         self.name = name
@@ -51,7 +51,7 @@ class RootWindow(object):
         libtcod.console_set_custom_font(self.font,
                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
         libtcod.console_init_root(self.width, self.height, self.name)
-        libtcod.console_credits()
+        # libtcod.console_credits()
 
     def add_window(self, layer, type, w, h, x, y):
         """Adds a new window, returns id."""
@@ -122,7 +122,7 @@ class Window(object):
         """Set the background color afterwards if needed."""
         self.width = w
         self.height = h
-        self.bgcol = (0,0,0)
+        self.bgcol = (255,0,0)
         self.specific_init()
 
     def specific_init(self):
@@ -164,10 +164,12 @@ class Window(object):
         """Update window with a list of messages in format (x, y, msg)."""
         for msg in msgs:
             x, y, line = msg
-            self.print_line_rect(convert((0,0,0)), convert((255,255,255)), x, y, self.width-3, 0, line)
+            self.print_line_rect(convert(self.bgcol), convert((255,255,255)), x, y, self.width-3, 0, line)
 
-    def clear(self,bgcol = (0,0,0), fgcol = (255,255,255)):
+    def clear(self,bgcol = None, fgcol = (255,255,255)):
         """Clear window to a color."""
+        if bgcol is None:
+            bgcol = self.bgcol
         bgcol = convert(bgcol)
         fgcol = convert(fgcol)
         self.console_clear(bgcol,fgcol)
@@ -187,7 +189,7 @@ class BorderedWindow(Window):
         self.restore_border()
     
     def restore_border(self):
-        """Restore border, called after clearing."""
+        """Restore border, automatically called after clearing."""
         if self.borderTile is not None:
             tiles = [ ]
             for i in range(self.width):
@@ -198,7 +200,7 @@ class BorderedWindow(Window):
                 tiles += [[self.width-1,i]+self.borderTile]
             self.update(tiles)
     
-    def clear(self,bgcol = (0,0,0), fgcol = (255,255,255)):
+    def clear(self,bgcol = None, fgcol = (255,255,255)):
         """Clear window to a color, then restore border."""
         super(BorderedWindow,self).clear(bgcol,fgcol)
         self.restore_border()
@@ -222,6 +224,7 @@ class LayeredGameWindow(BorderedWindow):
 
     def draw_layers(self):
         """Draw all layers, then restore border."""
+        self.clear()
         s = list(self.layers.iterkeys())
         s.sort()
         for layer in s:
@@ -242,18 +245,22 @@ class BorderedMessageWindow(BorderedWindow):
         """Returns current height of messages in window."""
         y = 2  # padding for border
         for msg in self.messages:
-            y += self.get_line_height(2, y, self.width-4, 0, msg)
+            y += self.get_line_height(2, y, self.width-4, 0, msg[2])
         return y
 
     def add_messages(self,msgs):
         """Add messages, as a list."""
-        y = self.get_current_height()
         for msg in msgs:
-            h = self.get_line_height(2, y, self.width-4, 0, msg)
+            y = self.get_current_height()
+            h = self.get_line_height(2, y, self.width-4, 0, msg[2])
             while y + h > self.height - 2:
                 del self.messages[0]
+                y = 2
+                for tmp_msg in self.messages:
+                    tmp_msg[1] = y
+                    y += self.get_line_height(2, y, self.width-4, 0, tmp_msg[2])
                 y = self.get_current_height()
-            self.messages.append(msg)
+            self.messages.append([2, y, msg])
         self.clear()
         self.update_message(self.messages)
     

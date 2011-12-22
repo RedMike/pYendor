@@ -22,8 +22,7 @@ class Application:
     def __init__(self, name, w, h):
         self.exit = 0
         
-        # One currently loaded map at any one time, referenced by the index it uses in self.maps. Changing maps is
-        # done using change_map to deinitialise everything needed, then reinitialise.
+        # One currently loaded map at any one time, referenced by the index it uses in self.maps.
         self.maps = []
         self.map = None
         
@@ -154,14 +153,20 @@ class Application:
         
     #entity work
     #[x,y,ent]
-    def add_entity(self, x, y, type="entity", delay=-1):
-        """Create a new entity, gives it an ID, adds it to the entity list, schedules it, and returns its ID."""
+    def add_entity(self, x, y, type="entity", delay=1):
+        """Create a new entity, gives it an ID, adds it to the entity list, schedules it, and returns its ID.
+
+        Set delay to None for no scheduling.
+        """
         ent = self.entity_lookup.get_class(type)(self)
         ent.set_attribute('delay',delay)
         id = self.entity_cur_id
         ent.id = id
         self.entity_list[id] = ent
-        self.entity_schedules[id] = self.scheduler.add_schedule((ent.update,(),1)) # TODO fix delay here
+        if delay is not None:
+            self.entity_schedules[id] = self.scheduler.add_schedule((ent.update,(),delay))
+        else:
+            self.entity_schedules[id] = None
         self.entity_pos[id] = (x, y)
         return id
 
@@ -177,8 +182,7 @@ class Application:
                 if not tiles[i][j][0]:
                     x, y = i, j
         pid = self.add_entity(x, y, 'player', delay)
-        cam = self.add_entity(x, y, 'camera', 1)
-        self.scheduler.cancel_schedule(cam)
+        cam = self.add_entity(x, y, 'camera', None)
         self.entity_schedules[cam] = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
         self.scheduler.set_dominant(self.entity_schedules[pid])
         self.player = pid
@@ -275,11 +279,7 @@ class Application:
         tiles = [ ]
         for i in range(win.width):
             for j in range(win.height):
-                if not map[i][j] == (0,0):
-                    # floor
-                    tiles.append([i, j, (255,255,255), ' ', (0,0,0), 1])
-                else:
-                    # wall
+                if map[i][j] == (0,0):
                     tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
         win.update_layer(0,tiles)
 
@@ -290,11 +290,13 @@ class Application:
         tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
         win.update_layer(5,tiles)
 
-
     def update(self):
         """Update function, called every tick."""
         if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
             self.update_game_window()
+        if self.msg_win is not None:
+            ticks = self.scheduler.ticks
+            self.add_messages(["Ticks: "+str(ticks)])
         self.win_man.draw_all()
 
         #input
