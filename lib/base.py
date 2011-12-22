@@ -159,6 +159,7 @@ class Application:
         ent = self.entity_lookup.get_class(type)(self)
         ent.set_attribute('delay',delay)
         id = self.entity_cur_id
+        ent.id = id
         self.entity_list[id] = ent
         self.entity_schedules[id] = self.scheduler.add_schedule((ent.update,(),1)) # TODO fix delay here
         self.entity_pos[id] = (x, y)
@@ -166,8 +167,15 @@ class Application:
 
     def place_player(self,delay):
         """Add a player entity and camera and set it as the current player."""
-        x = 2
-        y = 15
+        map = self.get_map()
+        if map is None:
+            raise Exception  # TODO exceptions
+        tiles = map.get_rect(0,0,3,map.height)
+        x, y = 0, 0
+        for i in range(len(tiles)):
+            for j in range(len(tiles[i])):
+                if not tiles[i][j][0]:
+                    x, y = i, j
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', 1)
         self.scheduler.cancel_schedule(cam)
@@ -257,12 +265,13 @@ class Application:
         cam = self.get_camera()
         map = self.get_map()
         win = self.game_win
-        ret = self.get_ent_pos(cam)
-        if ret is None:
+        pos = self.get_ent_pos(cam)
+        if pos is None:
             raise Exception  # TODO Make exceptions for everything.
-        x, y = ret
-        x, y = x - win.width/2, y - win.height/2
-        map = map.get_rect(x, y, win.width, win.height)
+        x, y = pos
+        cx, cy = win.width/2, win.height/2
+        ox, oy = x - cx, y - cy
+        map = map.get_rect(ox, oy, win.width, win.height)
         tiles = [ ]
         for i in range(win.width):
             for j in range(win.height):
@@ -273,6 +282,13 @@ class Application:
                     # wall
                     tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
         win.update_layer(0,tiles)
+
+        tiles = [ ]
+        pid = self.get_player()
+        if pid is None:
+            raise Exception # TODO No-one excepts the spanish inquisition.
+        tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
+        win.update_layer(5,tiles)
 
 
     def update(self):

@@ -1,12 +1,10 @@
 
 
 import random
-import data.libtcodpy as libtcod
 
 # Generator creates a map, then gen_map returns it.
 #
-# Map contains a basic 2D array of tuples of the form (blocks, blocks_light), for easy referencing. TODO: "Changed" tiles
-# are stored in a new list.
+# Map contains a basic 2D array of tuples of the form (blocks, blocks_light), for easy referencing.
 #
 # Tile is (blocks, blocks_light).
 #
@@ -100,13 +98,12 @@ class Map:
         """Returns the whole map."""
         return self.tiles
 
-    def get_rect(self, x, y, w, h, only_floors=0):
+    def get_rect(self, x, y, w, h):
         """Returns a 2D array section of the original map, starting at (x,y) with size (w,h)."""
         ret = [[_WALL for i in range(h)] for j in range(w)]
         for i in range(w):
             for j in range(h):
-                if not only_floors or self.get_tile(x+i, y+j) == _FLOOR:
-                    ret[i][j] = self.get_tile(x+i, y+j)
+                ret[i][j] = self.get_tile(x+i, y+j)
         return ret
     
     def get_tile(self,x,y):
