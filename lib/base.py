@@ -208,7 +208,7 @@ class Application:
         """Add a player entity and camera and set it as the current player."""
         map = self.get_map()
         if map is None:
-            raise Exception  # TODO exceptions
+            raise NoMapError
         tiles = map.get_rect(0,0,3,map.height)
         x, y = 0, 0
         for i in range(len(tiles)):
@@ -225,7 +225,7 @@ class Application:
 
     def get_ent(self, id):
         if id not in self.entity_list:
-            raise Exception  # TODO add exceptions!
+            raise IDNotFound
         return self.entity_list[id]
 
     def get_player(self):
@@ -237,9 +237,9 @@ class Application:
         return self.camera
 
     def get_ent_pos(self, id):
-        """Returns (x,y) based on ID, or None."""
+        """Returns (x,y) based on ID, can raise IDNotFound."""
         if id not in self.entity_list:
-            raise Exception  # TODO add exceptions!
+            raise IDNotFound
         return self.entity_pos[id]
 
     def destroy_ents(self):
@@ -257,7 +257,7 @@ class Application:
             if can_move:
                 self.entity_move(id, x + ex, y + ey)
         else:
-            raise Exception  # TODO: Add exceptions!
+            raise NoMapError
 
     def try_entity_move_to_entity(self, id, id2):
         """Tries moving entity id to entity id2."""
@@ -274,8 +274,6 @@ class Application:
         map = self.get_map()
         win = self.game_win
         pos = self.get_ent_pos(cam)
-        if pos is None:
-            raise Exception  # TODO Make exceptions for everything.
         x, y = pos
         cx, cy = win.width/2, win.height/2
         ox, oy = x - cx, y - cy
@@ -289,10 +287,9 @@ class Application:
 
         tiles = [ ]
         pid = self.get_player()
-        if pid is None:
-            raise Exception # TODO No-one excepts the spanish inquisition.
-        tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
-        win.update_layer(5,tiles)
+        if pid is not None:
+            tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
+            win.update_layer(5,tiles)
 
     def update(self):
         """Update function, called every tick."""
@@ -313,3 +310,16 @@ class Application:
     def quit(self):
         """Exit application."""
         self.exit = 1
+
+
+class Error(Exception):
+    """Base class for errors."""
+    pass
+
+class NoMapError(Error):
+    """A function that needs a map has been called, with no map loaded."""
+    pass
+
+class IDNotFound(Error):
+    """An ID has been requested and not found in the list."""
+    pass

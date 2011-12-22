@@ -1,715 +1,0 @@
-<?xml version="1.0" encoding="ascii"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-          "DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-<head>
-  <title>lib.entity</title>
-  <link rel="stylesheet" href="epydoc.css" type="text/css" />
-  <script type="text/javascript" src="epydoc.js"></script>
-</head>
-
-<body bgcolor="white" text="black" link="blue" vlink="#204080"
-      alink="#204080">
-<!-- ==================== NAVIGATION BAR ==================== -->
-<table class="navbar" border="0" width="100%" cellpadding="0"
-       bgcolor="#a0c0ff" cellspacing="0">
-  <tr valign="middle">
-  <!-- Home link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="lib-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Tree link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Index link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Help link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Project homepage -->
-      <th class="navbar" align="right" width="100%">
-        <table border="0" cellpadding="0" cellspacing="0">
-          <tr><th class="navbar" align="center"
-            ><a class="navbar" target="_top" href="remike.homelinux.org">pYendor</a></th>
-          </tr></table></th>
-  </tr>
-</table>
-<table width="100%" cellpadding="0" cellspacing="0">
-  <tr valign="top">
-    <td width="100%">
-      <span class="breadcrumbs">
-        <a href="lib-module.html">Package&nbsp;lib</a> ::
-        Module&nbsp;entity
-      </span>
-    </td>
-    <td>
-      <table cellpadding="0" cellspacing="0">
-        <!-- hide/show private -->
-        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
-    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
-        <tr><td align="right"><span class="options"
-            >[<a href="frames.html" target="_top">frames</a
-            >]&nbsp;|&nbsp;<a href="lib.entity-pysrc.html"
-            target="_top">no&nbsp;frames</a>]</span></td></tr>
-      </table>
-    </td>
-  </tr>
-</table>
-<h1 class="epydoc">Source Code for <a href="lib.entity-module.html">Module lib.entity</a></h1>
-<pre class="py-src">
-<a name="L1"></a><tt class="py-lineno">  1</tt>  <tt class="py-line"> </tt>
-<a name="L2"></a><tt class="py-lineno">  2</tt>  <tt class="py-line"><tt class="py-keyword">import</tt> <tt class="py-name">random</tt> </tt>
-<a name="L3"></a><tt class="py-lineno">  3</tt>  <tt class="py-line"> </tt>
-<a name="L4"></a><tt class="py-lineno">  4</tt>  <tt class="py-line"><tt class="py-comment">#  Entity has:</tt> </tt>
-<a name="L5"></a><tt class="py-lineno">  5</tt>  <tt class="py-line"><tt class="py-comment">#    - tile = graphical representation</tt> </tt>
-<a name="L6"></a><tt class="py-lineno">  6</tt>  <tt class="py-line"><tt class="py-comment">#    - x</tt> </tt>
-<a name="L7"></a><tt class="py-lineno">  7</tt>  <tt class="py-line"><tt class="py-comment">#    - y</tt> </tt>
-<a name="L8"></a><tt class="py-lineno">  8</tt>  <tt class="py-line"><tt class="py-comment">#    - attributes = anything from speed to stats to visibility</tt> </tt>
-<a name="L9"></a><tt class="py-lineno">  9</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
-<a name="L10"></a><tt class="py-lineno"> 10</tt>  <tt class="py-line"><tt class="py-comment">#  EntityMan has:</tt> </tt>
-<a name="L11"></a><tt class="py-lineno"> 11</tt>  <tt class="py-line"><tt class="py-comment">#    - getClass(str): which returns the class associated with str</tt> </tt>
-<a name="L12"></a><tt class="py-lineno"> 12</tt>  <tt class="py-line"><tt class="py-comment">#</tt> </tt>
-<a name="L13"></a><tt class="py-lineno"> 13</tt>  <tt class="py-line"><tt class="py-comment">#  Entity</tt> </tt>
-<a name="L14"></a><tt class="py-lineno"> 14</tt>  <tt class="py-line"><tt class="py-comment">#  |</tt> </tt>
-<a name="L15"></a><tt class="py-lineno"> 15</tt>  <tt class="py-line"><tt class="py-comment">#  +-Mob</tt> </tt>
-<a name="L16"></a><tt class="py-lineno"> 16</tt>  <tt class="py-line"><tt class="py-comment">#  |</tt> </tt>
-<a name="L17"></a><tt class="py-lineno"> 17</tt>  <tt class="py-line"><tt class="py-comment">#  +-Camera</tt> </tt>
-<a name="L18"></a><tt class="py-lineno"> 18</tt>  <tt class="py-line"> </tt>
-<a name="EntityMan"></a><div id="EntityMan-def"><a name="L19"></a><tt class="py-lineno"> 19</tt> <a class="py-toggle" href="#" id="EntityMan-toggle" onclick="return toggle('EntityMan');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.EntityMan-class.html">EntityMan</a><tt class="py-op">:</tt> </tt>
-</div><div id="EntityMan-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="EntityMan-expanded"><a name="L20"></a><tt class="py-lineno"> 20</tt>  <tt class="py-line">    <tt class="py-docstring">"""Simple entity manager class.</tt> </tt>
-<a name="L21"></a><tt class="py-lineno"> 21</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L22"></a><tt class="py-lineno"> 22</tt>  <tt class="py-line"><tt class="py-docstring">    Subclass and replace getClass with own classes as needed.</tt> </tt>
-<a name="L23"></a><tt class="py-lineno"> 23</tt>  <tt class="py-line"><tt class="py-docstring">    Actual entity management is done in Application.</tt> </tt>
-<a name="L24"></a><tt class="py-lineno"> 24</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
-<a name="L25"></a><tt class="py-lineno"> 25</tt>  <tt class="py-line"> </tt>
-<a name="EntityMan.__init__"></a><div id="EntityMan.__init__-def"><a name="L26"></a><tt class="py-lineno"> 26</tt> <a class="py-toggle" href="#" id="EntityMan.__init__-toggle" onclick="return toggle('EntityMan.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.EntityMan-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="EntityMan.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="EntityMan.__init__-expanded"><a name="L27"></a><tt class="py-lineno"> 27</tt>  <tt class="py-line">        <tt class="py-keyword">pass</tt> </tt>
-</div><a name="L28"></a><tt class="py-lineno"> 28</tt>  <tt class="py-line"> </tt>
-<a name="EntityMan.getClass"></a><div id="EntityMan.getClass-def"><a name="L29"></a><tt class="py-lineno"> 29</tt> <a class="py-toggle" href="#" id="EntityMan.getClass-toggle" onclick="return toggle('EntityMan.getClass');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.EntityMan-class.html#getClass">getClass</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">str</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="EntityMan.getClass-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="EntityMan.getClass-expanded"><a name="L30"></a><tt class="py-lineno"> 30</tt>  <tt class="py-line">        <tt class="py-docstring">"""Returns a class as associated by the manager."""</tt> </tt>
-<a name="L31"></a><tt class="py-lineno"> 31</tt>  <tt class="py-line">        <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-0" class="py-name" targets="Class lib.entity.Entity=lib.entity.Entity-class.html"><a title="lib.entity.Entity" class="py-name" href="#" onclick="return doclink('link-0', 'Entity', 'link-0');">Entity</a></tt> </tt>
-<a name="L32"></a><tt class="py-lineno"> 32</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">str</tt> <tt class="py-op">==</tt> <tt class="py-string">"item"</tt><tt class="py-op">:</tt> </tt>
-<a name="L33"></a><tt class="py-lineno"> 33</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-1" class="py-name" targets="Class lib.entity.Item=lib.entity.Item-class.html"><a title="lib.entity.Item" class="py-name" href="#" onclick="return doclink('link-1', 'Item', 'link-1');">Item</a></tt> </tt>
-<a name="L34"></a><tt class="py-lineno"> 34</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">str</tt> <tt class="py-op">==</tt> <tt class="py-string">"talker"</tt><tt class="py-op">:</tt> </tt>
-<a name="L35"></a><tt class="py-lineno"> 35</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-2" class="py-name" targets="Class lib.entity.Talker=lib.entity.Talker-class.html"><a title="lib.entity.Talker" class="py-name" href="#" onclick="return doclink('link-2', 'Talker', 'link-2');">Talker</a></tt> </tt>
-<a name="L36"></a><tt class="py-lineno"> 36</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">str</tt> <tt class="py-op">==</tt> <tt class="py-string">"npc"</tt><tt class="py-op">:</tt> </tt>
-<a name="L37"></a><tt class="py-lineno"> 37</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-3" class="py-name" targets="Class lib.entity.NPC=lib.entity.NPC-class.html"><a title="lib.entity.NPC" class="py-name" href="#" onclick="return doclink('link-3', 'NPC', 'link-3');">NPC</a></tt> </tt>
-<a name="L38"></a><tt class="py-lineno"> 38</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">str</tt> <tt class="py-op">==</tt> <tt class="py-string">"beast"</tt><tt class="py-op">:</tt> </tt>
-<a name="L39"></a><tt class="py-lineno"> 39</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-4" class="py-name" targets="Class lib.entity.Beast=lib.entity.Beast-class.html"><a title="lib.entity.Beast" class="py-name" href="#" onclick="return doclink('link-4', 'Beast', 'link-4');">Beast</a></tt> </tt>
-<a name="L40"></a><tt class="py-lineno"> 40</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">str</tt> <tt class="py-op">==</tt> <tt class="py-string">"player"</tt><tt class="py-op">:</tt> </tt>
-<a name="L41"></a><tt class="py-lineno"> 41</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-5" class="py-name" targets="Class lib.entity.Player=lib.entity.Player-class.html"><a title="lib.entity.Player" class="py-name" href="#" onclick="return doclink('link-5', 'Player', 'link-5');">Player</a></tt> </tt>
-<a name="L42"></a><tt class="py-lineno"> 42</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">str</tt> <tt class="py-op">==</tt> <tt class="py-string">"trap"</tt><tt class="py-op">:</tt> </tt>
-<a name="L43"></a><tt class="py-lineno"> 43</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-6" class="py-name" targets="Class lib.entity.Trap=lib.entity.Trap-class.html"><a title="lib.entity.Trap" class="py-name" href="#" onclick="return doclink('link-6', 'Trap', 'link-6');">Trap</a></tt> </tt>
-<a name="L44"></a><tt class="py-lineno"> 44</tt>  <tt class="py-line">        <tt class="py-keyword">elif</tt> <tt class="py-name">str</tt> <tt class="py-op">==</tt> <tt class="py-string">"door"</tt><tt class="py-op">:</tt> </tt>
-<a name="L45"></a><tt class="py-lineno"> 45</tt>  <tt class="py-line">            <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt id="link-7" class="py-name" targets="Class lib.entity.Door=lib.entity.Door-class.html"><a title="lib.entity.Door" class="py-name" href="#" onclick="return doclink('link-7', 'Door', 'link-7');">Door</a></tt> </tt>
-<a name="L46"></a><tt class="py-lineno"> 46</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ret</tt> </tt>
-</div></div><a name="L47"></a><tt class="py-lineno"> 47</tt>  <tt class="py-line"> </tt>
-<a name="Tile"></a><div id="Tile-def"><a name="L48"></a><tt class="py-lineno"> 48</tt> <a class="py-toggle" href="#" id="Tile-toggle" onclick="return toggle('Tile');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Tile-class.html">Tile</a><tt class="py-op">:</tt> </tt>
-</div><div id="Tile-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Tile-expanded"><a name="L49"></a><tt class="py-lineno"> 49</tt>  <tt class="py-line">    <tt class="py-docstring">"""Tile utility class.</tt> </tt>
-<a name="L50"></a><tt class="py-lineno"> 50</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L51"></a><tt class="py-lineno"> 51</tt>  <tt class="py-line"><tt class="py-docstring">    Contains information about a tile. Standardised to:</tt> </tt>
-<a name="L52"></a><tt class="py-lineno"> 52</tt>  <tt class="py-line"><tt class="py-docstring">        * x</tt> </tt>
-<a name="L53"></a><tt class="py-lineno"> 53</tt>  <tt class="py-line"><tt class="py-docstring">        * y</tt> </tt>
-<a name="L54"></a><tt class="py-lineno"> 54</tt>  <tt class="py-line"><tt class="py-docstring">        * background color</tt> </tt>
-<a name="L55"></a><tt class="py-lineno"> 55</tt>  <tt class="py-line"><tt class="py-docstring">        * character</tt> </tt>
-<a name="L56"></a><tt class="py-lineno"> 56</tt>  <tt class="py-line"><tt class="py-docstring">        * foreground color</tt> </tt>
-<a name="L57"></a><tt class="py-lineno"> 57</tt>  <tt class="py-line"><tt class="py-docstring">        * background set (1 = sets, 0 = doesn't set)</tt> </tt>
-<a name="L58"></a><tt class="py-lineno"> 58</tt>  <tt class="py-line"><tt class="py-docstring">        * blocks (1 = wall-like, 0 = floor-like)</tt> </tt>
-<a name="L59"></a><tt class="py-lineno"> 59</tt>  <tt class="py-line"><tt class="py-docstring">        * blocks light ((unused))</tt> </tt>
-<a name="L60"></a><tt class="py-lineno"> 60</tt>  <tt class="py-line"><tt class="py-docstring">    """</tt> </tt>
-<a name="L61"></a><tt class="py-lineno"> 61</tt>  <tt class="py-line"> </tt>
-<a name="Tile.__init__"></a><div id="Tile.__init__-def"><a name="L62"></a><tt class="py-lineno"> 62</tt> <a class="py-toggle" href="#" id="Tile.__init__-toggle" onclick="return toggle('Tile.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Tile-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">bgcol</tt><tt class="py-op">,</tt><tt class="py-param">char</tt><tt class="py-op">,</tt><tt class="py-param">fgcol</tt><tt class="py-op">,</tt><tt class="py-param">bgset</tt><tt class="py-op">,</tt><tt class="py-param">blocks</tt><tt class="py-op">,</tt><tt class="py-param">blocksLight</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Tile.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Tile.__init__-expanded"><a name="L63"></a><tt class="py-lineno"> 63</tt>  <tt class="py-line">        <tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">bgcol</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">char</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fgcol</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">bgset</tt><tt class="py-op">,</tt> </tt>
-<a name="L64"></a><tt class="py-lineno"> 64</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">blocks</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">blocksLight</tt><tt class="py-op">)</tt> <tt class="py-op">=</tt> <tt class="py-op">(</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">bgcol</tt><tt class="py-op">,</tt><tt class="py-name">char</tt><tt class="py-op">,</tt><tt class="py-name">fgcol</tt><tt class="py-op">,</tt><tt class="py-name">bgset</tt><tt class="py-op">,</tt> </tt>
-<a name="L65"></a><tt class="py-lineno"> 65</tt>  <tt class="py-line">            <tt class="py-name">blocks</tt><tt class="py-op">,</tt><tt class="py-name">blocksLight</tt><tt class="py-op">)</tt> </tt>
-</div><a name="L66"></a><tt class="py-lineno"> 66</tt>  <tt class="py-line"> </tt>
-<a name="Tile.copy"></a><div id="Tile.copy-def"><a name="L67"></a><tt class="py-lineno"> 67</tt> <a class="py-toggle" href="#" id="Tile.copy-toggle" onclick="return toggle('Tile.copy');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Tile-class.html#copy">copy</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Tile.copy-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Tile.copy-expanded"><a name="L68"></a><tt class="py-lineno"> 68</tt>  <tt class="py-line">        <tt class="py-docstring">"""Returns a new instance copy of the tile."""</tt> </tt>
-<a name="L69"></a><tt class="py-lineno"> 69</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-8" class="py-name" targets="Class lib.entity.Tile=lib.entity.Tile-class.html,Class lib.map.Tile=lib.map.Tile-class.html"><a title="lib.entity.Tile
-lib.map.Tile" class="py-name" href="#" onclick="return doclink('link-8', 'Tile', 'link-8');">Tile</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">bgcol</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">char</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fgcol</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">bgset</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">blocks</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">blocksLight</tt><tt class="py-op">)</tt> </tt>
-</div></div><a name="L70"></a><tt class="py-lineno"> 70</tt>  <tt class="py-line"> </tt>
-<a name="L71"></a><tt class="py-lineno"> 71</tt>  <tt class="py-line"> </tt>
-<a name="L72"></a><tt class="py-lineno"> 72</tt>  <tt class="py-line"> </tt>
-<a name="Entity"></a><div id="Entity-def"><a name="L73"></a><tt class="py-lineno"> 73</tt> <a class="py-toggle" href="#" id="Entity-toggle" onclick="return toggle('Entity');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Entity-class.html">Entity</a><tt class="py-op">:</tt> </tt>
-</div><div id="Entity-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Entity-expanded"><a name="L74"></a><tt class="py-lineno"> 74</tt>  <tt class="py-line">    <tt class="py-docstring">"""Base entity class.</tt> </tt>
-<a name="L75"></a><tt class="py-lineno"> 75</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L76"></a><tt class="py-lineno"> 76</tt>  <tt class="py-line"><tt class="py-docstring">    Basically a tile with a position and various attributes.</tt> </tt>
-<a name="L77"></a><tt class="py-lineno"> 77</tt>  <tt class="py-line"><tt class="py-docstring">    Can contain other entities and return its inventory, and can be scheduled."""</tt> </tt>
-<a name="L78"></a><tt class="py-lineno"> 78</tt>  <tt class="py-line">     </tt>
-<a name="Entity.__init__"></a><div id="Entity.__init__-def"><a name="L79"></a><tt class="py-lineno"> 79</tt> <a class="py-toggle" href="#" id="Entity.__init__-toggle" onclick="return toggle('Entity.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.__init__-expanded"><a name="L80"></a><tt class="py-lineno"> 80</tt>  <tt class="py-line">        <tt class="py-docstring">"""Initialisation method.</tt> </tt>
-<a name="L81"></a><tt class="py-lineno"> 81</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L82"></a><tt class="py-lineno"> 82</tt>  <tt class="py-line"><tt class="py-docstring">        Tile can be a tuple or a tile with irrelevant x and y properties.</tt> </tt>
-<a name="L83"></a><tt class="py-lineno"> 83</tt>  <tt class="py-line"><tt class="py-docstring">        List is in the format (bgcol, char, fgcol, bgset, blocks, blocksLight).</tt> </tt>
-<a name="L84"></a><tt class="py-lineno"> 84</tt>  <tt class="py-line"><tt class="py-docstring">        Contained objects are given an internal inventory ID.</tt> </tt>
-<a name="L85"></a><tt class="py-lineno"> 85</tt>  <tt class="py-line"><tt class="py-docstring">        Events are by default triggered when the entity is collided with."""</tt> </tt>
-<a name="L86"></a><tt class="py-lineno"> 86</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">tile</tt><tt class="py-op">,</tt><tt id="link-9" class="py-name"><a title="lib.entity.Tile
-lib.map.Tile" class="py-name" href="#" onclick="return doclink('link-9', 'Tile', 'link-8');">Tile</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L87"></a><tt class="py-lineno"> 87</tt>  <tt class="py-line">            <tt class="py-name">tile</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">bgcol</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">char</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">fgcol</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">bgset</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">blocks</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">blocksLight</tt><tt class="py-op">]</tt> </tt>
-<a name="L88"></a><tt class="py-lineno"> 88</tt>  <tt class="py-line">        <tt class="py-name">tile</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-name">tile</tt> </tt>
-<a name="L89"></a><tt class="py-lineno"> 89</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt> <tt class="py-op">=</tt> <tt id="link-10" class="py-name"><a title="lib.entity.Tile
-lib.map.Tile" class="py-name" href="#" onclick="return doclink('link-10', 'Tile', 'link-8');">Tile</a></tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-<a name="L90"></a><tt class="py-lineno"> 90</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">x</tt><tt class="py-op">,</tt> <tt class="py-name">y</tt> </tt>
-<a name="L91"></a><tt class="py-lineno"> 91</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">atts</tt> <tt class="py-op">=</tt> <tt class="py-op">{</tt> <tt class="py-string">'solid'</tt> <tt class="py-op">:</tt> <tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-string">'visible'</tt> <tt class="py-op">:</tt> <tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-string">'collidable'</tt> <tt class="py-op">:</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> </tt>
-<a name="L92"></a><tt class="py-lineno"> 92</tt>  <tt class="py-line">            <tt class="py-string">'liftable'</tt> <tt class="py-op">:</tt> <tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-string">'usable'</tt> <tt class="py-op">:</tt> <tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-string">'givelight'</tt> <tt class="py-op">:</tt> <tt class="py-number">0</tt><tt class="py-op">,</tt> <tt class="py-string">'hidden'</tt> <tt class="py-op">:</tt> <tt class="py-number">0</tt><tt class="py-op">}</tt> </tt>
-<a name="L93"></a><tt class="py-lineno"> 93</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">collision</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contained</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">,</tt> <tt class="py-number">0</tt> </tt>
-<a name="L94"></a><tt class="py-lineno"> 94</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">,</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">events</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt><tt class="py-op">,</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-<a name="L95"></a><tt class="py-lineno"> 95</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">moveCallback</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
-<a name="L96"></a><tt class="py-lineno"> 96</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">name</tt> <tt class="py-op">=</tt> <tt class="py-string">"generic"</tt> </tt>
-</div><a name="L97"></a><tt class="py-lineno"> 97</tt>  <tt class="py-line">         </tt>
-<a name="Entity.contain"></a><div id="Entity.contain-def"><a name="L98"></a><tt class="py-lineno"> 98</tt> <a class="py-toggle" href="#" id="Entity.contain-toggle" onclick="return toggle('Entity.contain');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#contain">contain</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.contain-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.contain-expanded"><a name="L99"></a><tt class="py-lineno"> 99</tt>  <tt class="py-line">        <tt class="py-docstring">"""Entity has been contained, makes itself disappear."""</tt> </tt>
-<a name="L100"></a><tt class="py-lineno">100</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contained</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L101"></a><tt class="py-lineno">101</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-11" class="py-name" targets="Method lib.entity.Entity.setAttribute()=lib.entity.Entity-class.html#setAttribute"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-11', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'hidden'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L102"></a><tt class="py-lineno">102</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
-<a name="L103"></a><tt class="py-lineno">103</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
-</div><a name="L104"></a><tt class="py-lineno">104</tt>  <tt class="py-line"> </tt>
-<a name="Entity.removed"></a><div id="Entity.removed-def"><a name="L105"></a><tt class="py-lineno">105</tt> <a class="py-toggle" href="#" id="Entity.removed-toggle" onclick="return toggle('Entity.removed');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#removed">removed</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.removed-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.removed-expanded"><a name="L106"></a><tt class="py-lineno">106</tt>  <tt class="py-line">        <tt class="py-docstring">"""Entity has been removed from inventory, unhide and update position."""</tt> </tt>
-<a name="L107"></a><tt class="py-lineno">107</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contained</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
-<a name="L108"></a><tt class="py-lineno">108</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-12" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-12', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'hidden'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L109"></a><tt class="py-lineno">109</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">ent</tt><tt class="py-op">.</tt><tt class="py-name">x</tt> </tt>
-<a name="L110"></a><tt class="py-lineno">110</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">ent</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> </tt>
-</div><a name="L111"></a><tt class="py-lineno">111</tt>  <tt class="py-line"> </tt>
-<a name="Entity.getContained"></a><div id="Entity.getContained-def"><a name="L112"></a><tt class="py-lineno">112</tt> <a class="py-toggle" href="#" id="Entity.getContained-toggle" onclick="return toggle('Entity.getContained');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#getContained">getContained</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.getContained-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.getContained-expanded"><a name="L113"></a><tt class="py-lineno">113</tt>  <tt class="py-line">        <tt class="py-docstring">"""Return the internal ID of the given entity or -1."""</tt> </tt>
-<a name="L114"></a><tt class="py-lineno">114</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">i</tt> <tt class="py-keyword">in</tt> <tt class="py-name">range</tt><tt class="py-op">(</tt><tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">)</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L115"></a><tt class="py-lineno">115</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">[</tt><tt class="py-name">i</tt><tt class="py-op">]</tt> <tt class="py-op">==</tt> <tt class="py-name">ent</tt><tt class="py-op">:</tt> </tt>
-<a name="L116"></a><tt class="py-lineno">116</tt>  <tt class="py-line">                <tt class="py-keyword">return</tt> <tt class="py-name">i</tt> </tt>
-<a name="L117"></a><tt class="py-lineno">117</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
-</div><a name="L118"></a><tt class="py-lineno">118</tt>  <tt class="py-line"> </tt>
-<a name="Entity.containObject"></a><div id="Entity.containObject-def"><a name="L119"></a><tt class="py-lineno">119</tt> <a class="py-toggle" href="#" id="Entity.containObject-toggle" onclick="return toggle('Entity.containObject');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#containObject">containObject</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.containObject-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.containObject-expanded"><a name="L120"></a><tt class="py-lineno">120</tt>  <tt class="py-line">        <tt class="py-docstring">"""Contain an entity in inventory and return its id."""</tt> </tt>
-<a name="L121"></a><tt class="py-lineno">121</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">ent</tt><tt class="py-op">)</tt> </tt>
-<a name="L122"></a><tt class="py-lineno">122</tt>  <tt class="py-line">        <tt class="py-name">ent</tt><tt class="py-op">.</tt><tt id="link-13" class="py-name" targets="Method lib.entity.Entity.contain()=lib.entity.Entity-class.html#contain"><a title="lib.entity.Entity.contain" class="py-name" href="#" onclick="return doclink('link-13', 'contain', 'link-13');">contain</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
-<a name="L123"></a><tt class="py-lineno">123</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">)</tt><tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
-</div><a name="L124"></a><tt class="py-lineno">124</tt>  <tt class="py-line"> </tt>
-<a name="Entity.uncontainObject"></a><div id="Entity.uncontainObject-def"><a name="L125"></a><tt class="py-lineno">125</tt> <a class="py-toggle" href="#" id="Entity.uncontainObject-toggle" onclick="return toggle('Entity.uncontainObject');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#uncontainObject">uncontainObject</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">id</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.uncontainObject-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.uncontainObject-expanded"><a name="L126"></a><tt class="py-lineno">126</tt>  <tt class="py-line">        <tt class="py-docstring">"""Remove an entity from inventory."""</tt> </tt>
-<a name="L127"></a><tt class="py-lineno">127</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">[</tt><tt class="py-name">id</tt><tt class="py-op">]</tt><tt class="py-op">.</tt><tt id="link-14" class="py-name" targets="Method lib.entity.Entity.removed()=lib.entity.Entity-class.html#removed"><a title="lib.entity.Entity.removed" class="py-name" href="#" onclick="return doclink('link-14', 'removed', 'link-14');">removed</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">)</tt> </tt>
-<a name="L128"></a><tt class="py-lineno">128</tt>  <tt class="py-line">        <tt class="py-keyword">del</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">[</tt><tt class="py-name">id</tt><tt class="py-op">]</tt> </tt>
-</div><a name="L129"></a><tt class="py-lineno">129</tt>  <tt class="py-line"> </tt>
-<a name="Entity.returnInventory"></a><div id="Entity.returnInventory-def"><a name="L130"></a><tt class="py-lineno">130</tt> <a class="py-toggle" href="#" id="Entity.returnInventory-toggle" onclick="return toggle('Entity.returnInventory');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#returnInventory">returnInventory</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.returnInventory-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.returnInventory-expanded"><a name="L131"></a><tt class="py-lineno">131</tt>  <tt class="py-line">        <tt class="py-docstring">"""Return inventory as simple list."""</tt> </tt>
-<a name="L132"></a><tt class="py-lineno">132</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt> </tt>
-</div><a name="L133"></a><tt class="py-lineno">133</tt>  <tt class="py-line"> </tt>
-<a name="Entity.gridInventory"></a><div id="Entity.gridInventory-def"><a name="L134"></a><tt class="py-lineno">134</tt> <a class="py-toggle" href="#" id="Entity.gridInventory-toggle" onclick="return toggle('Entity.gridInventory');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#gridInventory">gridInventory</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.gridInventory-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.gridInventory-expanded"><a name="L135"></a><tt class="py-lineno">135</tt>  <tt class="py-line">        <tt class="py-docstring">"""Return inventory in format: [ id : [character, color, name, obj] ]."""</tt> </tt>
-<a name="L136"></a><tt class="py-lineno">136</tt>  <tt class="py-line">        <tt class="py-name">id</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L137"></a><tt class="py-lineno">137</tt>  <tt class="py-line">        <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-<a name="L138"></a><tt class="py-lineno">138</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">ent</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contains</tt><tt class="py-op">:</tt> </tt>
-<a name="L139"></a><tt class="py-lineno">139</tt>  <tt class="py-line">            <tt class="py-name">it</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-name">ent</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">char</tt><tt class="py-op">,</tt> <tt class="py-name">ent</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">fgcol</tt><tt class="py-op">,</tt> <tt class="py-name">ent</tt><tt class="py-op">.</tt><tt class="py-name">name</tt><tt class="py-op">,</tt> <tt class="py-name">ent</tt><tt class="py-op">]</tt> </tt>
-<a name="L140"></a><tt class="py-lineno">140</tt>  <tt class="py-line">            <tt class="py-name">ret</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-op">[</tt><tt class="py-name">id</tt><tt class="py-op">,</tt> <tt class="py-name">it</tt><tt class="py-op">]</tt><tt class="py-op">)</tt> </tt>
-<a name="L141"></a><tt class="py-lineno">141</tt>  <tt class="py-line">            <tt class="py-name">id</tt> <tt class="py-op">+=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L142"></a><tt class="py-lineno">142</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ret</tt> </tt>
-</div><a name="L143"></a><tt class="py-lineno">143</tt>  <tt class="py-line"> </tt>
-<a name="Entity.getTile"></a><div id="Entity.getTile-def"><a name="L144"></a><tt class="py-lineno">144</tt> <a class="py-toggle" href="#" id="Entity.getTile-toggle" onclick="return toggle('Entity.getTile');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#getTile">getTile</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.getTile-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.getTile-expanded"><a name="L145"></a><tt class="py-lineno">145</tt>  <tt class="py-line">        <tt class="py-docstring">"""Return tile."""</tt> </tt>
-<a name="L146"></a><tt class="py-lineno">146</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt> </tt>
-</div><a name="L147"></a><tt class="py-lineno">147</tt>  <tt class="py-line">     </tt>
-<a name="Entity.getAttribute"></a><div id="Entity.getAttribute-def"><a name="L148"></a><tt class="py-lineno">148</tt> <a class="py-toggle" href="#" id="Entity.getAttribute-toggle" onclick="return toggle('Entity.getAttribute');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#getAttribute">getAttribute</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">att</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.getAttribute-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.getAttribute-expanded"><a name="L149"></a><tt class="py-lineno">149</tt>  <tt class="py-line">        <tt class="py-docstring">"""Return wanted attribute, or -1."""</tt> </tt>
-<a name="L150"></a><tt class="py-lineno">150</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">att</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">atts</tt><tt class="py-op">:</tt> </tt>
-<a name="L151"></a><tt class="py-lineno">151</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">atts</tt><tt class="py-op">[</tt><tt class="py-name">att</tt><tt class="py-op">]</tt> </tt>
-<a name="L152"></a><tt class="py-lineno">152</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L153"></a><tt class="py-lineno">153</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
-</div><a name="L154"></a><tt class="py-lineno">154</tt>  <tt class="py-line">     </tt>
-<a name="Entity.setAttribute"></a><div id="Entity.setAttribute-def"><a name="L155"></a><tt class="py-lineno">155</tt> <a class="py-toggle" href="#" id="Entity.setAttribute-toggle" onclick="return toggle('Entity.setAttribute');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#setAttribute">setAttribute</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">att</tt><tt class="py-op">,</tt><tt class="py-param">val</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.setAttribute-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.setAttribute-expanded"><a name="L156"></a><tt class="py-lineno">156</tt>  <tt class="py-line">        <tt class="py-docstring">"""Set an attribute to given value."""</tt> </tt>
-<a name="L157"></a><tt class="py-lineno">157</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">atts</tt><tt class="py-op">[</tt><tt class="py-name">att</tt><tt class="py-op">]</tt> <tt class="py-op">=</tt> <tt class="py-name">val</tt> </tt>
-</div><a name="L158"></a><tt class="py-lineno">158</tt>  <tt class="py-line"> </tt>
-<a name="Entity.setCollisionCheck"></a><div id="Entity.setCollisionCheck-def"><a name="L159"></a><tt class="py-lineno">159</tt> <a class="py-toggle" href="#" id="Entity.setCollisionCheck-toggle" onclick="return toggle('Entity.setCollisionCheck');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#setCollisionCheck">setCollisionCheck</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">fct</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.setCollisionCheck-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.setCollisionCheck-expanded"><a name="L160"></a><tt class="py-lineno">160</tt>  <tt class="py-line">        <tt class="py-docstring">"""Set the current collision check.</tt> </tt>
-<a name="L161"></a><tt class="py-lineno">161</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L162"></a><tt class="py-lineno">162</tt>  <tt class="py-line"><tt class="py-docstring">        This function gets evaluated on every movement.</tt> </tt>
-<a name="L163"></a><tt class="py-lineno">163</tt>  <tt class="py-line"><tt class="py-docstring">        On returned 1, movement is allowed.</tt> </tt>
-<a name="L164"></a><tt class="py-lineno">164</tt>  <tt class="py-line"><tt class="py-docstring">        On returned 0, movement is stopped.</tt> </tt>
-<a name="L165"></a><tt class="py-lineno">165</tt>  <tt class="py-line"><tt class="py-docstring">        Set to -1 for no collision checking."""</tt> </tt>
-<a name="L166"></a><tt class="py-lineno">166</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">collision</tt> <tt class="py-op">=</tt> <tt class="py-name">fct</tt> </tt>
-</div><a name="L167"></a><tt class="py-lineno">167</tt>  <tt class="py-line"> </tt>
-<a name="Entity.collidedWith"></a><div id="Entity.collidedWith-def"><a name="L168"></a><tt class="py-lineno">168</tt> <a class="py-toggle" href="#" id="Entity.collidedWith-toggle" onclick="return toggle('Entity.collidedWith');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#collidedWith">collidedWith</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.collidedWith-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.collidedWith-expanded"><a name="L169"></a><tt class="py-lineno">169</tt>  <tt class="py-line">        <tt class="py-docstring">"""Default collided checking runs events in self.events.</tt> </tt>
-<a name="L170"></a><tt class="py-lineno">170</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L171"></a><tt class="py-lineno">171</tt>  <tt class="py-line"><tt class="py-docstring">        Events are in format (function, (arg1, arg2, arg3))."""</tt> </tt>
-<a name="L172"></a><tt class="py-lineno">172</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">set</tt> <tt class="py-keyword">in</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">events</tt><tt class="py-op">:</tt> </tt>
-<a name="L173"></a><tt class="py-lineno">173</tt>  <tt class="py-line">            <tt class="py-name">fct</tt> <tt class="py-op">=</tt> <tt class="py-name">set</tt><tt class="py-op">[</tt><tt class="py-number">0</tt><tt class="py-op">]</tt> </tt>
-<a name="L174"></a><tt class="py-lineno">174</tt>  <tt class="py-line">            <tt class="py-name">opts</tt> <tt class="py-op">=</tt> <tt class="py-name">set</tt><tt class="py-op">[</tt><tt class="py-number">1</tt><tt class="py-op">]</tt> </tt>
-<a name="L175"></a><tt class="py-lineno">175</tt>  <tt class="py-line">            <tt class="py-name">fct</tt><tt class="py-op">(</tt><tt class="py-op">*</tt><tt class="py-name">opts</tt><tt class="py-op">)</tt> </tt>
-<a name="L176"></a><tt class="py-lineno">176</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-</div><a name="L177"></a><tt class="py-lineno">177</tt>  <tt class="py-line"> </tt>
-<a name="Entity.relMove"></a><div id="Entity.relMove-def"><a name="L178"></a><tt class="py-lineno">178</tt> <a class="py-toggle" href="#" id="Entity.relMove-toggle" onclick="return toggle('Entity.relMove');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#relMove">relMove</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">dx</tt><tt class="py-op">,</tt><tt class="py-param">dy</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.relMove-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.relMove-expanded"><a name="L179"></a><tt class="py-lineno">179</tt>  <tt class="py-line">        <tt class="py-docstring">"""Try to move in the relative direction (dx, dy)."""</tt> </tt>
-<a name="L180"></a><tt class="py-lineno">180</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-15" class="py-name" targets="Method lib.entity.Entity.move()=lib.entity.Entity-class.html#move"><a title="lib.entity.Entity.move" class="py-name" href="#" onclick="return doclink('link-15', 'move', 'link-15');">move</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt><tt class="py-op">+</tt><tt class="py-name">dx</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt><tt class="py-op">+</tt><tt class="py-name">dy</tt><tt class="py-op">)</tt> </tt>
-</div><a name="L181"></a><tt class="py-lineno">181</tt>  <tt class="py-line"> </tt>
-<a name="Entity.move"></a><div id="Entity.move-def"><a name="L182"></a><tt class="py-lineno">182</tt> <a class="py-toggle" href="#" id="Entity.move-toggle" onclick="return toggle('Entity.move');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#move">move</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.move-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.move-expanded"><a name="L183"></a><tt class="py-lineno">183</tt>  <tt class="py-line">        <tt class="py-docstring">"""Try to move to (x, y).</tt> </tt>
-<a name="L184"></a><tt class="py-lineno">184</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L185"></a><tt class="py-lineno">185</tt>  <tt class="py-line"><tt class="py-docstring">        If the collision function is not -1, call. Actually move on returned 1.</tt> </tt>
-<a name="L186"></a><tt class="py-lineno">186</tt>  <tt class="py-line"><tt class="py-docstring">        If the move callback is not -1, call it with self and position moved to.</tt> </tt>
-<a name="L187"></a><tt class="py-lineno">187</tt>  <tt class="py-line"><tt class="py-docstring">        """</tt> </tt>
-<a name="L188"></a><tt class="py-lineno">188</tt>  <tt class="py-line">        <tt class="py-comment">#print 'Trying to move to ' + str(x)+':'+str(y)</tt> </tt>
-<a name="L189"></a><tt class="py-lineno">189</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">collision</tt><tt class="py-op">,</tt><tt class="py-name">int</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L190"></a><tt class="py-lineno">190</tt>  <tt class="py-line">            <tt class="py-comment">#print 'Collision testing.'</tt> </tt>
-<a name="L191"></a><tt class="py-lineno">191</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">collision</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L192"></a><tt class="py-lineno">192</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">moveCallback</tt> <tt class="py-op">!=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
-<a name="L193"></a><tt class="py-lineno">193</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">moveCallback</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
-<a name="L194"></a><tt class="py-lineno">194</tt>  <tt class="py-line">                <tt class="py-comment">#print 'No collision.'</tt> </tt>
-<a name="L195"></a><tt class="py-lineno">195</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">x</tt> </tt>
-<a name="L196"></a><tt class="py-lineno">196</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">y</tt> </tt>
-<a name="L197"></a><tt class="py-lineno">197</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">x</tt> </tt>
-<a name="L198"></a><tt class="py-lineno">198</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">y</tt> </tt>
-<a name="L199"></a><tt class="py-lineno">199</tt>  <tt class="py-line">        <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L200"></a><tt class="py-lineno">200</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">moveCallback</tt> <tt class="py-op">!=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">:</tt> </tt>
-<a name="L201"></a><tt class="py-lineno">201</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">moveCallback</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">)</tt> </tt>
-<a name="L202"></a><tt class="py-lineno">202</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">x</tt> </tt>
-<a name="L203"></a><tt class="py-lineno">203</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">y</tt> </tt>
-<a name="L204"></a><tt class="py-lineno">204</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">x</tt> </tt>
-<a name="L205"></a><tt class="py-lineno">205</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">y</tt> <tt class="py-op">=</tt> <tt class="py-name">y</tt> </tt>
-</div><a name="L206"></a><tt class="py-lineno">206</tt>  <tt class="py-line">     </tt>
-<a name="Entity.copy"></a><div id="Entity.copy-def"><a name="L207"></a><tt class="py-lineno">207</tt> <a class="py-toggle" href="#" id="Entity.copy-toggle" onclick="return toggle('Entity.copy');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#copy">copy</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.copy-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.copy-expanded"><a name="L208"></a><tt class="py-lineno">208</tt>  <tt class="py-line">        <tt class="py-docstring">"""Return a copy of the entity."""</tt> </tt>
-<a name="L209"></a><tt class="py-lineno">209</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt id="link-16" class="py-name"><a title="lib.entity.Entity" class="py-name" href="#" onclick="return doclink('link-16', 'Entity', 'link-0');">Entity</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">toList</tt><tt class="py-op">(</tt><tt class="py-op">)</tt><tt class="py-op">)</tt> </tt>
-</div><a name="L210"></a><tt class="py-lineno">210</tt>  <tt class="py-line"> </tt>
-<a name="Entity.update"></a><div id="Entity.update-def"><a name="L211"></a><tt class="py-lineno">211</tt> <a class="py-toggle" href="#" id="Entity.update-toggle" onclick="return toggle('Entity.update');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Entity-class.html#update">update</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Entity.update-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Entity.update-expanded"><a name="L212"></a><tt class="py-lineno">212</tt>  <tt class="py-line">        <tt class="py-keyword">pass</tt> </tt>
-</div></div><a name="L213"></a><tt class="py-lineno">213</tt>  <tt class="py-line"> </tt>
-<a name="L214"></a><tt class="py-lineno">214</tt>  <tt class="py-line"> </tt>
-<a name="Item"></a><div id="Item-def"><a name="L215"></a><tt class="py-lineno">215</tt> <a class="py-toggle" href="#" id="Item-toggle" onclick="return toggle('Item');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Item-class.html">Item</a><tt class="py-op">(</tt><tt class="py-base-class">Entity</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Item-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Item-expanded"><a name="L216"></a><tt class="py-lineno">216</tt>  <tt class="py-line">    <tt class="py-docstring">"""Base non-blocking, visible, liftable and usable entity for subclassing."""</tt> </tt>
-<a name="L217"></a><tt class="py-lineno">217</tt>  <tt class="py-line"> </tt>
-<a name="Item.__init__"></a><div id="Item.__init__-def"><a name="L218"></a><tt class="py-lineno">218</tt> <a class="py-toggle" href="#" id="Item.__init__-toggle" onclick="return toggle('Item.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Item-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Item.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Item.__init__-expanded"><a name="L219"></a><tt class="py-lineno">219</tt>  <tt class="py-line">        <tt id="link-17" class="py-name"><a title="lib.entity.Entity" class="py-name" href="#" onclick="return doclink('link-17', 'Entity', 'link-0');">Entity</a></tt><tt class="py-op">.</tt><tt id="link-18" class="py-name" targets="Method lib.base.Application.__init__()=lib.base.Application-class.html#__init__,Method lib.entity.Beast.__init__()=lib.entity.Beast-class.html#__init__,Method lib.entity.Door.__init__()=lib.entity.Door-class.html#__init__,Method lib.entity.Entity.__init__()=lib.entity.Entity-class.html#__init__,Method lib.entity.EntityMan.__init__()=lib.entity.EntityMan-class.html#__init__,Method lib.entity.Item.__init__()=lib.entity.Item-class.html#__init__,Method lib.entity.NPC.__init__()=lib.entity.NPC-class.html#__init__,Method lib.entity.Player.__init__()=lib.entity.Player-class.html#__init__,Method lib.entity.Talker.__init__()=lib.entity.Talker-class.html#__init__,Method lib.entity.Tile.__init__()=lib.entity.Tile-class.html#__init__,Method lib.entity.Trap.__init__()=lib.entity.Trap-class.html#__init__,Method lib.graphics.BorderedMessageWindow.__init__()=lib.graphics.BorderedMessageWindow-class.html#__init__,Method lib.graphics.BorderedWindow.__init__()=lib.graphics.BorderedWindow-class.html#__init__,Method lib.graphics.ChoiceWindow.__init__()=lib.graphics.ChoiceWindow-class.html#__init__,Method lib.graphics.GridWindow.__init__()=lib.graphics.GridWindow-class.html#__init__,Method lib.graphics.InputWindow.__init__()=lib.graphics.InputWindow-class.html#__init__,Method lib.graphics.LayeredGameWindow.__init__()=lib.graphics.LayeredGameWindow-class.html#__init__,Method lib.graphics.MultiChoiceWindow.__init__()=lib.graphics.MultiChoiceWindow-class.html#__init__,Method lib.graphics.RootWindow.__init__()=lib.graphics.RootWindow-class.html#__init__,Method lib.graphics.StatusWindow.__init__()=lib.graphics.StatusWindow-class.html#__init__,Method lib.graphics.Window.__init__()=lib.graphics.Window-class.html#__init__,Method lib.graphics.WindowManager.__init__()=lib.graphics.WindowManager-class.html#__init__,Method lib.interface.KeyboardListener.__init__()=lib.interface.KeyboardListener-class.html#__init__,Method lib.map.Generator.__init__()=lib.map.Generator-class.html#__init__,Method lib.map.Map.__init__()=lib.map.Map-class.html#__init__,Method lib.map.Tile.__init__()=lib.map.Tile-class.html#__init__,Method lib.object.Camera.__init__()=lib.object.Camera-class.html#__init__,Method lib.object.Object.__init__()=lib.object.Object-class.html#__init__,Method lib.time.Scheduler.__init__()=lib.time.Scheduler-class.html#__init__"><a title="lib.base.Application.__init__
-lib.entity.Beast.__init__
-lib.entity.Door.__init__
-lib.entity.Entity.__init__
-lib.entity.EntityMan.__init__
-lib.entity.Item.__init__
-lib.entity.NPC.__init__
-lib.entity.Player.__init__
-lib.entity.Talker.__init__
-lib.entity.Tile.__init__
-lib.entity.Trap.__init__
-lib.graphics.BorderedMessageWindow.__init__
-lib.graphics.BorderedWindow.__init__
-lib.graphics.ChoiceWindow.__init__
-lib.graphics.GridWindow.__init__
-lib.graphics.InputWindow.__init__
-lib.graphics.LayeredGameWindow.__init__
-lib.graphics.MultiChoiceWindow.__init__
-lib.graphics.RootWindow.__init__
-lib.graphics.StatusWindow.__init__
-lib.graphics.Window.__init__
-lib.graphics.WindowManager.__init__
-lib.interface.KeyboardListener.__init__
-lib.map.Generator.__init__
-lib.map.Map.__init__
-lib.map.Tile.__init__
-lib.object.Camera.__init__
-lib.object.Object.__init__
-lib.time.Scheduler.__init__" class="py-name" href="#" onclick="return doclink('link-18', '__init__', 'link-18');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-<a name="L220"></a><tt class="py-lineno">220</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-19" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-19', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'solid'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L221"></a><tt class="py-lineno">221</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-20" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-20', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'visible'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L222"></a><tt class="py-lineno">222</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-21" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-21', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'collidable'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L223"></a><tt class="py-lineno">223</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-22" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-22', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'liftable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L224"></a><tt class="py-lineno">224</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-23" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-23', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'usable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-</div></div><a name="L225"></a><tt class="py-lineno">225</tt>  <tt class="py-line"> </tt>
-<a name="L226"></a><tt class="py-lineno">226</tt>  <tt class="py-line"> </tt>
-<a name="NPC"></a><div id="NPC-def"><a name="L227"></a><tt class="py-lineno">227</tt> <a class="py-toggle" href="#" id="NPC-toggle" onclick="return toggle('NPC');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.NPC-class.html">NPC</a><tt class="py-op">(</tt><tt class="py-base-class">Entity</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="NPC-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="NPC-expanded"><a name="L228"></a><tt class="py-lineno">228</tt>  <tt class="py-line"> </tt>
-<a name="NPC.__init__"></a><div id="NPC.__init__-def"><a name="L229"></a><tt class="py-lineno">229</tt> <a class="py-toggle" href="#" id="NPC.__init__-toggle" onclick="return toggle('NPC.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.NPC-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="NPC.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NPC.__init__-expanded"><a name="L230"></a><tt class="py-lineno">230</tt>  <tt class="py-line">        <tt class="py-docstring">"""Base blocking, collidable, unliftable, unusable entity for subclass.</tt> </tt>
-<a name="L231"></a><tt class="py-lineno">231</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L232"></a><tt class="py-lineno">232</tt>  <tt class="py-line"><tt class="py-docstring">        Also has hp and maximum hp and alive/dead state by default."""</tt> </tt>
-<a name="L233"></a><tt class="py-lineno">233</tt>  <tt class="py-line">        <tt id="link-24" class="py-name"><a title="lib.entity.Entity" class="py-name" href="#" onclick="return doclink('link-24', 'Entity', 'link-0');">Entity</a></tt><tt class="py-op">.</tt><tt id="link-25" class="py-name"><a title="lib.base.Application.__init__
-lib.entity.Beast.__init__
-lib.entity.Door.__init__
-lib.entity.Entity.__init__
-lib.entity.EntityMan.__init__
-lib.entity.Item.__init__
-lib.entity.NPC.__init__
-lib.entity.Player.__init__
-lib.entity.Talker.__init__
-lib.entity.Tile.__init__
-lib.entity.Trap.__init__
-lib.graphics.BorderedMessageWindow.__init__
-lib.graphics.BorderedWindow.__init__
-lib.graphics.ChoiceWindow.__init__
-lib.graphics.GridWindow.__init__
-lib.graphics.InputWindow.__init__
-lib.graphics.LayeredGameWindow.__init__
-lib.graphics.MultiChoiceWindow.__init__
-lib.graphics.RootWindow.__init__
-lib.graphics.StatusWindow.__init__
-lib.graphics.Window.__init__
-lib.graphics.WindowManager.__init__
-lib.interface.KeyboardListener.__init__
-lib.map.Generator.__init__
-lib.map.Map.__init__
-lib.map.Tile.__init__
-lib.object.Camera.__init__
-lib.object.Object.__init__
-lib.time.Scheduler.__init__" class="py-name" href="#" onclick="return doclink('link-25', '__init__', 'link-18');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-<a name="L234"></a><tt class="py-lineno">234</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-26" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-26', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'solid'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L235"></a><tt class="py-lineno">235</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-27" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-27', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'collidable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L236"></a><tt class="py-lineno">236</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-28" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-28', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'liftable'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L237"></a><tt class="py-lineno">237</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-29" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-29', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'usable'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L238"></a><tt class="py-lineno">238</tt>  <tt class="py-line"> </tt>
-<a name="L239"></a><tt class="py-lineno">239</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">maxhp</tt> <tt class="py-op">=</tt> <tt class="py-number">5</tt> </tt>
-<a name="L240"></a><tt class="py-lineno">240</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">hp</tt> <tt class="py-op">=</tt> <tt class="py-number">5</tt> </tt>
-<a name="L241"></a><tt class="py-lineno">241</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dead</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
-</div><a name="L242"></a><tt class="py-lineno">242</tt>  <tt class="py-line"> </tt>
-<a name="NPC.checkHealth"></a><div id="NPC.checkHealth-def"><a name="L243"></a><tt class="py-lineno">243</tt> <a class="py-toggle" href="#" id="NPC.checkHealth-toggle" onclick="return toggle('NPC.checkHealth');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.NPC-class.html#checkHealth">checkHealth</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="NPC.checkHealth-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NPC.checkHealth-expanded"><a name="L244"></a><tt class="py-lineno">244</tt>  <tt class="py-line">        <tt class="py-docstring">"""Verify if dead, and change into corpse of being."""</tt> </tt>
-<a name="L245"></a><tt class="py-lineno">245</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">hp</tt> <tt class="py-op">&lt;=</tt> <tt class="py-number">0</tt> <tt class="py-keyword">and</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dead</tt><tt class="py-op">:</tt> </tt>
-<a name="L246"></a><tt class="py-lineno">246</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dead</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L247"></a><tt class="py-lineno">247</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-30" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-30', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'liftable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L248"></a><tt class="py-lineno">248</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-31" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-31', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'solid'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L249"></a><tt class="py-lineno">249</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-32" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-32', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'collidable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L250"></a><tt class="py-lineno">250</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">name</tt> <tt class="py-op">+=</tt> <tt class="py-string">' corpse'</tt> </tt>
-</div><a name="L251"></a><tt class="py-lineno">251</tt>  <tt class="py-line">             </tt>
-<a name="NPC.pickUp"></a><div id="NPC.pickUp-def"><a name="L252"></a><tt class="py-lineno">252</tt> <a class="py-toggle" href="#" id="NPC.pickUp-toggle" onclick="return toggle('NPC.pickUp');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.NPC-class.html#pickUp">pickUp</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">objs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="NPC.pickUp-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NPC.pickUp-expanded"><a name="L253"></a><tt class="py-lineno">253</tt>  <tt class="py-line">        <tt class="py-docstring">"""Pick up object, return list of messages to display."""</tt> </tt>
-<a name="L254"></a><tt class="py-lineno">254</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">obj</tt> <tt class="py-keyword">in</tt> <tt class="py-name">objs</tt><tt class="py-op">:</tt> </tt>
-<a name="L255"></a><tt class="py-lineno">255</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-33" class="py-name" targets="Method lib.entity.Entity.containObject()=lib.entity.Entity-class.html#containObject"><a title="lib.entity.Entity.containObject" class="py-name" href="#" onclick="return doclink('link-33', 'containObject', 'link-33');">containObject</a></tt><tt class="py-op">(</tt><tt class="py-name">obj</tt><tt class="py-op">)</tt> </tt>
-<a name="L256"></a><tt class="py-lineno">256</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-</div><a name="L257"></a><tt class="py-lineno">257</tt>  <tt class="py-line"> </tt>
-<a name="NPC.drop"></a><div id="NPC.drop-def"><a name="L258"></a><tt class="py-lineno">258</tt> <a class="py-toggle" href="#" id="NPC.drop-toggle" onclick="return toggle('NPC.drop');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.NPC-class.html#drop">drop</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ids</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="NPC.drop-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="NPC.drop-expanded"><a name="L259"></a><tt class="py-lineno">259</tt>  <tt class="py-line">        <tt class="py-docstring">"""Drop objects in list of inventory ids."""</tt> </tt>
-<a name="L260"></a><tt class="py-lineno">260</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">id</tt> <tt class="py-keyword">in</tt> <tt class="py-name">ids</tt><tt class="py-op">:</tt> </tt>
-<a name="L261"></a><tt class="py-lineno">261</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-34" class="py-name" targets="Method lib.entity.Entity.uncontainObject()=lib.entity.Entity-class.html#uncontainObject"><a title="lib.entity.Entity.uncontainObject" class="py-name" href="#" onclick="return doclink('link-34', 'uncontainObject', 'link-34');">uncontainObject</a></tt><tt class="py-op">(</tt><tt class="py-name">id</tt><tt class="py-op">)</tt> </tt>
-</div></div><a name="L262"></a><tt class="py-lineno">262</tt>  <tt class="py-line"> </tt>
-<a name="L263"></a><tt class="py-lineno">263</tt>  <tt class="py-line"> </tt>
-<a name="Beast"></a><div id="Beast-def"><a name="L264"></a><tt class="py-lineno">264</tt> <a class="py-toggle" href="#" id="Beast-toggle" onclick="return toggle('Beast');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Beast-class.html">Beast</a><tt class="py-op">(</tt><tt class="py-base-class">NPC</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Beast-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Beast-expanded"><a name="L265"></a><tt class="py-lineno">265</tt>  <tt class="py-line">    <tt class="py-docstring">"""Subclassed beast entity, can be hit by player."""</tt> </tt>
-<a name="L266"></a><tt class="py-lineno">266</tt>  <tt class="py-line"> </tt>
-<a name="Beast.__init__"></a><div id="Beast.__init__-def"><a name="L267"></a><tt class="py-lineno">267</tt> <a class="py-toggle" href="#" id="Beast.__init__-toggle" onclick="return toggle('Beast.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Beast-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Beast.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Beast.__init__-expanded"><a name="L268"></a><tt class="py-lineno">268</tt>  <tt class="py-line">        <tt class="py-docstring">"""Initialisation method.</tt> </tt>
-<a name="L269"></a><tt class="py-lineno">269</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L270"></a><tt class="py-lineno">270</tt>  <tt class="py-line"><tt class="py-docstring">        Set name afterwards directly, or defaults to 'beast'."""</tt> </tt>
-<a name="L271"></a><tt class="py-lineno">271</tt>  <tt class="py-line">        <tt id="link-35" class="py-name"><a title="lib.entity.NPC" class="py-name" href="#" onclick="return doclink('link-35', 'NPC', 'link-3');">NPC</a></tt><tt class="py-op">.</tt><tt id="link-36" class="py-name"><a title="lib.base.Application.__init__
-lib.entity.Beast.__init__
-lib.entity.Door.__init__
-lib.entity.Entity.__init__
-lib.entity.EntityMan.__init__
-lib.entity.Item.__init__
-lib.entity.NPC.__init__
-lib.entity.Player.__init__
-lib.entity.Talker.__init__
-lib.entity.Tile.__init__
-lib.entity.Trap.__init__
-lib.graphics.BorderedMessageWindow.__init__
-lib.graphics.BorderedWindow.__init__
-lib.graphics.ChoiceWindow.__init__
-lib.graphics.GridWindow.__init__
-lib.graphics.InputWindow.__init__
-lib.graphics.LayeredGameWindow.__init__
-lib.graphics.MultiChoiceWindow.__init__
-lib.graphics.RootWindow.__init__
-lib.graphics.StatusWindow.__init__
-lib.graphics.Window.__init__
-lib.graphics.WindowManager.__init__
-lib.interface.KeyboardListener.__init__
-lib.map.Generator.__init__
-lib.map.Map.__init__
-lib.map.Tile.__init__
-lib.object.Camera.__init__
-lib.object.Object.__init__
-lib.time.Scheduler.__init__" class="py-name" href="#" onclick="return doclink('link-36', '__init__', 'link-18');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-<a name="L272"></a><tt class="py-lineno">272</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">name</tt> <tt class="py-op">=</tt> <tt class="py-string">"beast"</tt> </tt>
-</div><a name="L273"></a><tt class="py-lineno">273</tt>  <tt class="py-line"> </tt>
-<a name="L274"></a><tt class="py-lineno">274</tt>  <tt class="py-line"> </tt>
-<a name="Beast.collidedWith"></a><div id="Beast.collidedWith-def"><a name="L275"></a><tt class="py-lineno">275</tt> <a class="py-toggle" href="#" id="Beast.collidedWith-toggle" onclick="return toggle('Beast.collidedWith');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Beast-class.html#collidedWith">collidedWith</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Beast.collidedWith-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Beast.collidedWith-expanded"><a name="L276"></a><tt class="py-lineno">276</tt>  <tt class="py-line">        <tt class="py-docstring">"""Subclassed collision method returning player messages.</tt> </tt>
-<a name="L277"></a><tt class="py-lineno">277</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L278"></a><tt class="py-lineno">278</tt>  <tt class="py-line"><tt class="py-docstring">        Only good for a game where only the player can hurt things.</tt> </tt>
-<a name="L279"></a><tt class="py-lineno">279</tt>  <tt class="py-line"><tt class="py-docstring">        To be used as an example or a debugging test only."""</tt> </tt>
-<a name="L280"></a><tt class="py-lineno">280</tt>  <tt class="py-line">        <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-<a name="L281"></a><tt class="py-lineno">281</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">ent</tt><tt class="py-op">,</tt><tt id="link-37" class="py-name"><a title="lib.entity.Player" class="py-name" href="#" onclick="return doclink('link-37', 'Player', 'link-5');">Player</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L282"></a><tt class="py-lineno">282</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dead</tt><tt class="py-op">:</tt> </tt>
-<a name="L283"></a><tt class="py-lineno">283</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">hp</tt> <tt class="py-op">-=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L284"></a><tt class="py-lineno">284</tt>  <tt class="py-line">                <tt class="py-name">first</tt> <tt class="py-op">=</tt> <tt class="py-string">"You hit the "</tt><tt class="py-op">+</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">name</tt><tt class="py-op">+</tt><tt class="py-string">". "</tt> </tt>
-<a name="L285"></a><tt class="py-lineno">285</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-38" class="py-name" targets="Method lib.entity.NPC.checkHealth()=lib.entity.NPC-class.html#checkHealth"><a title="lib.entity.NPC.checkHealth" class="py-name" href="#" onclick="return doclink('link-38', 'checkHealth', 'link-38');">checkHealth</a></tt><tt class="py-op">(</tt><tt class="py-op">)</tt> </tt>
-<a name="L286"></a><tt class="py-lineno">286</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dead</tt><tt class="py-op">:</tt> </tt>
-<a name="L287"></a><tt class="py-lineno">287</tt>  <tt class="py-line">                    <tt class="py-name">first</tt> <tt class="py-op">+=</tt> <tt class="py-string">"It dies."</tt> </tt>
-<a name="L288"></a><tt class="py-lineno">288</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-39" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-39', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'solid'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L289"></a><tt class="py-lineno">289</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-40" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-40', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'liftable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L290"></a><tt class="py-lineno">290</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">char</tt> <tt class="py-op">=</tt> <tt class="py-string">"%"</tt> </tt>
-<a name="L291"></a><tt class="py-lineno">291</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">blocks</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
-<a name="L292"></a><tt class="py-lineno">292</tt>  <tt class="py-line">                <tt class="py-name">ret</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">first</tt><tt class="py-op">)</tt> </tt>
-<a name="L293"></a><tt class="py-lineno">293</tt>  <tt class="py-line">            <tt class="py-keyword">else</tt><tt class="py-op">:</tt> </tt>
-<a name="L294"></a><tt class="py-lineno">294</tt>  <tt class="py-line">                <tt class="py-name">first</tt> <tt class="py-op">=</tt> <tt class="py-string">"You trample the corpse."</tt> </tt>
-<a name="L295"></a><tt class="py-lineno">295</tt>  <tt class="py-line">                <tt class="py-name">ret</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">first</tt><tt class="py-op">)</tt> </tt>
-<a name="L296"></a><tt class="py-lineno">296</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ret</tt> </tt>
-</div><a name="L297"></a><tt class="py-lineno">297</tt>  <tt class="py-line"> </tt>
-<a name="Beast.update"></a><div id="Beast.update-def"><a name="L298"></a><tt class="py-lineno">298</tt> <a class="py-toggle" href="#" id="Beast.update-toggle" onclick="return toggle('Beast.update');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Beast-class.html#update">update</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Beast.update-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Beast.update-expanded"><a name="L299"></a><tt class="py-lineno">299</tt>  <tt class="py-line">        <tt class="py-docstring">"""Walks around in circles and regenerates a hitpoint on random chance."""</tt> </tt>
-<a name="L300"></a><tt class="py-lineno">300</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">dead</tt><tt class="py-op">:</tt> </tt>
-<a name="L301"></a><tt class="py-lineno">301</tt>  <tt class="py-line">            <tt class="py-name">dx</tt> <tt class="py-op">=</tt> <tt class="py-name">random</tt><tt class="py-op">.</tt><tt class="py-name">randint</tt><tt class="py-op">(</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L302"></a><tt class="py-lineno">302</tt>  <tt class="py-line">            <tt class="py-name">dy</tt> <tt class="py-op">=</tt> <tt class="py-name">random</tt><tt class="py-op">.</tt><tt class="py-name">randint</tt><tt class="py-op">(</tt><tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L303"></a><tt class="py-lineno">303</tt>  <tt class="py-line">            <tt class="py-name">regen</tt> <tt class="py-op">=</tt> <tt class="py-name">random</tt><tt class="py-op">.</tt><tt class="py-name">randint</tt><tt class="py-op">(</tt><tt class="py-number">0</tt><tt class="py-op">,</tt><tt class="py-number">50</tt><tt class="py-op">)</tt> </tt>
-<a name="L304"></a><tt class="py-lineno">304</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">regen</tt> <tt class="py-op">==</tt> <tt class="py-number">1</tt> <tt class="py-keyword">and</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">hp</tt><tt class="py-op">&lt;</tt><tt class="py-number">5</tt><tt class="py-op">:</tt> </tt>
-<a name="L305"></a><tt class="py-lineno">305</tt>  <tt class="py-line">                <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">hp</tt> <tt class="py-op">+=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L306"></a><tt class="py-lineno">306</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-41" class="py-name" targets="Method lib.entity.Entity.relMove()=lib.entity.Entity-class.html#relMove"><a title="lib.entity.Entity.relMove" class="py-name" href="#" onclick="return doclink('link-41', 'relMove', 'link-41');">relMove</a></tt><tt class="py-op">(</tt><tt class="py-name">dx</tt><tt class="py-op">,</tt><tt class="py-name">dy</tt><tt class="py-op">)</tt> </tt>
-</div></div><a name="L307"></a><tt class="py-lineno">307</tt>  <tt class="py-line"> </tt>
-<a name="Trap"></a><div id="Trap-def"><a name="L308"></a><tt class="py-lineno">308</tt> <a class="py-toggle" href="#" id="Trap-toggle" onclick="return toggle('Trap');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Trap-class.html">Trap</a><tt class="py-op">(</tt><tt class="py-base-class">Entity</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Trap-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Trap-expanded"><a name="L309"></a><tt class="py-lineno">309</tt>  <tt class="py-line">    <tt class="py-docstring">"""Base class for solid, collidable, unliftable, unusable ents for subclass."""</tt> </tt>
-<a name="L310"></a><tt class="py-lineno">310</tt>  <tt class="py-line"> </tt>
-<a name="Trap.__init__"></a><div id="Trap.__init__-def"><a name="L311"></a><tt class="py-lineno">311</tt> <a class="py-toggle" href="#" id="Trap.__init__-toggle" onclick="return toggle('Trap.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Trap-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Trap.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Trap.__init__-expanded"><a name="L312"></a><tt class="py-lineno">312</tt>  <tt class="py-line">        <tt id="link-42" class="py-name"><a title="lib.entity.Entity" class="py-name" href="#" onclick="return doclink('link-42', 'Entity', 'link-0');">Entity</a></tt><tt class="py-op">.</tt><tt id="link-43" class="py-name"><a title="lib.base.Application.__init__
-lib.entity.Beast.__init__
-lib.entity.Door.__init__
-lib.entity.Entity.__init__
-lib.entity.EntityMan.__init__
-lib.entity.Item.__init__
-lib.entity.NPC.__init__
-lib.entity.Player.__init__
-lib.entity.Talker.__init__
-lib.entity.Tile.__init__
-lib.entity.Trap.__init__
-lib.graphics.BorderedMessageWindow.__init__
-lib.graphics.BorderedWindow.__init__
-lib.graphics.ChoiceWindow.__init__
-lib.graphics.GridWindow.__init__
-lib.graphics.InputWindow.__init__
-lib.graphics.LayeredGameWindow.__init__
-lib.graphics.MultiChoiceWindow.__init__
-lib.graphics.RootWindow.__init__
-lib.graphics.StatusWindow.__init__
-lib.graphics.Window.__init__
-lib.graphics.WindowManager.__init__
-lib.interface.KeyboardListener.__init__
-lib.map.Generator.__init__
-lib.map.Map.__init__
-lib.map.Tile.__init__
-lib.object.Camera.__init__
-lib.object.Object.__init__
-lib.time.Scheduler.__init__" class="py-name" href="#" onclick="return doclink('link-43', '__init__', 'link-18');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-<a name="L313"></a><tt class="py-lineno">313</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-44" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-44', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'solid'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L314"></a><tt class="py-lineno">314</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-45" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-45', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'collidable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L315"></a><tt class="py-lineno">315</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-46" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-46', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'liftable'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L316"></a><tt class="py-lineno">316</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-47" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-47', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'usable'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-</div></div><a name="L317"></a><tt class="py-lineno">317</tt>  <tt class="py-line"> </tt>
-<a name="L318"></a><tt class="py-lineno">318</tt>  <tt class="py-line"> </tt>
-<a name="Door"></a><div id="Door-def"><a name="L319"></a><tt class="py-lineno">319</tt> <a class="py-toggle" href="#" id="Door-toggle" onclick="return toggle('Door');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Door-class.html">Door</a><tt class="py-op">(</tt><tt class="py-base-class">Trap</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Door-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Door-expanded"><a name="L320"></a><tt class="py-lineno">320</tt>  <tt class="py-line">    <tt class="py-docstring">"""Simple door class openable only by player, subclass of Trap."""</tt> </tt>
-<a name="L321"></a><tt class="py-lineno">321</tt>  <tt class="py-line"> </tt>
-<a name="Door.__init__"></a><div id="Door.__init__-def"><a name="L322"></a><tt class="py-lineno">322</tt> <a class="py-toggle" href="#" id="Door.__init__-toggle" onclick="return toggle('Door.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Door-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Door.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Door.__init__-expanded"><a name="L323"></a><tt class="py-lineno">323</tt>  <tt class="py-line">        <tt id="link-48" class="py-name"><a title="lib.entity.Trap" class="py-name" href="#" onclick="return doclink('link-48', 'Trap', 'link-6');">Trap</a></tt><tt class="py-op">.</tt><tt id="link-49" class="py-name"><a title="lib.base.Application.__init__
-lib.entity.Beast.__init__
-lib.entity.Door.__init__
-lib.entity.Entity.__init__
-lib.entity.EntityMan.__init__
-lib.entity.Item.__init__
-lib.entity.NPC.__init__
-lib.entity.Player.__init__
-lib.entity.Talker.__init__
-lib.entity.Tile.__init__
-lib.entity.Trap.__init__
-lib.graphics.BorderedMessageWindow.__init__
-lib.graphics.BorderedWindow.__init__
-lib.graphics.ChoiceWindow.__init__
-lib.graphics.GridWindow.__init__
-lib.graphics.InputWindow.__init__
-lib.graphics.LayeredGameWindow.__init__
-lib.graphics.MultiChoiceWindow.__init__
-lib.graphics.RootWindow.__init__
-lib.graphics.StatusWindow.__init__
-lib.graphics.Window.__init__
-lib.graphics.WindowManager.__init__
-lib.interface.KeyboardListener.__init__
-lib.map.Generator.__init__
-lib.map.Map.__init__
-lib.map.Tile.__init__
-lib.object.Camera.__init__
-lib.object.Object.__init__
-lib.time.Scheduler.__init__" class="py-name" href="#" onclick="return doclink('link-49', '__init__', 'link-18');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-<a name="L324"></a><tt class="py-lineno">324</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">open</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
-</div><a name="L325"></a><tt class="py-lineno">325</tt>  <tt class="py-line"> </tt>
-<a name="Door.collidedWith"></a><div id="Door.collidedWith-def"><a name="L326"></a><tt class="py-lineno">326</tt> <a class="py-toggle" href="#" id="Door.collidedWith-toggle" onclick="return toggle('Door.collidedWith');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Door-class.html#collidedWith">collidedWith</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Door.collidedWith-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Door.collidedWith-expanded"><a name="L327"></a><tt class="py-lineno">327</tt>  <tt class="py-line">        <tt class="py-docstring">"""Collision function only for player, until opened."""</tt> </tt>
-<a name="L328"></a><tt class="py-lineno">328</tt>  <tt class="py-line">        <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-<a name="L329"></a><tt class="py-lineno">329</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">ent</tt><tt class="py-op">,</tt><tt id="link-50" class="py-name"><a title="lib.entity.Player" class="py-name" href="#" onclick="return doclink('link-50', 'Player', 'link-5');">Player</a></tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">open</tt><tt class="py-op">:</tt> </tt>
-<a name="L330"></a><tt class="py-lineno">330</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">open</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L331"></a><tt class="py-lineno">331</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">char</tt> <tt class="py-op">=</tt> <tt class="py-string">' '</tt> </tt>
-<a name="L332"></a><tt class="py-lineno">332</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">blocks</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
-<a name="L333"></a><tt class="py-lineno">333</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">tile</tt><tt class="py-op">.</tt><tt class="py-name">blocksLight</tt> <tt class="py-op">=</tt> <tt class="py-number">0</tt> </tt>
-<a name="L334"></a><tt class="py-lineno">334</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-51" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-51', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'solid'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L335"></a><tt class="py-lineno">335</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-52" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-52', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'collidable'</tt><tt class="py-op">,</tt><tt class="py-number">0</tt><tt class="py-op">)</tt> </tt>
-<a name="L336"></a><tt class="py-lineno">336</tt>  <tt class="py-line">            <tt class="py-name">ret</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-string">'You open the door.'</tt><tt class="py-op">)</tt> </tt>
-<a name="L337"></a><tt class="py-lineno">337</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ret</tt> </tt>
-</div></div><a name="L338"></a><tt class="py-lineno">338</tt>  <tt class="py-line"> </tt>
-<a name="L339"></a><tt class="py-lineno">339</tt>  <tt class="py-line"> </tt>
-<a name="Player"></a><div id="Player-def"><a name="L340"></a><tt class="py-lineno">340</tt> <a class="py-toggle" href="#" id="Player-toggle" onclick="return toggle('Player');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Player-class.html">Player</a><tt class="py-op">(</tt><tt class="py-base-class">NPC</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Player-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Player-expanded"><a name="L341"></a><tt class="py-lineno">341</tt>  <tt class="py-line">    <tt class="py-docstring">"""Simple player class."""</tt> </tt>
-<a name="L342"></a><tt class="py-lineno">342</tt>  <tt class="py-line"> </tt>
-<a name="Player.__init__"></a><div id="Player.__init__-def"><a name="L343"></a><tt class="py-lineno">343</tt> <a class="py-toggle" href="#" id="Player.__init__-toggle" onclick="return toggle('Player.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Player-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Player.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Player.__init__-expanded"><a name="L344"></a><tt class="py-lineno">344</tt>  <tt class="py-line">        <tt id="link-53" class="py-name"><a title="lib.entity.NPC" class="py-name" href="#" onclick="return doclink('link-53', 'NPC', 'link-3');">NPC</a></tt><tt class="py-op">.</tt><tt id="link-54" class="py-name"><a title="lib.base.Application.__init__
-lib.entity.Beast.__init__
-lib.entity.Door.__init__
-lib.entity.Entity.__init__
-lib.entity.EntityMan.__init__
-lib.entity.Item.__init__
-lib.entity.NPC.__init__
-lib.entity.Player.__init__
-lib.entity.Talker.__init__
-lib.entity.Tile.__init__
-lib.entity.Trap.__init__
-lib.graphics.BorderedMessageWindow.__init__
-lib.graphics.BorderedWindow.__init__
-lib.graphics.ChoiceWindow.__init__
-lib.graphics.GridWindow.__init__
-lib.graphics.InputWindow.__init__
-lib.graphics.LayeredGameWindow.__init__
-lib.graphics.MultiChoiceWindow.__init__
-lib.graphics.RootWindow.__init__
-lib.graphics.StatusWindow.__init__
-lib.graphics.Window.__init__
-lib.graphics.WindowManager.__init__
-lib.interface.KeyboardListener.__init__
-lib.map.Generator.__init__
-lib.map.Map.__init__
-lib.map.Tile.__init__
-lib.object.Camera.__init__
-lib.object.Object.__init__
-lib.time.Scheduler.__init__" class="py-name" href="#" onclick="return doclink('link-54', '__init__', 'link-18');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-</div><a name="L345"></a><tt class="py-lineno">345</tt>  <tt class="py-line"> </tt>
-<a name="Player.pickUp"></a><div id="Player.pickUp-def"><a name="L346"></a><tt class="py-lineno">346</tt> <a class="py-toggle" href="#" id="Player.pickUp-toggle" onclick="return toggle('Player.pickUp');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Player-class.html#pickUp">pickUp</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">objs</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Player.pickUp-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Player.pickUp-expanded"><a name="L347"></a><tt class="py-lineno">347</tt>  <tt class="py-line">        <tt class="py-docstring">"""Pick up object, return list of messages to display."""</tt> </tt>
-<a name="L348"></a><tt class="py-lineno">348</tt>  <tt class="py-line">        <tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-string">'You pick up '</tt> </tt>
-<a name="L349"></a><tt class="py-lineno">349</tt>  <tt class="py-line">        <tt class="py-keyword">for</tt> <tt class="py-name">obj</tt> <tt class="py-keyword">in</tt> <tt class="py-name">objs</tt><tt class="py-op">:</tt> </tt>
-<a name="L350"></a><tt class="py-lineno">350</tt>  <tt class="py-line">            <tt class="py-name">x</tt> <tt class="py-op">+=</tt> <tt class="py-string">'the '</tt><tt class="py-op">+</tt><tt class="py-name">obj</tt><tt class="py-op">.</tt><tt class="py-name">name</tt><tt class="py-op">+</tt><tt class="py-string">', '</tt> </tt>
-<a name="L351"></a><tt class="py-lineno">351</tt>  <tt class="py-line">            <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-55" class="py-name"><a title="lib.entity.Entity.containObject" class="py-name" href="#" onclick="return doclink('link-55', 'containObject', 'link-33');">containObject</a></tt><tt class="py-op">(</tt><tt class="py-name">obj</tt><tt class="py-op">)</tt> </tt>
-<a name="L352"></a><tt class="py-lineno">352</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">len</tt><tt class="py-op">(</tt><tt class="py-name">objs</tt><tt class="py-op">)</tt> <tt class="py-op">!=</tt> <tt class="py-number">0</tt><tt class="py-op">:</tt> </tt>
-<a name="L353"></a><tt class="py-lineno">353</tt>  <tt class="py-line">            <tt class="py-name">x</tt> <tt class="py-op">=</tt> <tt class="py-name">x</tt><tt class="py-op">[</tt><tt class="py-op">:</tt><tt class="py-op">-</tt><tt class="py-number">2</tt><tt class="py-op">]</tt> <tt class="py-op">+</tt> <tt class="py-string">'.'</tt> </tt>
-<a name="L354"></a><tt class="py-lineno">354</tt>  <tt class="py-line">            <tt class="py-keyword">return</tt> <tt class="py-op">[</tt><tt class="py-name">x</tt><tt class="py-op">]</tt> </tt>
-<a name="L355"></a><tt class="py-lineno">355</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-</div><a name="L356"></a><tt class="py-lineno">356</tt>  <tt class="py-line"> </tt>
-<a name="Player.collidedWith"></a><div id="Player.collidedWith-def"><a name="L357"></a><tt class="py-lineno">357</tt> <a class="py-toggle" href="#" id="Player.collidedWith-toggle" onclick="return toggle('Player.collidedWith');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Player-class.html#collidedWith">collidedWith</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Player.collidedWith-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Player.collidedWith-expanded"><a name="L358"></a><tt class="py-lineno">358</tt>  <tt class="py-line">        <tt class="py-docstring">"""Collision method has every NPC or subclass ignore player."""</tt> </tt>
-<a name="L359"></a><tt class="py-lineno">359</tt>  <tt class="py-line">        <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-<a name="L360"></a><tt class="py-lineno">360</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">ent</tt><tt class="py-op">,</tt><tt id="link-56" class="py-name"><a title="lib.entity.NPC" class="py-name" href="#" onclick="return doclink('link-56', 'NPC', 'link-3');">NPC</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L361"></a><tt class="py-lineno">361</tt>  <tt class="py-line">            <tt class="py-name">ret</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-string">"The "</tt><tt class="py-op">+</tt><tt class="py-name">ent</tt><tt class="py-op">.</tt><tt class="py-name">name</tt><tt class="py-op">+</tt><tt class="py-string">" brushes against you, then walks away."</tt><tt class="py-op">)</tt> </tt>
-<a name="L362"></a><tt class="py-lineno">362</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ret</tt> </tt>
-</div></div><a name="L363"></a><tt class="py-lineno">363</tt>  <tt class="py-line"> </tt>
-<a name="Talker"></a><div id="Talker-def"><a name="L364"></a><tt class="py-lineno">364</tt> <a class="py-toggle" href="#" id="Talker-toggle" onclick="return toggle('Talker');">-</a><tt class="py-line"><tt class="py-keyword">class</tt> <a class="py-def-name" href="lib.entity.Talker-class.html">Talker</a><tt class="py-op">(</tt><tt class="py-base-class">Item</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Talker-collapsed" style="display:none;" pad="+++" indent="++++"></div><div id="Talker-expanded"><a name="L365"></a><tt class="py-lineno">365</tt>  <tt class="py-line">    <tt class="py-docstring">"""Simple entity that prints a message on collision, collidable by default.</tt> </tt>
-<a name="L366"></a><tt class="py-lineno">366</tt>  <tt class="py-line"><tt class="py-docstring">    </tt> </tt>
-<a name="L367"></a><tt class="py-lineno">367</tt>  <tt class="py-line"><tt class="py-docstring">    Use setMessage to set the message it prints after creating.</tt> </tt>
-<a name="L368"></a><tt class="py-lineno">368</tt>  <tt class="py-line"><tt class="py-docstring">    Use setToggled to set if it always fires, or just the first time."""</tt> </tt>
-<a name="L369"></a><tt class="py-lineno">369</tt>  <tt class="py-line"> </tt>
-<a name="Talker.__init__"></a><div id="Talker.__init__-def"><a name="L370"></a><tt class="py-lineno">370</tt> <a class="py-toggle" href="#" id="Talker.__init__-toggle" onclick="return toggle('Talker.__init__');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Talker-class.html#__init__">__init__</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">x</tt><tt class="py-op">,</tt><tt class="py-param">y</tt><tt class="py-op">,</tt><tt class="py-param">tile</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Talker.__init__-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Talker.__init__-expanded"><a name="L371"></a><tt class="py-lineno">371</tt>  <tt class="py-line">        <tt class="py-docstring">"""Initialisation method.</tt> </tt>
-<a name="L372"></a><tt class="py-lineno">372</tt>  <tt class="py-line"><tt class="py-docstring"></tt> </tt>
-<a name="L373"></a><tt class="py-lineno">373</tt>  <tt class="py-line"><tt class="py-docstring">        Can't set message or firing type during initialisation, call afterwards."""</tt> </tt>
-<a name="L374"></a><tt class="py-lineno">374</tt>  <tt class="py-line">        <tt id="link-57" class="py-name"><a title="lib.entity.Item" class="py-name" href="#" onclick="return doclink('link-57', 'Item', 'link-1');">Item</a></tt><tt class="py-op">.</tt><tt id="link-58" class="py-name"><a title="lib.base.Application.__init__
-lib.entity.Beast.__init__
-lib.entity.Door.__init__
-lib.entity.Entity.__init__
-lib.entity.EntityMan.__init__
-lib.entity.Item.__init__
-lib.entity.NPC.__init__
-lib.entity.Player.__init__
-lib.entity.Talker.__init__
-lib.entity.Tile.__init__
-lib.entity.Trap.__init__
-lib.graphics.BorderedMessageWindow.__init__
-lib.graphics.BorderedWindow.__init__
-lib.graphics.ChoiceWindow.__init__
-lib.graphics.GridWindow.__init__
-lib.graphics.InputWindow.__init__
-lib.graphics.LayeredGameWindow.__init__
-lib.graphics.MultiChoiceWindow.__init__
-lib.graphics.RootWindow.__init__
-lib.graphics.StatusWindow.__init__
-lib.graphics.Window.__init__
-lib.graphics.WindowManager.__init__
-lib.interface.KeyboardListener.__init__
-lib.map.Generator.__init__
-lib.map.Map.__init__
-lib.map.Tile.__init__
-lib.object.Camera.__init__
-lib.object.Object.__init__
-lib.time.Scheduler.__init__" class="py-name" href="#" onclick="return doclink('link-58', '__init__', 'link-18');">__init__</a></tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">,</tt><tt class="py-name">x</tt><tt class="py-op">,</tt><tt class="py-name">y</tt><tt class="py-op">,</tt><tt class="py-name">tile</tt><tt class="py-op">)</tt> </tt>
-<a name="L375"></a><tt class="py-lineno">375</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt id="link-59" class="py-name"><a title="lib.entity.Entity.setAttribute" class="py-name" href="#" onclick="return doclink('link-59', 'setAttribute', 'link-11');">setAttribute</a></tt><tt class="py-op">(</tt><tt class="py-string">'collidable'</tt><tt class="py-op">,</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> </tt>
-<a name="L376"></a><tt class="py-lineno">376</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">msg</tt> <tt class="py-op">=</tt> <tt class="py-string">"Generic message. Something went wrong."</tt> </tt>
-<a name="L377"></a><tt class="py-lineno">377</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fired</tt> <tt class="py-op">=</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt> </tt>
-</div><a name="L378"></a><tt class="py-lineno">378</tt>  <tt class="py-line"> </tt>
-<a name="Talker.setMessage"></a><div id="Talker.setMessage-def"><a name="L379"></a><tt class="py-lineno">379</tt> <a class="py-toggle" href="#" id="Talker.setMessage-toggle" onclick="return toggle('Talker.setMessage');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Talker-class.html#setMessage">setMessage</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">str</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Talker.setMessage-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Talker.setMessage-expanded"><a name="L380"></a><tt class="py-lineno">380</tt>  <tt class="py-line">        <tt class="py-docstring">"""Set message to be printed, single line by default."""</tt> </tt>
-<a name="L381"></a><tt class="py-lineno">381</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">msg</tt> <tt class="py-op">=</tt> <tt class="py-name">str</tt> </tt>
-</div><a name="L382"></a><tt class="py-lineno">382</tt>  <tt class="py-line"> </tt>
-<a name="Talker.setToggled"></a><div id="Talker.setToggled-def"><a name="L383"></a><tt class="py-lineno">383</tt> <a class="py-toggle" href="#" id="Talker.setToggled-toggle" onclick="return toggle('Talker.setToggled');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Talker-class.html#setToggled">setToggled</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">nr</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Talker.setToggled-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Talker.setToggled-expanded"><a name="L384"></a><tt class="py-lineno">384</tt>  <tt class="py-line">        <tt class="py-docstring">"""Set firing type, -1 means toggle every time, 0 means fire once."""</tt> </tt>
-<a name="L385"></a><tt class="py-lineno">385</tt>  <tt class="py-line">        <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fired</tt> <tt class="py-op">=</tt> <tt class="py-name">nr</tt> </tt>
-</div><a name="L386"></a><tt class="py-lineno">386</tt>  <tt class="py-line"> </tt>
-<a name="Talker.collidedWith"></a><div id="Talker.collidedWith-def"><a name="L387"></a><tt class="py-lineno">387</tt> <a class="py-toggle" href="#" id="Talker.collidedWith-toggle" onclick="return toggle('Talker.collidedWith');">-</a><tt class="py-line">    <tt class="py-keyword">def</tt> <a class="py-def-name" href="lib.entity.Talker-class.html#collidedWith">collidedWith</a><tt class="py-op">(</tt><tt class="py-param">self</tt><tt class="py-op">,</tt><tt class="py-param">ent</tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-</div><div id="Talker.collidedWith-collapsed" style="display:none;" pad="+++" indent="++++++++"></div><div id="Talker.collidedWith-expanded"><a name="L388"></a><tt class="py-lineno">388</tt>  <tt class="py-line">        <tt class="py-docstring">"""Default collision method that only prints the message for a Player."""</tt> </tt>
-<a name="L389"></a><tt class="py-lineno">389</tt>  <tt class="py-line">        <tt class="py-name">ret</tt> <tt class="py-op">=</tt> <tt class="py-op">[</tt><tt class="py-op">]</tt> </tt>
-<a name="L390"></a><tt class="py-lineno">390</tt>  <tt class="py-line">        <tt class="py-keyword">if</tt> <tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fired</tt> <tt class="py-op">==</tt> <tt class="py-number">0</tt> <tt class="py-keyword">or</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fired</tt> <tt class="py-op">==</tt> <tt class="py-op">-</tt><tt class="py-number">1</tt><tt class="py-op">)</tt> <tt class="py-keyword">and</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">contained</tt><tt class="py-op">:</tt> </tt>
-<a name="L391"></a><tt class="py-lineno">391</tt>  <tt class="py-line">            <tt class="py-keyword">if</tt> <tt class="py-name">isinstance</tt><tt class="py-op">(</tt><tt class="py-name">ent</tt><tt class="py-op">,</tt><tt id="link-60" class="py-name"><a title="lib.entity.Player" class="py-name" href="#" onclick="return doclink('link-60', 'Player', 'link-5');">Player</a></tt><tt class="py-op">)</tt><tt class="py-op">:</tt> </tt>
-<a name="L392"></a><tt class="py-lineno">392</tt>  <tt class="py-line">                <tt class="py-name">ret</tt><tt class="py-op">.</tt><tt class="py-name">append</tt><tt class="py-op">(</tt><tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">msg</tt><tt class="py-op">)</tt> </tt>
-<a name="L393"></a><tt class="py-lineno">393</tt>  <tt class="py-line">                <tt class="py-keyword">if</tt> <tt class="py-keyword">not</tt> <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fired</tt><tt class="py-op">:</tt> </tt>
-<a name="L394"></a><tt class="py-lineno">394</tt>  <tt class="py-line">                    <tt class="py-name">self</tt><tt class="py-op">.</tt><tt class="py-name">fired</tt> <tt class="py-op">=</tt> <tt class="py-number">1</tt> </tt>
-<a name="L395"></a><tt class="py-lineno">395</tt>  <tt class="py-line">        <tt class="py-keyword">return</tt> <tt class="py-name">ret</tt> </tt>
-</div></div><a name="L396"></a><tt class="py-lineno">396</tt>  <tt class="py-line"> </tt><script type="text/javascript">
-<!--
-expandto(location.href);
-// -->
-</script>
-</pre>
-<br />
-<!-- ==================== NAVIGATION BAR ==================== -->
-<table class="navbar" border="0" width="100%" cellpadding="0"
-       bgcolor="#a0c0ff" cellspacing="0">
-  <tr valign="middle">
-  <!-- Home link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="lib-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Tree link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Index link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Help link -->
-      <th>&nbsp;&nbsp;&nbsp;<a
-        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
-
-  <!-- Project homepage -->
-      <th class="navbar" align="right" width="100%">
-        <table border="0" cellpadding="0" cellspacing="0">
-          <tr><th class="navbar" align="center"
-            ><a class="navbar" target="_top" href="remike.homelinux.org">pYendor</a></th>
-          </tr></table></th>
-  </tr>
-</table>
-<table border="0" cellpadding="0" cellspacing="0" width="100%%">
-  <tr>
-    <td align="left" class="footer">
-    Generated by Epydoc 3.0.1 on Tue Aug  9 14:31:09 2011
-    </td>
-    <td align="right" class="footer">
-      <a target="mainFrame" href="http://epydoc.sourceforge.net"
-        >http://epydoc.sourceforge.net</a>
-    </td>
-  </tr>
-</table>
-
-<script type="text/javascript">
-  <!--
-  // Private objects are initially displayed (because if
-  // javascript is turned off then we want them to be
-  // visible); but by default, we want to hide them.  So hide
-  // them unless we have a cookie that says to show them.
-  checkCookie();
-  // -->
-</script>
-</body>
-</html>

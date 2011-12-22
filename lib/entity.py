@@ -57,7 +57,7 @@ class Entity:
     def get_id(self):
         if self.id is not None:
             return self.id
-        raise Exception  # TODO: Add exceptions!
+        raise IDNotAssignedError
 
     def get_attribute(self, att):
         """Return wanted attribute, or None."""
@@ -172,3 +172,13 @@ class Camera(Entity):
     def sync_camera(self, pid):
         """Try to move to player's location."""
         self.parent.try_entity_move_to_entity(self.id,pid)
+
+
+
+class EntityError(Entity):
+    """Base class for entity errors."""
+    pass
+
+class IDNotAssignedError(EntityError):
+    """Raised when an entity was asked to give its ID, but it has none assigned."""
+    pass

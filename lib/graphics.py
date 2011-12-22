@@ -313,8 +313,6 @@ class ChoiceWindow(BorderedMessageWindow):
     
     def enter(self):
         """Returns currently selected choice."""
-        if self.highlight is None:
-            raise Exception  # TODO: Exception!
         return self.highlight
 
     def tick(self):
