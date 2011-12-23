@@ -1,3 +1,4 @@
+import random  # TODO: add libtcod RNG and customisable RNG system.
 import lib.graphics as graphics
 import lib.map as map
 import lib.entity as entity
@@ -15,7 +16,7 @@ class Application:
 
     """
     
-    version = (0, 5, 0, 'a')
+    version = (0, 5, 0, 'b')
     
     def __init__(self, name, w, h):
         self.exit = 0
@@ -85,9 +86,23 @@ class Application:
             self.add_binding(key,bind)
 
     def generate_map(self,w,h,set):
-        """Generates new map and adds it, using BasicGenerator from map."""
+        """Generates new map using BasicGenerator, then generates basic entities."""
         self.add_map(map=map.BasicGenerator(w,h).gen_map(),
                     set=set)
+
+        # TODO: better entity generation
+        m = self.get_map()
+        m = m.get_rect(0,0,m.width,m.height)
+        s = "#$*()[]"
+        for i in range(len(m)):
+            for j in range(len(m[i])):
+                if not m[i][j][0]:
+                    r = random.randint(0,500)
+                    if r < 5:
+                        id = self.add_entity(i, j)
+                        ent = self.get_ent(id)
+                        ent.char = s[random.randint(0,len(s)-1)]
+                        ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
 
     def add_map(self,file=0,map=0,set=0):
         """Add map to stack from file or object."""
@@ -202,6 +217,8 @@ class Application:
         else:
             self.entity_schedules[id] = None
         self.entity_pos[id] = (x, y)
+
+        self.entity_cur_id += 1
         return id
 
     def place_player(self,delay):
@@ -286,6 +303,14 @@ class Application:
         win.update_layer(0,tiles)
 
         tiles = [ ]
+        for id in self.entity_list.iterkeys():
+            if self.entity_list[id].drawn:
+                tx, ty = self.get_ent_pos(id)
+                ent = self.get_ent(id)
+                tiles.append([tx-x+cx, ty-y+cy, (0,0,0), ent.char, ent.fgcol, 0])
+        win.update_layer(4,tiles)
+
+        tiles = [ ]
         pid = self.get_player()
         if pid is not None:
             tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
@@ -294,12 +319,12 @@ class Application:
     def update(self):
         """Update function, called every tick."""
         if self.time_passing:
+            self.scheduler.tick()
             if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
                 self.update_game_window()
             if self.msg_win is not None:
                 ticks = self.scheduler.ticks
                 self.add_messages(["Ticks: "+str(ticks)])
-            self.scheduler.tick()
         self.win_man.draw_all()
 
         #input

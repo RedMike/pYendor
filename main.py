@@ -49,8 +49,8 @@ app.add_choice_menu(["Main menu: "], ("Start Game", "Quit", "Recursion"), menu_c
 while not app.exit:
     app.update()
     if app.get_player() is not None:
-        if app.get_ent_pos(app.get_player())[0] > 20 and not app.menu_stack:
-            app.add_choice_menu(["Your X position was over 20.", "This menu pops up when that happens:"],
+        if app.get_ent_pos(app.get_player())[0] > 50 and not app.menu_stack:
+            app.add_choice_menu(["Your X position was over 50.", "This menu pops up when that happens:"],
                                 ("Start Game", "Quit"), menu_callback)
 
     
