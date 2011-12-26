@@ -1,13 +1,13 @@
 import random  # TODO: add libtcod RNG and customisable RNG system.
 import lib.graphics as graphics
 import lib.map as map
-import lib.entity as entity
+import lib.entity_manager as entity_man
 import lib.interface as interface
 import lib.time as time
 
 
 
-class Application:
+class Application(object):
     """
     Main application class.
 
@@ -27,21 +27,9 @@ class Application:
         
         # All entities are scheduled in one global scheduler.
         self.scheduler = time.Scheduler()
-                
-        # Entities are kept in a dictionary as an id. Keys are a tuple of (x, y).
-        # This allows for fast checking for entities in tiles, and raises
-        # only a slight problem in keeping them in sync. Picking a class for
-        # add_entity is done via the entity manager transparently. Send a string
-        # like 'item'. ID lookup is in entity_list. Scheduling IDs are in entity_schedules.
-        # If the value in entity_pos is a single int, it is an ID and the entity is CONTAINED
-        # by that other entity. If you call get_ent_pos, it will return the position of the
-        # container, recursing up to the top-level entity. Call get_ent_contain returns the ID
-        # of the containing entity, or None if not contained.
-        self.entity_lookup = entity.EntityLookup()
-        self.entity_list = { }
-        self.entity_pos = { }
-        self.entity_schedules = { }
-        self.entity_cur_id = 0
+
+        # Entity management done by EntityManager.
+        self.entity_manager = entity_man.EntityManager()
 
         # Player and camera entities are saved so that you could switch cameras
         # OR players quite easily.
@@ -215,18 +203,12 @@ class Application:
 
         Set delay to None for no scheduling.
         """
-        ent = self.entity_lookup.get_class(type)(self)
-        ent.set_attribute('delay',delay)
-        id = self.entity_cur_id
-        ent.id = id
-        self.entity_list[id] = ent
+        id = self.entity_manager.add_entity(self, type)
+        self.entity_manager.set_pos(id, (x, y))
+        self.entity_manager.set_attribute(id, 'delay', delay)
         if delay is not None:
-            self.entity_schedules[id] = self.scheduler.add_schedule((ent.update,(),delay))
-        else:
-            self.entity_schedules[id] = None
-        self.entity_pos[id] = (x, y)
-
-        self.entity_cur_id += 1
+            self.entity_manager.schedule(self.scheduler, id)
+        self.entity_manager.get_ent(id).id = id
         return id
 
     def place_player(self,delay):
@@ -242,19 +224,16 @@ class Application:
                     x, y = i, j
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
-        self.entity_schedules[cam] = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
-        self.scheduler.set_dominant(self.entity_schedules[pid])
+        sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
+        self.entity_manager.set_sched(cam, sch_id)
+        self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
         self.player = pid
         self.camera = cam
         return pid
 
     def get_ent(self, id):
         """Raises IDNotFound if entity doesn't exist and NullID if passed None."""
-        if id not in self.entity_list:
-            raise IDNotFound
-        if id is None:
-            raise NullID
-        return self.entity_list[id]
+        return self.entity_manager.get_ent(id)
 
     def get_player(self):
         """Returns current player ID or None."""
@@ -265,10 +244,8 @@ class Application:
         return self.camera
 
     def get_ent_pos(self, id):
-        """Returns (x,y) based on ID, can raise IDNotFound."""
-        if id not in self.entity_list:
-            raise IDNotFound
-        return self.entity_pos[id]
+        """Returns (x,y) or id of container for entity, can raise IDNotFound."""
+        return self.entity_manager.get_pos(id)
 
     def destroy_ents(self):
         """Destroy all entities."""
@@ -295,7 +272,7 @@ class Application:
 
     def entity_move(self, id, x, y):
         """Directly move an entity, no checks; generally called by try_entity_move_*."""
-        self.entity_pos[id] = (x, y)
+        self.entity_manager.set_pos(id, (x,y))
 
     def update_game_window(self):
         """Default implementation of graphics updating, updates map and entities; doesn't redraw walls."""
@@ -315,8 +292,8 @@ class Application:
         win.update_layer(0,tiles)
 
         tiles = [ ]
-        for id in self.entity_list.iterkeys():
-            if self.entity_list[id].drawn:
+        for id in self.entity_manager.get_ids():
+            if self.entity_manager.get_ent(id).drawn:
                 tx, ty = self.get_ent_pos(id)
                 ent = self.get_ent(id)
                 tiles.append([tx-x+cx, ty-y+cy, (0,0,0), ent.char, ent.fgcol, 0])

@@ -9,37 +9,6 @@ import random
 #
 # Entity DOES NOT care about its position or graphical representation.
 
-class EntityLookup:
-    """Simple entity lookup class.
-
-    Subclass and replace get_class with own classes as needed.
-    Actual entity management is done in Application.
-    """
-
-    def __init__(self):
-        pass
-
-    def get_class(self,str):
-        """Returns a class as associated by lookup."""
-        ret = Entity
-        str = str.lower()
-        if str == "item":
-            ret = Item
-        elif str == "npc":
-            ret = NPC
-        elif str == "beast":
-            ret = Beast
-        elif str == "player":
-            ret = Player
-        elif str == "trap":
-            ret = Trap
-        elif str == "door":
-            ret = Door
-        elif str == "camera":
-            ret = Camera
-        return ret
-
-
 class Entity:
     """Base entity class.
 
@@ -181,7 +150,6 @@ class Camera(Entity):
     def sync_camera(self, pid):
         """Try to move to player's location."""
         self.parent.try_entity_move_to_entity(self.id,pid)
-
 
 
 class EntityError(Entity):

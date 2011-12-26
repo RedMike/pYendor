@@ -60,7 +60,7 @@ class Scheduler:
             for set in sets:
                 # run the function
                 set[0](*set[1])
-                self.add_schedule(set,1)
+                self.add_schedule(set,set[2])
                 if self.dominant == set:
                     done = 1
             if self.dominant is None:
