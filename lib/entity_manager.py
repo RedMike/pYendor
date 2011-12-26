@@ -55,6 +55,16 @@ class EntityManager(object):
             return ret
         return None
 
+    def get_in(self,ent):
+        """Returns list of ids of entities contained directly by ent or None."""
+        if ent in self.positions.itervalues():
+            ret = [ ]
+            for id in self.positions:
+                if self.positions[id] == ent:
+                    ret.append(id)
+            return ret
+        return None
+
     def get_pos(self,id):
         """Returns (x,y) or id of container for entity."""
         ent = self.get_ent(id)
@@ -107,7 +117,7 @@ class EntityManager(object):
     def set_pos(self, id, obj):
         """Sets the entity's position to the given obj; can be tuple (x, y), or id of other entity."""
         if isinstance(obj,int):
-            if self.get_ent(int) is None:
+            if self.get_ent(obj) is None:
                 raise IDNotFound
         self.positions[id] = obj
 

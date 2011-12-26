@@ -140,13 +140,23 @@ class Player(NPC):
         self.char = '@'
         self.fgcol = (255,255,255)
 
-class Camera(Entity):
-    """Simple camera class."""
+class Ethereal(Entity):
+    """Class for entities like cameras, with which you don't interact ingame."""
 
     def __init__(self, parent):
         Entity.__init__(self,parent)
         self.set_attribute('solid', 0)
+        self.set_attribute('liftable', 0)
+        self.set_attribute('collidable', 0)
+        self.set_attribute('usable', 0)
+        self.set_attribute('visible', 0)
         self.drawn = 0
+
+class Camera(Ethereal):
+    """Simple camera class."""
+
+    def __init__(self, parent):
+        Ethereal.__init__(self,parent)
 
     def sync_camera(self, pid):
         """Try to move to player's location."""

@@ -59,6 +59,8 @@ class Application(object):
                      ['s',[player.move,(0,1)]],
                      ['a',[player.move,(-1,0)]],
                      ['d',[player.move,(1,0)]],
+                     ['i',[self.print_player_inventory,()]],
+                     ['e',[self.player_pickup,()]],
                      ['q',[self.quit,()]] ]
             for set in temp:
                 key = set[0]
@@ -211,6 +213,7 @@ class Application(object):
         if delay is not None:
             self.entity_manager.schedule(self.scheduler, id)
         self.entity_manager.get_ent(id).id = id
+        self.entity_manager.get_ent(id).name += ' #'+str(id)
         return id
 
     def place_player(self,delay):
@@ -237,6 +240,14 @@ class Application(object):
         """Raises IDNotFound if entity doesn't exist and NullID if passed None."""
         return self.entity_manager.get_ent(id)
 
+    def get_ent_at(self, x, y):
+        """Returns list of entities on tile or None."""
+        return self.entity_manager.get_at(x, y)
+
+    def get_ent_in(self, obj):
+        """Returns list of entities contained by obj or None."""
+        return self.entity_manager.get_in(obj)
+
     def get_player(self):
         """Returns current player ID or None."""
         return self.player
@@ -248,6 +259,10 @@ class Application(object):
     def get_ent_pos(self, id):
         """Returns (x,y) or id of container for entity, can raise IDNotFound."""
         return self.entity_manager.get_pos(id)
+
+    def set_ent_pos(self, id, pos):
+        """Sets an entity's position as the object passed, tuple or int; pass the container id for contained ents."""
+        self.entity_manager.set_pos(id, pos)
 
     def destroy_ents(self):
         """Destroy all entities."""
@@ -262,7 +277,7 @@ class Application(object):
             if self.get_map().get_tile(x + ex, y + ey)[0]:
                 can_move = 0
             if self.get_ent(id).get_attribute('solid'):
-                ents = self.entity_manager.get_at(x + ex, y + ey)
+                ents = self.get_ent_at(x + ex, y + ey)
                 if ents is not None:
                     for ent in ents:
                         if self.get_ent(ent).get_attribute('solid'):
@@ -286,10 +301,39 @@ class Application(object):
 
     def player_pickup(self):
         """Attempt to have the player pick up everything on the tile he's on."""
-        pass
+        pl = self.get_player()
+        x, y = self.get_ent_pos(pl)
+        ents = self.get_ent_at(x, y)
+        msg = 'You pick up: '
+        count = 0
+        for id in ents:
+            if id is not self.get_player():
+                if self.get_ent(id).get_attribute('liftable'):
+                    msg += self.get_ent(id).name + ', '
+                    count += 1
+                    self.set_ent_pos(id,pl)
+        if count:
+            msg = msg[:-2] + '.'
+            self.add_messages([msg])
+
+    def print_player_inventory(self):
+        """Prints the player's inventory to the message window."""
+        pl = self.get_player()
+        ents = self.get_ent_in(pl)
+        if ents is not None:
+            msg = 'You currently have: '
+            for id in ents:
+                msg += self.get_ent(id).name + ', '
+            msg = msg[:-2] + '.'
+            self.add_messages([msg])
+        else:
+            msg = 'You have nothing on you.'
+            self.add_messages([msg])
+
 
     def examine_tile(self, x, y):
-        ents = self.entity_manager.get_at(x, y)
+        """Examines a tile and displays messages that list the entities on it, excluding the current player."""
+        ents = self.get_ent_at(x, y)
         if ents == [self.get_player()]:
             return None
         else:
@@ -298,7 +342,7 @@ class Application(object):
                 if id is not self.get_player():
                     ent = self.get_ent(id)
                     msg += ent.name + ', '
-            msg = msg.replace(', ','.')
+            msg = msg[:-2] + '.'
         self.add_messages([msg])
         return ents
 
