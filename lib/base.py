@@ -32,7 +32,11 @@ class Application:
         # This allows for fast checking for entities in tiles, and raises
         # only a slight problem in keeping them in sync. Picking a class for
         # add_entity is done via the entity manager transparently. Send a string
-        # like 'item'. ID lookup is in entity_list. Scheduling IDs are in entity_schedules
+        # like 'item'. ID lookup is in entity_list. Scheduling IDs are in entity_schedules.
+        # If the value in entity_pos is a single int, it is an ID and the entity is CONTAINED
+        # by that other entity. If you call get_ent_pos, it will return the position of the
+        # container, recursing up to the top-level entity. Call get_ent_contain returns the ID
+        # of the containing entity, or None if not contained.
         self.entity_lookup = entity.EntityLookup()
         self.entity_list = { }
         self.entity_pos = { }
@@ -179,6 +183,10 @@ class Application:
         self.menu_stack.append([id,callback])
 
     def remove_menu(self):
+        """Removes the last menu on the stack, and rebinds to the new active menu.
+
+        If no menus remain, rebinds the game.
+        """
         self.win_man.remove_window(self.menu_stack[-1][0])
         del self.menu_stack[-1]
         if self.menu_stack:
@@ -241,8 +249,11 @@ class Application:
         return pid
 
     def get_ent(self, id):
+        """Raises IDNotFound if entity doesn't exist and NullID if passed None."""
         if id not in self.entity_list:
             raise IDNotFound
+        if id is None:
+            raise NullID
         return self.entity_list[id]
 
     def get_player(self):
@@ -287,6 +298,7 @@ class Application:
         self.entity_pos[id] = (x, y)
 
     def update_game_window(self):
+        """Default implementation of graphics updating, updates map and entities; doesn't redraw walls."""
         cam = self.get_camera()
         map = self.get_map()
         win = self.game_win
@@ -347,4 +359,8 @@ class NoMapError(Error):
 
 class IDNotFound(Error):
     """An ID has been requested and not found in the list."""
+    pass
+
+class NullID(Error):
+    """An ID of None has been requested."""
     pass

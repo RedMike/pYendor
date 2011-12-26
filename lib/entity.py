@@ -12,7 +12,7 @@ import random
 class EntityLookup:
     """Simple entity lookup class.
 
-    Subclass and replace getClass with own classes as needed.
+    Subclass and replace get_class with own classes as needed.
     Actual entity management is done in Application.
     """
 
@@ -53,6 +53,9 @@ class Entity:
         self.name = "generic"
         self.parent = parent
         self.id = None
+        self.drawn = 1
+        self.char = '?'
+        self.fgcol = (255,255,255)
 
     def get_id(self):
         if self.id is not None:
@@ -87,6 +90,7 @@ class Item(Entity):
         self.set_attribute('collidable',0)
         self.set_attribute('liftable',1)
         self.set_attribute('usable',1)
+        self.char = '('
 
 
 class NPC(Entity):
@@ -100,6 +104,8 @@ class NPC(Entity):
         self.set_attribute('collidable',1)
         self.set_attribute('liftable',0)
         self.set_attribute('usable',0)
+        self.char = '@'
+        self.fgcol = (0,255,255)
 
         self.maxhp = 5
         self.hp = 5
@@ -162,12 +168,15 @@ class Player(NPC):
 
     def __init__(self,parent):
         NPC.__init__(self,parent)
+        self.char = '@'
+        self.fgcol = (255,255,255)
 
 class Camera(Entity):
     """Simple camera class."""
 
     def __init__(self, parent):
         Entity.__init__(self,parent)
+        self.drawn = 0
 
     def sync_camera(self, pid):
         """Try to move to player's location."""
