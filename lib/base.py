@@ -92,6 +92,8 @@ class Application(object):
                     r = random.randint(0,500)
                     if r < 5:
                         id = self.add_entity(i, j)
+                        if random.randint(0,100) < 50:
+                            self.get_ent(id).set_attribute('solid',0)
                         ent = self.get_ent(id)
                         ent.char = s[random.randint(0,len(s)-1)]
                         ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
@@ -258,7 +260,13 @@ class Application(object):
         if self.get_map() is not None:
             # check for wall
             if self.get_map().get_tile(x + ex, y + ey)[0]:
-               can_move = 0
+                can_move = 0
+            if self.get_ent(id).get_attribute('solid'):
+                ents = self.entity_manager.get_at(x + ex, y + ey)
+                if ents is not None:
+                    for ent in ents:
+                        if self.get_ent(ent).get_attribute('solid'):
+                            can_move = 0
             if can_move:
                 self.entity_move(id, x + ex, y + ey)
         else:
@@ -273,6 +281,27 @@ class Application(object):
     def entity_move(self, id, x, y):
         """Directly move an entity, no checks; generally called by try_entity_move_*."""
         self.entity_manager.set_pos(id, (x,y))
+        if self.get_player() is id:
+            self.examine_tile(x,y)
+
+    def player_pickup(self):
+        """Attempt to have the player pick up everything on the tile he's on."""
+        pass
+
+    def examine_tile(self, x, y):
+        ents = self.entity_manager.get_at(x, y)
+        if ents == [self.get_player()]:
+            return None
+        else:
+            msg = 'You see here: '
+            for id in ents:
+                if id is not self.get_player():
+                    ent = self.get_ent(id)
+                    msg += ent.name + ', '
+            msg = msg.replace(', ','.')
+        self.add_messages([msg])
+        return ents
+
 
     def update_game_window(self):
         """Default implementation of graphics updating, updates map and entities; doesn't redraw walls."""
@@ -311,9 +340,9 @@ class Application(object):
             self.scheduler.tick()
             if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
                 self.update_game_window()
-            if self.msg_win is not None:
-                ticks = self.scheduler.ticks
-                self.add_messages(["Ticks: "+str(ticks)])
+            #if self.msg_win is not None:
+            #    ticks = self.scheduler.ticks
+            #    self.add_messages(["Ticks: "+str(ticks)])
         self.win_man.draw_all()
 
         #input

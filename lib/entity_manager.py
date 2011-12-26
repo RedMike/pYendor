@@ -45,6 +45,16 @@ class EntityManager(object):
         """Returns entity of id or None."""
         return self.lookup.get(id,None)
 
+    def get_at(self,x,y):
+        """Returns list of ids of entities at a position or None."""
+        if (x,y) in self.positions.itervalues():
+            ret = [ ]
+            for id in self.positions:
+                if self.positions[id] == (x,y):
+                    ret.append(id)
+            return ret
+        return None
+
     def get_pos(self,id):
         """Returns (x,y) or id of container for entity."""
         ent = self.get_ent(id)

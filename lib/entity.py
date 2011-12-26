@@ -145,6 +145,7 @@ class Camera(Entity):
 
     def __init__(self, parent):
         Entity.__init__(self,parent)
+        self.set_attribute('solid', 0)
         self.drawn = 0
 
     def sync_camera(self, pid):
