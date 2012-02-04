@@ -15,6 +15,8 @@ import data.libtcodpy as libtcod
 #    |  +-InputWindow
 #    |  |
 #    |  +-MultiChoiceWindow
+#    |  |
+#    |  +-NodeWindow
 #    |
 #    +-StatusWindow
 #
@@ -105,6 +107,7 @@ class RootWindow(object):
     def draw_all(self):
         """Draw all the layers, in order, lowest to highest."""
         l = list(self.layers.itervalues())
+        l = list(set(l)) #remove duplicates and sort.
         l.sort()
         for layer in l:
             for id in self.layers:
@@ -342,7 +345,7 @@ class InputWindow(BorderedMessageWindow):
         self.length = 5
         self.input = ""
     
-    def setLabel(self,labels):
+    def set_label(self,labels):
         """Set label before text input."""
         self.labels = labels
         self.tick()
@@ -351,20 +354,20 @@ class InputWindow(BorderedMessageWindow):
         """Set max length of input."""
         self.length = length
     
-    def addChar(self,c):
+    def add_char(self,c):
         """Add character to input."""
         if len(self.input)<self.length:
             self.input += c
         self.tick()
     
-    def removeChar(self,id):
+    def remove_char(self,id):
         """Remove character from input."""
         self.input = self.input[:id] + self.input[id+1:]
         self.tick()
     
     def backspace(self):
         """Backspace method."""
-        self.removeChar(len(self.input)-1)
+        self.remove_char(len(self.input)-1)
     
     def enter(self):
         """Return current input."""
@@ -385,134 +388,62 @@ class InputWindow(BorderedMessageWindow):
         self.update_message(msgs)
         self.restore_border()
 
-class MultiChoiceWindow(BorderedMessageWindow):
-    """Multi-choice window."""
+class NodeWindow(BorderedMessageWindow):
+    """Node-list window, like a tree view."""
 
     def __init__(self,w,h):
         """Initialisation method."""
-        super(MultiChoiceWindow,self).__init__(w, h)
-        self.labels = []
-        self.choices = []
-        self.chosen = []
+        super(NodeWindow,self).__init__(w,h)
+        self.node_list = { }
+        self.node_parents = { }
+        self.add_node(0,None,"root")
 
-    def setLabels(self,labels):
-        """Set choice labels."""
-        self.labels = labels
+    def set_nodes(self, parents, texts):
+        self.node_list = { }
+        self.node_parents = { }
+        for id in texts.keys():
+            self.add_node(id, parents[id], texts[id])
 
-    def setChoices(self,choices):
-        """Set choices."""
-        self.choices = choices
-        self.tick()
+    def add_node(self, id, parent, text):
+        if id in self.node_list:
+            del self.node_list[id]
+            del self.node_parents[id]
+        if parent not in self.node_list and parent is not None:
+            parent = 0
+        self.node_list[id] = text
+        self.node_parents[id] = parent
 
-    def addChoice(self,choice):
-        """Add new choice."""
-        self.choices.append(choice)
-        self.tick()
+    def get_node_text(self, id):
+        if id not in self.node_list:
+            return "Error"
+        return self.node_list[id]
 
-    def choose(self,choice):
-        """Toggle choice."""
-        if choice in self.chosen:
-            self.chosen.remove(choice)
-        else:
-            self.chosen += [self.choices[choice][1]]
+    def rename_node(self, id, text):
+        if id not in self.node_list:
+            return  #TODO: error handling.
+        self.node_list[id] = text
 
-    def enter(self):
-        """Return currently selected choices."""
-        return self.chosen
+    def get_children(self, id):
+        ret = [ ]
+        for node in self.node_parents.keys():
+            if self.node_parents[node] == id:
+                ret.append(node)
+        return ret
 
-    def tick(self):
-        """Internally-called updater method."""
-        self.clear()
-        msgs = []
-        for label in self.labels:
-            msgs += [label]
-        msgs += [[self.bgcol, '', (255,255,255), 1]]
-        msgs += [[self.bgcol, '', (255,255,255), 1]]
-        for id in range(len(self.choices)):
-            choice = self.choices[id]
-            line = ' '
-            if id in self.chosen:
-                line += '+'
-            else:
-                line += '-'
-            line += ' ' + str(id) + ')  ' + choice[0]
-            msgs += [[self.bgcol, line, (255,255,255), 1]]
-            msgs += [[self.bgcol, '', (255,255,255), 1]]
-        self.update_message(msgs)
-
-class StatusWindow(BorderedWindow):
-    """Variable bar-number bar window."""
-
-    def __init__(self,w,h):
-        """Initialisation method."""
-        super(StatusWindow,self).__init__(w,h)
-        self.bars = []
-
-    # [current, maximum, (bgcol,fgcol)]
-    def addBar(self,label,cur,max,col):
-        """Add new bar in format [current, max, (bgcol, fgcol)], returns id."""
-        self.bars += [[label,cur,max,col]]
-        return len(self.bars)-1
-
-    def updateBar(self,id,label,cur,max,col):
-        """Update bar."""
-        self.bars[id] = [label,cur,max,col]
-        self.tick()
+    def _recurse_children(self, id=0, ret=None, depth=0):
+        """Internal recursion function that goes through all the children of root and returns a list of them."""
+        if not ret: ret = []
+        for child in self.get_children(id):
+            ret.append("  "*depth + "|-<" +self.get_node_text(child)+">")
+            ret = self._recurse_children(child, ret, depth+1)
+        return ret
 
     def tick(self):
-        """Internally-called updater method."""
         self.clear()
-        y = 2
-        #bar = [label,current,maximum,(bgcol,fgcol)]
-        for bar in self.bars:
-            label,cur,max,col = bar
-            bcol = col[0]
-            fcol = col[1]
-            l = len(label)
-            maxw = self.width-4-l
+        msgs = ["<" + self.get_node_text(0) + ">"]
+        self._depth = 0
+        msgs += self._recurse_children()
+        self.messages = [ ]
+        self.add_messages(msgs)
+        self.restore_border()
 
-            r = int(float(cur)/max*maxw)
-
-            # tile = (x, y, bgcol, char, fgcol, bgset)
-            tiles = []
-            for x in range(l):
-                bgcol = (0,0,0)
-                char = label[x]
-                fgcol = (255,255,255)
-                bgset = 1
-                tiles += [[x+2,y,bgcol,char,fgcol,bgset]]
-            for x in range(r):
-                bgcol = bcol
-                char = "="
-                fgcol = fcol
-                bgset = 1
-                tiles += [[x+2+l,y,bgcol,char,fgcol,bgset]]
-            if r != self.width-4-l:
-                for x in range(self.width-4-l-r):
-                    bgcol = (0,0,255)
-                    char = " "
-                    fgcol = (0,0,0)
-                    bgset = 1
-                    tiles += [[self.width-x-3,y,bgcol,
-                        char,fgcol,bgset]]
-            y+=1
-            # label: bar
-            # cur/max
-            # [space]
-            cur = str(cur)
-            max = str(max)
-            for x in range(len(cur)):
-                bgcol = (0,0,0)
-                char = cur[x]
-                fgcol = (255,255,255)
-                bgset = 1
-                tiles += [[x+2,y,bgcol,char,fgcol,bgset]]
-            tiles += [[len(cur)+2,y,(0,0,0),'/',(255,255,255),1]]
-            for x in range(len(max)):
-                bgcol = (0,0,0)
-                char = max[x]
-                fgcol = (255,255,255)
-                bgset = 1
-                tiles += [[x+len(cur)+3,y,bgcol,char,fgcol,bgset]]
-            self.update(tiles)
-            y += 2
