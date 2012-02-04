@@ -139,6 +139,7 @@ class Player(NPC):
         NPC.__init__(self,parent)
         self.char = '@'
         self.fgcol = (255,255,255)
+        self.name = "Player"
 
 class Ethereal(Entity):
     """Class for entities like cameras, with which you don't interact ingame."""

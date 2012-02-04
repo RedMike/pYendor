@@ -40,6 +40,7 @@ class Application(object):
         self.win_man = graphics.RootWindow(w,h,name)
         self.game_win = None
         self.msg_win = None
+        self.inv_win = None
         
         # Initialise keyboard interface.
         self.keyboard = interface.KeyboardListener()
@@ -94,11 +95,21 @@ class Application(object):
                     r = random.randint(0,500)
                     if r < 5:
                         id = self.add_entity(i, j)
-                        if random.randint(0,100) < 50:
+                        if random.randint(0,100) < 220:
                             self.get_ent(id).set_attribute('solid',0)
                         ent = self.get_ent(id)
                         ent.char = s[random.randint(0,len(s)-1)]
                         ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
+                        if random.randint(0,100) < 50:
+                            id2 = self.add_entity(i, j)
+                            self.set_ent_pos(id2,id)
+                            if random.randint(0,100) < 70:
+                                id2 = self.add_entity(i, j)
+                                self.set_ent_pos(id2,id)
+                                id2 = self.add_entity(i, j)
+                                self.set_ent_pos(id2,id)
+
+
 
     def add_map(self,file=0,map=0,set=0):
         """Add map to stack from file or object."""
@@ -135,7 +146,7 @@ class Application(object):
 
     def set_inventory_window(self,w):
         """Set current inventory window to use."""
-        self.invWin = w
+        self.inv_win = w
 
     def set_message_window(self,w):
         """Set current message window to use."""
@@ -346,6 +357,29 @@ class Application(object):
         self.add_messages([msg])
         return ents
 
+    def _inv_window_recurse(self,id,parents=None,names=None,cur_id=1,parent_id=0):
+        """Internal recursion method for inventory listing."""
+        if not names: names = {}
+        if not parents: parents = {}
+        ents = self.get_ent_in(id)
+        if ents is not None:
+            for child in ents:
+                orig_id = cur_id
+                names[cur_id] = self.get_ent(child).name
+                parents[cur_id] = parent_id
+                cur_id += 1
+                parents, names, cur_id = self._inv_window_recurse(child,parents,names,cur_id,orig_id)
+        return parents, names, cur_id
+
+    def update_inv_window(self):
+        """Default implementation of inventory window updating."""
+        if self.inv_win is None:
+            return  #TODO: Error handling.
+        player = self.get_player()
+        names = {0:self.get_ent(player).name}
+        parents = {0:None}
+        parents, names, tmp = self._inv_window_recurse(player,parents,names)
+        self.inv_win.set_nodes(parents,names)
 
     def update_game_window(self):
         """Default implementation of graphics updating, updates map and entities; doesn't redraw walls."""
@@ -384,6 +418,8 @@ class Application(object):
             self.scheduler.tick()
             if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
                 self.update_game_window()
+                if self.player is not None:
+                    self.update_inv_window()
             #if self.msg_win is not None:
             #    ticks = self.scheduler.ticks
             #    self.add_messages(["Ticks: "+str(ticks)])

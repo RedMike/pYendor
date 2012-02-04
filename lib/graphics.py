@@ -403,6 +403,7 @@ class NodeWindow(BorderedMessageWindow):
         self.node_parents = { }
         for id in texts.keys():
             self.add_node(id, parents[id], texts[id])
+        self.tick()
 
     def add_node(self, id, parent, text):
         if id in self.node_list:
