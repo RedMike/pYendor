@@ -33,7 +33,7 @@ class EntityManager(object):
         """Adds a new entity of type to entity_list, and returns its ID; does not set anything."""
         id = self.cur_id
         type = self.class_lookup.get_class(type)
-        self.lookup[id] = type(parent)
+        self.lookup[id] = type(parent,id)
         self.adjust_cur_id()
         return id
 
@@ -89,6 +89,13 @@ class EntityManager(object):
             raise IDNotFound
         return ent.get_attribute(att)
 
+    def get_name(self, id):
+        """Returns the entity's name."""
+        ent = self.get_ent(id)
+        if ent is None:
+            raise IDNotFound
+        return ent.get_name()
+
     def set_sched(self, ent, sched):
         """Cancels the current schedule for an entity and sets a new id as its main."""
         if ent in self.schedules:
@@ -129,8 +136,8 @@ class EntityManager(object):
 class EntityLookup:
     """Simple entity lookup class.
 
-    Subclass and replace get_class with own classes as needed.
-    Actual entity management is done in Application.
+    Subclass and replace initialisation with own classes as needed.
+    Actual entity management is done in EntityManager.
     """
 
     def __init__(self):
@@ -139,10 +146,11 @@ class EntityLookup:
         self.lookup['npc'] = entity.NPC
         self.lookup['player'] = entity.Player
         self.lookup['camera'] = entity.Camera
+        self.lookup['bodypart'] = entity.Bodypart
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""
-        return self.lookup.get(str,entity.Entity)
+        return self.lookup.get(str.lower(),entity.Entity)
 
 
 class IDNotFound(Exception):

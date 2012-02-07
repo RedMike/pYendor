@@ -50,6 +50,8 @@ class Application(object):
 
         self.time_passing = None
 
+        self.debug = 1
+
     def default_bindings(self):
         """Bind defaults for game."""
         self.time_passing = 1  # TODO: fix this.
@@ -96,7 +98,7 @@ class Application(object):
                     if r < 5:
                         id = self.add_entity(i, j)
                         if random.randint(0,100) < 220:
-                            self.get_ent(id).set_attribute('solid',0)
+                            self.entity_manager.set_attribute(id,'solid',0)
                         ent = self.get_ent(id)
                         ent.char = s[random.randint(0,len(s)-1)]
                         ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
@@ -224,7 +226,8 @@ class Application(object):
         if delay is not None:
             self.entity_manager.schedule(self.scheduler, id)
         self.entity_manager.get_ent(id).id = id
-        self.entity_manager.get_ent(id).name += ' #'+str(id)
+        if self.debug:
+            self.entity_manager.get_ent(id).name += '#'+str(id)
         return id
 
     def place_player(self,delay):
@@ -287,11 +290,11 @@ class Application(object):
             # check for wall
             if self.get_map().get_tile(x + ex, y + ey)[0]:
                 can_move = 0
-            if self.get_ent(id).get_attribute('solid'):
+            if self.entity_manager.get_attribute(id,'solid'):
                 ents = self.get_ent_at(x + ex, y + ey)
                 if ents is not None:
                     for ent in ents:
-                        if self.get_ent(ent).get_attribute('solid'):
+                        if self.entity_manager.get_attribute(ent,'solid'):
                             can_move = 0
             if can_move:
                 self.entity_move(id, x + ex, y + ey)
@@ -307,25 +310,22 @@ class Application(object):
     def entity_move(self, id, x, y):
         """Directly move an entity, no checks; generally called by try_entity_move_*."""
         self.entity_manager.set_pos(id, (x,y))
-        if self.get_player() is id:
+        if self.get_player() is id:  #TODO: Fix me.
             self.examine_tile(x,y)
 
     def player_pickup(self):
         """Attempt to have the player pick up everything on the tile he's on."""
         pl = self.get_player()
+        pl_ent = self.get_ent(pl)
         x, y = self.get_ent_pos(pl)
         ents = self.get_ent_at(x, y)
-        msg = 'You pick up: '
-        count = 0
         for id in ents:
             if id is not self.get_player():
-                if self.get_ent(id).get_attribute('liftable'):
-                    msg += self.get_ent(id).name + ', '
-                    count += 1
-                    self.set_ent_pos(id,pl)
-        if count:
-            msg = msg[:-2] + '.'
-            self.add_messages([msg])
+                if self.entity_manager.get_attribute(id,'liftable'):
+                    if not self.get_ent_in(pl_ent.nodes['r_hand']):
+                        self.set_ent_pos(id,pl_ent.nodes['r_hand'])
+                    elif not self.get_ent_in(pl_ent.nodes['l_hand']):
+                        self.set_ent_pos(id,pl_ent.nodes['l_hand'])
 
     def print_player_inventory(self):
         """Prints the player's inventory to the message window."""
@@ -334,7 +334,7 @@ class Application(object):
         if ents is not None:
             msg = 'You currently have: '
             for id in ents:
-                msg += self.get_ent(id).name + ', '
+                msg += self.entity_manager.get_name(id) + ', '
             msg = msg[:-2] + '.'
             self.add_messages([msg])
         else:
@@ -351,8 +351,7 @@ class Application(object):
             msg = 'You see here: '
             for id in ents:
                 if id is not self.get_player():
-                    ent = self.get_ent(id)
-                    msg += ent.name + ', '
+                    msg += self.entity_manager.get_name(id) + ', '
             msg = msg[:-2] + '.'
         self.add_messages([msg])
         return ents
@@ -365,7 +364,7 @@ class Application(object):
         if ents is not None:
             for child in ents:
                 orig_id = cur_id
-                names[cur_id] = self.get_ent(child).name
+                names[cur_id] = self.entity_manager.get_name(child)
                 parents[cur_id] = parent_id
                 cur_id += 1
                 parents, names, cur_id = self._inv_window_recurse(child,parents,names,cur_id,orig_id)
@@ -376,9 +375,19 @@ class Application(object):
         if self.inv_win is None:
             return  #TODO: Error handling.
         player = self.get_player()
-        names = {0:self.get_ent(player).name}
+        names = {0:self.entity_manager.get_name(player)}
         parents = {0:None}
-        parents, names, tmp = self._inv_window_recurse(player,parents,names)
+#        cur_id = 1
+#        bodyparts = self.get_ent(player).get_nodes()
+#        for part in bodyparts:
+#            print names
+#            id = bodyparts[part]
+#            names[cur_id] = part
+#            parents[cur_id] = 0
+#            cur_id += 1
+#            parents, names, cur_id = self._inv_window_recurse(id,parents,names,cur_id,0)
+        parents, names, cur_id = self._inv_window_recurse(player,parents,names)
+
         self.inv_win.set_nodes(parents,names)
 
     def update_game_window(self):
@@ -400,7 +409,7 @@ class Application(object):
 
         tiles = [ ]
         for id in self.entity_manager.get_ids():
-            if self.entity_manager.get_ent(id).drawn:
+            if self.entity_manager.get_ent(id).get_attribute('visible'):
                 tx, ty = self.get_ent_pos(id)
                 ent = self.get_ent(id)
                 tiles.append([tx-x+cx, ty-y+cy, (0,0,0), ent.char, ent.fgcol, 0])
@@ -437,16 +446,12 @@ class Application(object):
 
 class Error(Exception):
     """Base class for errors."""
-    pass
 
 class NoMapError(Error):
     """A function that needs a map has been called, with no map loaded."""
-    pass
 
 class IDNotFound(Error):
     """An ID has been requested and not found in the list."""
-    pass
 
 class NullID(Error):
     """An ID of None has been requested."""
-    pass

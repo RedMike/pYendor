@@ -40,15 +40,6 @@ app.add_messages(["Hello world.",
                   "This is a test message which should be long enough to wrap, hopefully. "
                  +"However, that's not enough, so hey, there we go, another line, awesome."])
 
-#dg_ids = {0:None, 1:0, 2:1, 3:1, 4:0, 5:4, 6:0}
-#dg_txt = {0:"root", 1:"test", 2:"woohoo", 3:"This is a weird node window.", 4:"Hi.", 5:"Oh god why", 6:"Hello world."}
-#dg_win = app.add_window(3,graphics.NodeWindow,20,30,WIDTH-20,0)
-#dg_win = app.win_man.get_window(dg_win)
-#dg_win.set_border([COL2,' ',(0,0,0),1])
-#dg_win.bgcol = COL1
-#dg_win.clear()
-#dg_win.set_nodes(dg_ids,dg_txt)
-
 def menu_callback(fct):
     choice = fct()
     if not choice:
