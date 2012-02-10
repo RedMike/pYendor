@@ -1,5 +1,5 @@
 #  Entity has:
-#    - attributes = anything from speed to stats to visibility
+#    - attributes = anything from speed to stats to visibilities
 #
 # Entity DOES NOT care about its position.
 

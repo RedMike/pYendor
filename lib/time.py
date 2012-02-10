@@ -5,7 +5,7 @@ import time
 class Scheduler:
     """Can schedule functions to be called a few ticks in the future.
 
-    If dominant id is not set, it'll stop on the first draw_tiles it finds. Queue's keys are tick numbers, value is a list
+    If dominant id is not set, it'll stop on the first draw_tiles it finds. Queue's keys are update numbers, value is a list
     containing tuples of the form (function, params, delay).
     """
     def __init__(self):
@@ -42,14 +42,14 @@ class Scheduler:
         del self.lookup[id]
 
     def set_dominant(self,id):
-        """Call with None in order to stop every useful tick."""
+        """Call with None in order to stop every useful update."""
         if id is not None:
             self.dominant = self.lookup[id]
         else:
             self.dominant = None
 
     def tick(self):
-        """Find the first useful tick, then run everything in it; If one of the run functions was the dominant or
+        """Find the first useful update, then run everything in it; If one of the run functions was the dominant or
         dominant is None, stop after this, otherwise keep going."""
         done = 0
         while not done:

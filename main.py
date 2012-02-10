@@ -58,6 +58,16 @@ app.add_messages(("Hello world.",
                   "This is a test message which should be long enough to wrap, hopefully. "
                  +"However, that's not enough, so hey, there we go, another line, awesome."))
 
+def debug_callback(fct):
+    text = fct()
+    if text != 'quit':
+        try:
+            eval(text)
+        except Exception as e:
+            app.add_messages((str(e),))
+    else:
+        app.remove_menu()
+
 def menu_callback(fct):
     choice = fct()
     if not choice:
@@ -65,6 +75,7 @@ def menu_callback(fct):
         app.place_player(1)
         while app.menu_stack:
             app.remove_menu()
+        app.add_binding('t',(app.add_input_menu,('Debug input:', debug_callback)))
     elif choice == 1:
         app.quit()
     elif choice == 2:

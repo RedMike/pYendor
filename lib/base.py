@@ -6,7 +6,6 @@ import lib.interface as interface
 import lib.time as time
 
 
-
 class Application(object):
     """
     Main application class.
@@ -17,7 +16,7 @@ class Application(object):
     windows with L{set_game_window}, L{set_message_window}, L{set_inventory_window} if you do not wish
     to handle drawing and updating yourself, define your menu callbacks, then use L{add_choice_menu}
     to create a main menu, if you wish it. After this, loop while checking if L{exit} is false, and
-    L{draw_tiles} every iteration.
+    run L{self.update} every iteration.
 
     """
     
@@ -88,11 +87,32 @@ class Application(object):
                      ['i',[self.print_player_inventory,()]],
                      ['e',[self.player_pickup,()]],
                      ['r',[self.player_drop,()]],
-                     ['q',[self.quit,()]] ]
+                     ['q',[self.quit,()]]]
             for set in temp:
                 key = set[0]
                 bind = set[1]
                 self.add_binding(key,bind)
+
+    def input_bindings(self, window, callback):
+        """Bind default input keys.
+
+        Any custom bindings are cleared, and keys are bound for the window and callback you pass.
+
+        @type  window: L{graphics.Window}
+        @param window: Window to bind to as menu.
+        @type  callback: Function.
+        @param callback: Function that gets called on accept.
+        """
+        self.time_passing = 0  # TODO: Fix this.
+        self.clear_bindings()
+        temp = [ ['<', [window.backspace,()]],
+                 ['>', [callback,(window.enter,)]]]
+        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz;\'":,.[]()_+- !?':
+            temp.append([char, [window.add_char,(char,)]])
+        for set in temp:
+            key = set[0]
+            bind = set[1]
+            self.add_binding(key,bind)
 
     def menu_bindings(self, window, callback):
         """Bind default menu keys.
@@ -198,8 +218,8 @@ class Application(object):
         @param x: X coordinate of top-left corner.
         @type  y: number
         @param y: Y coordinate of top-left corner.
-        @rtype number
-        @return Window ID of created window; Use L{graphics.WindowManager.get_window} to get the object.
+        @rtype: number
+        @return: Window ID of created window; Use L{graphics.WindowManager.get_window} to get the object.
         """
         win = self.win_man.add_window(layer,type,w,h,x,y)
         return win
@@ -266,14 +286,32 @@ class Application(object):
         self.win_man.hide_window(window)
 
     def show_window(self,window):
-        """Unhide a window.
+        """Unhides a window.
 
         Convenience function, calls L{window manager <graphics.WindowManager>} functions.
         """
         self.win_man.show_window(window)
 
+    def add_input_menu(self, label, callback):
+        """Adds an input menu to the stack and sets it as active.
+
+        Callback gets called with a method that returns the string that was in the list.
+
+        @type  label: string
+        @param label: Text to display before input bar.
+        @type  callback: method
+        @param callback: Function that gets called with a function as a parameter, that returns the string
+                        that has been input into the window.
+        """
+        id = self.add_window(6, graphics.InputWindow, self.win_man.width, 6, 0, self.win_man.height-6)
+        win = self.win_man.get_window(id)
+        win.set_label(label)
+        win.set_length(self.win_man.width-6)
+        self.input_bindings(win,callback)
+        self.menu_stack.append([id,callback])
+
     def add_choice_menu(self, labels, choices, callback):
-        """Add a single choice menu to the stack and sets it as active.
+        """Adds a single choice menu to the stack and sets it as active.
 
         ID of choice in choices is the ID that gets used in callback, starting from 0.
 
@@ -285,7 +323,7 @@ class Application(object):
         @param callback: Function that gets called with a function as a parameter, that returns the ID
                         of the choice selected, when called.
         """
-        id = self.win_man.add_window(5, graphics.ChoiceWindow, self.win_man.width, self.win_man.height, 0, 0)
+        id = self.add_window(5, graphics.ChoiceWindow, self.win_man.width, self.win_man.height, 0, 0)
         win = self.win_man.get_window(id)
         win.set_label(labels)
         win.set_choices(choices)
@@ -599,9 +637,9 @@ class Application(object):
             win.update_layer(5,tiles)
 
     def update(self):
-        """Update function, called every tick.
+        """Update function, called every update.
 
-        Subclass and replace to add code to run every working tick, or drawing calls.
+        Subclass and replace to add code to run every working update, or drawing calls.
         """
         if self.time_passing:
             self.scheduler.tick()

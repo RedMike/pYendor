@@ -5,12 +5,12 @@ import data.libtcodpy as libtcod
 #    +-LayeredGameWindow
 #    |
 #    +-MessageWindow
-#    |  |
-#    |  +-ChoiceWindow
-#    |  |
-#    |  +-InputWindow
-#    |  |
-#    |  +-NodeWindow
+#       |
+#       +-ChoiceWindow
+#       |
+#       +-InputWindow
+#       |
+#       +-NodeWindow
 
 
 def convert(color):
@@ -20,8 +20,8 @@ def convert(color):
 
     @type  color: tuple
     @param color: (r,g,b) formatted tuple describing a colour.
-    @rtype libtcod.Color
-    @return Converted library-specific color.
+    @rtype: libtcod.Color
+    @return: Converted library-specific color.
     """
     if not isinstance(color,libtcod.Color):
         color = libtcod.Color(*color)
@@ -31,8 +31,8 @@ class WindowManager(object):
     """Contains all windows and handles positioning, drawing and layering.
 
     Windows are referred to by ID.
-    Window position is in L{positions}, object in L{window_list}, layer in L{layers} and visibility flag in
-    L{visibility}.
+    Window position is in I{positions}, object in I{window_list}, layer in I{layers}
+    and visibility flag in I{visibilities}.
     """
 
     def __init__(self,w,h,name,font='data/font.png'):
@@ -56,7 +56,7 @@ class WindowManager(object):
         self.window_list = { }
         self.positions = { }
         self.layers = { }
-        self.visibility = { }
+        self.visibilities = { }
 
     def specific_init(self):
         """Library-specific initialisation.
@@ -84,15 +84,15 @@ class WindowManager(object):
         @param x: X coordinate of new window's top-left corner.
         @type  y: number
         @param y: Y coordinate of new window's top-left corner.
-        @rtype  number
-        @return Created window's ID.
+        @rtype:  number
+        @return: Created window's ID.
         """
         win = type(w,h)
         id = self.current_id
         self.window_list[id] = win
         self.positions[id] = (x,y)
         self.layers[id] = layer
-        self.visibility[id] = 1
+        self.visibilities[id] = 1
         self.current_id += 1
         return id
 
@@ -101,8 +101,8 @@ class WindowManager(object):
 
         @type  id: number
         @param id: Window ID.
-        @rtype  instance of L{Window} subclass.
-        @return Window object.
+        @rtype:  instance of L{Window} subclass.
+        @return: Window object.
         """
         return self.window_list[id]
 
@@ -111,10 +111,10 @@ class WindowManager(object):
 
         @type  id: number
         @param id: Window ID.
-        @rtype  bool
-        @return Window's visibility flag.
+        @rtype:  bool
+        @return: Window's visibility flag.
         """
-        return self.visibility[id]
+        return self.visibilities[id]
 
     def hide_window(self,id):
         """Set a window's visibility flag to I{False}.
@@ -122,7 +122,7 @@ class WindowManager(object):
         @type  id: number
         @param id: Window ID.
         """
-        self.visibility[id] = False
+        self.visibilities[id] = False
 
     def show_window(self,id):
         """Set a window's visibility flag to I{True}.
@@ -130,7 +130,7 @@ class WindowManager(object):
         @type  id: number
         @param id: Window ID.
         """
-        self.visibility[id] = True
+        self.visibilities[id] = True
 
     def clear_layer(self,layer):
         """Clear a layer of windows.
@@ -144,7 +144,7 @@ class WindowManager(object):
                 del self.window_list[id]
                 del self.positions[id]
                 del self.layers[id]
-                del self.visibility[id]
+                del self.visibilities[id]
     
     def remove_window(self,id):
         """Remove a window.
@@ -156,7 +156,7 @@ class WindowManager(object):
             del self.window_list[id]
             del self.positions[id]
             del self.layers[id]
-            del self.visibility[id]
+            del self.visibilities[id]
 
     def specific_flush(self):
         """Libtcod-specific flushing of console."""
@@ -270,8 +270,8 @@ class Window(object):
         @param h: Height of rectangle.
         @type  msg: string
         @param msg: String to fit inside the rectangle.
-        @rtype number
-        @return Number of lines the string would end up being..
+        @rtype: number
+        @return: Number of lines the string would end up being..
         """
         return libtcod.console_height_left_rect(self.con,x,y,w,h,msg)
 
@@ -301,7 +301,7 @@ class Window(object):
     def restore_border(self):
         """Restore border, automatically called after clearing or border draw_tiles.
 
-        Does nothing if L{border_tile} is None.
+        Does nothing if I{border_tile} is None.
         """
         if self.border_tile is not None:
             tiles = [ ]
@@ -409,8 +409,8 @@ class MessageWindow(Window):
     def get_current_height(self):
         """Returns current height of messages in window.
 
-        @rtype number
-        @return Current height of messages in queue.
+        @rtype: number
+        @return: Current height of messages in queue.
         """
         y = 2  # padding for border
         for msg in self.messages:
@@ -449,7 +449,7 @@ class ChoiceWindow(MessageWindow):
         self.highlight = None
     
     def set_label(self,labels):
-        """Set choice displayed labels."""
+        """Set choice displayed label."""
         self.labels = labels
     
     def set_choices(self,choices):
@@ -502,56 +502,83 @@ class ChoiceWindow(MessageWindow):
 
 
 class InputWindow(MessageWindow):
-    """One line input window."""
+    """One line input window.
+
+    Used to obtain one line of text from the player.
+    """
     
     def __init__(self,w,h):
-        """Initialisation method."""
+        """Initialisation method.
+
+        @type  w: number
+        @param w: Width of window.
+        @type  h: number
+        @param h: Height of window.
+        """
         super(InputWindow,self).__init__(w, h)
-        self.labels = []
+        self.label = ""
         self.length = 5
         self.input = ""
     
-    def set_label(self,labels):
-        """Set label before text input."""
-        self.labels = labels
-        self.tick()
+    def set_label(self,label):
+        """Sets label to display before text.
+
+        @type  label: string
+        @param label: Text to display before text.
+        """
+        self.label = label
+        self.update()
     
-    def setLength(self,length):
-        """Set max length of input."""
+    def set_length(self,length):
+        """Sets max length of input.
+
+        @type  length: number
+        @param length: Maximum number of characters that can be input.
+        """
         self.length = length
     
-    def add_char(self,c):
-        """Add character to input."""
+    def add_char(self,char):
+        """Adds character to input.
+
+        Does nothing if maximum length is already reached.
+
+        @type  char: char
+        @param char: Character to add.
+        """
         if len(self.input)<self.length:
-            self.input += c
-        self.tick()
+            self.input += char
+        self.update()
     
     def remove_char(self,id):
-        """Remove character from input."""
+        """Removes character from input.
+
+        @type  id: number
+        @param id: Index of character to remove.
+        """
         self.input = self.input[:id] + self.input[id+1:]
-        self.tick()
+        self.update()
     
     def backspace(self):
-        """Backspace method."""
+        """Convenience method to remove last character."""
         self.remove_char(len(self.input)-1)
     
     def enter(self):
-        """Return current input."""
+        """Returns current input and clears input.
+
+        @rtype: string
+        @return: Currently input string.
+        """
         inp = self.input
         self.input = ""
-        self.tick()
+        self.update()
         return inp
     
-    def tick(self):
+    def update(self):
         """Internally-called updater method."""
         self.clear()
-        msgs = []
-        for label in self.labels:
-            msgs.append(label)
-        msgs.append([self.bgcol, '', (255,255,255), 1])
-        msgs.append([(255,255,255), self.input, (80,80,80), 1])
-        msgs.append([self.bgcol, '', (255,255,255), 1])
-        self.draw_messages(msgs)
+        msgs = [self.label, ">>> " + self.input, '']
+        self.messages = []
+        self.add_messages(msgs)
         self.restore_border()
 
 class NodeWindow(MessageWindow):
