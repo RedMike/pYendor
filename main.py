@@ -39,7 +39,7 @@ game_win.set_border([COL2,' ',(0,0,0),1])
 game_win.bgcol = COL1
 game_win.clear()
 
-msg_win = app.add_window(0,graphics.BorderedMessageWindow,WIDTH,20,0,HEIGHT-20)
+msg_win = app.add_window(0,graphics.MessageWindow,WIDTH,20,0,HEIGHT-20)
 msg_win = app.win_man.get_window(msg_win)
 msg_win.set_border([COL1,' ',(0,0,0),1])
 msg_win.bgcol = (0,0,0)

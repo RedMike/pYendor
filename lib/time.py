@@ -5,7 +5,7 @@ import time
 class Scheduler:
     """Can schedule functions to be called a few ticks in the future.
 
-    If dominant id is not set, it'll stop on the first update it finds. Queue's keys are tick numbers, value is a list
+    If dominant id is not set, it'll stop on the first draw_tiles it finds. Queue's keys are tick numbers, value is a list
     containing tuples of the form (function, params, delay).
     """
     def __init__(self):

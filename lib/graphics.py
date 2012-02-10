@@ -1,42 +1,52 @@
 import data.libtcodpy as libtcod
 
-# Window
-# |
-# +-BorderedWindow
+#    Window
 #    |
-#    +-GameWindow
-#    |  |
-#    |  +-LayeredGameWindow
+#    +-LayeredGameWindow
 #    |
-#    +-BorderedMessageWindow
+#    +-MessageWindow
 #    |  |
 #    |  +-ChoiceWindow
 #    |  |
 #    |  +-InputWindow
 #    |  |
-#    |  +-MultiChoiceWindow
-#    |  |
 #    |  +-NodeWindow
-#    |
-#    +-StatusWindow
-#
 
 
 def convert(color):
-    """Convert (r, g, b) color to libtcod.Color."""
+    """Convert (r, g, b) color to libtcod.Color.
+
+    Has to be replaced to change graphical back-end library.
+
+    @type  color: tuple
+    @param color: (r,g,b) formatted tuple describing a colour.
+    @rtype libtcod.Color
+    @return Converted library-specific color.
+    """
     if not isinstance(color,libtcod.Color):
         color = libtcod.Color(*color)
     return color
 
-class RootWindow(object):
-    """Root window object that contains all other windows.
+class WindowManager(object):
+    """Contains all windows and handles positioning, drawing and layering.
 
-    Each window has an ID, layers and visibility are dicts.
+    Windows are referred to by ID.
+    Window position is in L{positions}, object in L{window_list}, layer in L{layers} and visibility flag in
+    L{visibility}.
     """
 
     def __init__(self,w,h,name,font='data/font.png'):
-        """Initialisation method, name shows up as the title."""
-        # TODO: font things.
+        """Initialisation method.
+
+        @type  w: number
+        @param w: Main window width.
+        @type  h: number
+        @param h: Main window height.
+        @type  name: string
+        @param name: Main window title.
+        @type  font: string
+        @param font: Path to font file.
+        """
         self.width = w
         self.height = h
         self.name = name
@@ -49,39 +59,85 @@ class RootWindow(object):
         self.visibility = { }
 
     def specific_init(self):
-        """Library-specific initialisation; Overwrite for non-libtcod."""
+        """Library-specific initialisation.
+
+        Subclass and replace to change graphical backend.
+        """
         libtcod.console_set_custom_font(self.font,
                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
         libtcod.console_init_root(self.width, self.height, self.name)
-        # libtcod.console_credits()
 
     def add_window(self, layer, type, w, h, x, y):
-        """Adds a new window, returns id."""
+        """Adds a new window.
+
+        Higher layers are drawn last, thus show up on top.
+
+        @type  layer: number
+        @param layer: Layer to add the window to.
+        @type  type: subclass of L{Window}.
+        @param type: Type of new window.
+        @type  w: number
+        @param w: Width of new window.
+        @type  h: number
+        @param h: Height of new window.
+        @type  x: number
+        @param x: X coordinate of new window's top-left corner.
+        @type  y: number
+        @param y: Y coordinate of new window's top-left corner.
+        @rtype  number
+        @return Created window's ID.
+        """
         win = type(w,h)
-        self.window_list[self.current_id] = win
-        self.positions[self.current_id] = (x,y)
-        self.layers[self.current_id] = layer
-        self.visibility[self.current_id] = 1
+        id = self.current_id
+        self.window_list[id] = win
+        self.positions[id] = (x,y)
+        self.layers[id] = layer
+        self.visibility[id] = 1
         self.current_id += 1
-        return self.current_id-1
+        return id
 
     def get_window(self, id):
-        """Returns window object."""
+        """Looks up and returns a window object by ID.
+
+        @type  id: number
+        @param id: Window ID.
+        @rtype  instance of L{Window} subclass.
+        @return Window object.
+        """
         return self.window_list[id]
 
     def get_visible(self, id):
-        """Returns a window's visibility flag."""
+        """Returns a window's visibility flag.
+
+        @type  id: number
+        @param id: Window ID.
+        @rtype  bool
+        @return Window's visibility flag.
+        """
         return self.visibility[id]
 
     def hide_window(self,id):
-        """Set a window's visibility flag to 0."""
-        self.visibility[id] = 0
+        """Set a window's visibility flag to I{False}.
+
+        @type  id: number
+        @param id: Window ID.
+        """
+        self.visibility[id] = False
 
     def show_window(self,id):
-        """Set a window's visibility flag to 1."""
-        self.visibility[id] = 1
+        """Set a window's visibility flag to I{True}.
+
+        @type  id: number
+        @param id: Window ID.
+        """
+        self.visibility[id] = True
 
     def clear_layer(self,layer):
+        """Clear a layer of windows.
+
+        @type  layer: number
+        @param layer: ID of layer to clear.
+        """
         for id in self.layers.iterkeys():
             if self.layers[id] == layer:
                 self.window_list[id].clear()
@@ -91,129 +147,222 @@ class RootWindow(object):
                 del self.visibility[id]
     
     def remove_window(self,id):
-        """Remove a window, by id."""
+        """Remove a window.
+
+        @type  id: number
+        @param id: Window ID.
+        """
         if id in self.window_list:
             del self.window_list[id]
             del self.positions[id]
             del self.layers[id]
             del self.visibility[id]
 
-    def draw_window(self, id):
-        """Libtcod-specific drawing of window."""
+    def specific_flush(self):
+        """Libtcod-specific flushing of console."""
+        libtcod.console_flush()
+
+    def specific_draw_window(self, id):
+        """Libtcod-specific drawing.
+
+        @type  id: number
+        @param id: Window ID.
+        """
         x, y = self.positions[id]
         win = self.window_list[id]
         libtcod.console_blit(win.con, 0, 0, win.width, win.height, 0, x, y)
 
     def draw_all(self):
-        """Draw all the layers, in order, lowest to highest."""
+        """Draw all the layers, in order.
+
+        Lower layers are drawn first, so higher layers can cover them up.
+        """
         l = list(self.layers.itervalues())
         l = list(set(l)) #remove duplicates and sort.
         l.sort()
         for layer in l:
             for id in self.layers:
                 if self.layers[id] == layer:
-                    self.draw_window(id)
-        libtcod.console_flush()
+                    self.specific_draw_window(id)
+        self.specific_flush()
+
 
 class Window(object):
-    """Basic window from which any kind of window is derived from.
+    """Basic window object with basic drawing methods.
 
-    It takes care of drawing to its own off-screen console, the root window does the rest.
+    It takes care of drawing to its own off-screen console, the window manager handles blitting that to the main
+    console.
     """
     
     def __init__(self,w,h):
-        """Set the background color afterwards if needed."""
+        """Initialisation method.
+
+        @type  w: number
+        @param w: Width of window.
+        @type  h: number
+        @param h: Height of window.
+        """
         self.width = w
         self.height = h
         self.bgcol = (255,0,0)
         self.fgcol = (255,255,255)
+        self.border_tile = None
         self.specific_init()
 
     def specific_init(self):
         """Library-specific console initialisation."""
         self.con = libtcod.console_new(self.width,self.height)
 
-    def draw_char(self,x,y,char,bgcol,fgcol,bgset):
-        """Library-specific drawing a character at a position with a specific color."""
+    def specific_draw_char(self,x,y,char,bgcol,fgcol,bgset):
+        """Library-specific drawing a character at a position with a specific color.
+
+        @type  x: number
+        @param x: X coordinate.
+        @type  y: number
+        @param y: Y coordinate.
+        @type  char: char
+        @param char: Character to draw.
+        @type  bgcol: libtcod.Color
+        @param bgcol: libtcod-specific color to draw background of character.
+        @type  fgcol: libtcod.Color
+        @param fgcol: libtcod-specific color to draw character foreground in.
+        @type  bgset: bool
+        @param bgset: If I{True}, fills background in, else, only the character itself is drawn.
+        """
         libtcod.console_set_background_color(self.con,bgcol)
         libtcod.console_set_foreground_color(self.con,fgcol)
         libtcod.console_put_char(self.con, x, y, char, bgset)
 
-    def print_line_rect(self,bgcol,fgcol,x,y,w,h,msg):
-        """Library-specific drawing a string inside a rect."""
+    def specific_print_line_rect(self,bgcol,fgcol,x,y,w,h,msg):
+        """Library-specific drawing a string inside a filled rectangle.
+
+        @type  bgcol: libtcod.Color
+        @param bgcol: Background libtcod-specific color to draw the rectangle.
+        @type  fgcol: libtcod.Color
+        @param fgcol: Foreground libtcod-specific color to draw the text in.
+        @type  x: number
+        @param x: X coordinate of top-left corner of rectangle.
+        @type  y: number
+        @param y: Y coordinate of top-left corner of rectangle.
+        @type  w: number
+        @param w: Width of rectangle.
+        @type  h: number
+        @param h: Height of rectangle.
+        @type  msg: string
+        @param msg: String to draw inside the rectangle.
+        """
         libtcod.console_set_background_color(self.con,bgcol)
         libtcod.console_set_foreground_color(self.con,fgcol)
         libtcod.console_print_left_rect(self.con,x,y,w,h,1,msg)
 
-    def get_line_height(self,x,y,w,h,msg):
-        """Library-specific predicting height of a string inside a rect."""
+    def specific_get_line_height(self,x,y,w,h,msg):
+        """Library-specific predicting height of a string inside a rect without drawing.
+
+        Returns the height of the string wrapped around into the rectangle.
+
+        @type  x: number
+        @param x: X coordinate of top-left corner of rectangle.
+        @type  y: number
+        @param y: Y coordinate of top-left corner of rectangle.
+        @type  w: number
+        @param w: Width of rectangle.
+        @type  h: number
+        @param h: Height of rectangle.
+        @type  msg: string
+        @param msg: String to fit inside the rectangle.
+        @rtype number
+        @return Number of lines the string would end up being..
+        """
         return libtcod.console_height_left_rect(self.con,x,y,w,h,msg)
 
-    def console_clear(self,bgcol,fgcol):
-        """Library-specific clearing of console to a color."""
+    def specific_console_clear(self,bgcol,fgcol):
+        """Library-specific clearing of console to a color.
+
+        @type  bgcol: libtcod.Color
+        @param bgcol: Background libtcod-specific color to clear to.
+        @type  fgcol: libtcod.Color
+        @param fgcol: Foreground libtcod-specific color to clear to.
+        """
         libtcod.console_set_background_color(self.con,bgcol)
         libtcod.console_set_foreground_color(self.con,fgcol)
         libtcod.console_clear(self.con)
 
-    def update(self,tiles):
-        """Update window with tiles of the form (x,y,bgcol,char,fgcol,bgset)."""
+    def set_border(self,tile):
+        """Set the border type, (bgcol, char, fgcol, bgset) or None for no border.
+
+        Draws the border immediately afterwards.
+
+        @type  tile: tuple
+        @param tile: Tuple of the form (bgcol, char, fgcol, bgset) that describes the window's border tile.
+        """
+        self.border_tile = tile
+        self.restore_border()
+
+    def restore_border(self):
+        """Restore border, automatically called after clearing or border draw_tiles.
+
+        Does nothing if L{border_tile} is None.
+        """
+        if self.border_tile is not None:
+            tiles = [ ]
+            for i in range(self.width):
+                tiles += [[i,0]+self.border_tile]
+                tiles += [[i,self.height-1]+self.border_tile]
+            for i in range(self.height):
+                tiles += [[0,i]+self.border_tile]
+                tiles += [[self.width-1,i]+self.border_tile]
+            self.draw_tiles(tiles)
+
+    def draw_tiles(self,tiles):
+        """Draw tiles onto the window.
+
+        Does not clear window.
+
+        @type  tiles: list
+        @param tiles: List of tuples of the form (x, y, bgcol, char, fgcol, bgset).
+        """
         for tile in tiles:
             x, y, bgcol, char, fgcol, bgset = tile
             if 0 <= x < self.width:
                 if 0 <= y < self.height:
                     bgcol = convert(bgcol)
                     fgcol = convert(fgcol)
-                    self.draw_char(x,y,char,bgcol,fgcol,bgset)
+                    self.specific_draw_char(x,y,char,bgcol,fgcol,bgset)
 
-    def update_message(self,msgs):
-        """Update window with a list of messages in format (x, y, msg)."""
+    def draw_messages(self,msgs):
+        """Draw messages onto the window.
+
+        Does not clear window.
+
+        @type  msgs: list
+        @param msgs: List of tuples of the form (x, y, msg).
+        """
         for msg in msgs:
             x, y, line = msg
-            self.print_line_rect(convert(self.bgcol), convert(self.fgcol), x, y, self.width-3, 0, line)
+            self.specific_print_line_rect(convert(self.bgcol), convert(self.fgcol), x, y, self.width-3, 0, line)
 
     def clear(self,bgcol = None, fgcol = None):
-        """Clear window to a color."""
+        """Clear window.
+
+        Defaults to clearing to the instance variables L{bgcol} and L{fgcol}.
+        Restores the border afterwards.
+
+        @type  bgcol: tuple or libtcod.Color or None
+        @param bgcol: Background color to clear the window to.
+        @type  fgcol: tuple or libtcod.Color or None
+        @param fgcol: Foreground color to clear the window to.
+        """
         if bgcol is None:
             bgcol = self.bgcol
         if fgcol is None:
             fgcol = self.fgcol
         bgcol = convert(bgcol)
         fgcol = convert(fgcol)
-        self.console_clear(bgcol,fgcol)
-
-
-class BorderedWindow(Window):
-    """Window with a set tile border."""
-
-    def __init__(self,w,h):
-        """Call setBorder after for the border to show up."""
-        super(BorderedWindow,self).__init__(w,h)
-        self.borderTile = None
-    
-    def set_border(self,tile):
-        """Set the border type, (bgcol, char, fgcol, bgset) or None for no border."""
-        self.borderTile = tile
-        self.restore_border()
-    
-    def restore_border(self):
-        """Restore border, automatically called after clearing."""
-        if self.borderTile is not None:
-            tiles = [ ]
-            for i in range(self.width):
-                tiles += [[i,0]+self.borderTile]
-                tiles += [[i,self.height-1]+self.borderTile]
-            for i in range(self.height):
-                tiles += [[0,i]+self.borderTile]
-                tiles += [[self.width-1,i]+self.borderTile]
-            self.update(tiles)
-    
-    def clear(self,bgcol = None, fgcol = None):
-        """Clear window to a color, then restore border."""
-        super(BorderedWindow,self).clear(bgcol,fgcol)
+        self.specific_console_clear(bgcol,fgcol)
         self.restore_border()
 
 
-class LayeredGameWindow(BorderedWindow):
+class LayeredGameWindow(Window):
     """Main game window, supports layers."""
     
     def __init__(self,w,h):
@@ -236,43 +385,60 @@ class LayeredGameWindow(BorderedWindow):
         s.sort()
         for layer in s:
             tiles = self.layers[layer]
-            self.update(tiles)
+            self.draw_tiles(tiles)
         self.restore_border()
 
 
-class BorderedMessageWindow(BorderedWindow):
-    """Main messaging window type."""
+class MessageWindow(Window):
+    """Main messaging window type.
+
+    Scrolls down when too many messages have been added, but dumps old messages.
+    """
     
     def __init__(self,w,h):
-        """Initialisation method."""
-        super(BorderedMessageWindow,self).__init__(w,h)
+        """Initialisation method.
+
+        @type  w: number
+        @param w: Width of window.
+        @type  h: number
+        @param h: Height of window.
+        """
+        super(MessageWindow,self).__init__(w,h)
         self.messages = [ ]
         
     def get_current_height(self):
-        """Returns current height of messages in window."""
+        """Returns current height of messages in window.
+
+        @rtype number
+        @return Current height of messages in queue.
+        """
         y = 2  # padding for border
         for msg in self.messages:
-            y += self.get_line_height(2, y, self.width-4, 0, msg[2])
+            y += self.specific_get_line_height(2, y, self.width-4, 0, msg[2])
         return y
 
     def add_messages(self,msgs):
-        """Add messages, as a list."""
+        """Add messages to queue.
+
+        @type  msgs: list
+        @param msgs: List of strings to add to the queue.
+        """
         for msg in msgs:
             y = self.get_current_height()
-            h = self.get_line_height(2, y, self.width-4, 0, msg)
+            h = self.specific_get_line_height(2, y, self.width-4, 0, msg)
             while y + h > self.height - 2:
                 del self.messages[0]
                 y = 2
                 for tmp_msg in self.messages:
                     tmp_msg[1] = y
-                    y += self.get_line_height(2, y, self.width-4, 0, tmp_msg[2])
+                    y += self.specific_get_line_height(2, y, self.width-4, 0, tmp_msg[2])
                 y = self.get_current_height()
             self.messages.append([2, y, msg])
         self.clear()
-        self.update_message(self.messages)
+        self.draw_messages(self.messages)
 
 
-class ChoiceWindow(BorderedMessageWindow):
+class ChoiceWindow(MessageWindow):
     """Main menu type, single choice from multiple ones."""
     
     def __init__(self,w,h):
@@ -321,7 +487,7 @@ class ChoiceWindow(BorderedMessageWindow):
     def tick(self):
         """Internally-called updater method."""
         self.messages = [ ]
-        self.update_message(self.messages)
+        self.draw_messages(self.messages)
         msgs = [ ]
         msgs += self.labels
         msgs += [' ']
@@ -335,7 +501,7 @@ class ChoiceWindow(BorderedMessageWindow):
         self.add_messages(msgs)
 
 
-class InputWindow(BorderedMessageWindow):
+class InputWindow(MessageWindow):
     """One line input window."""
     
     def __init__(self,w,h):
@@ -385,10 +551,10 @@ class InputWindow(BorderedMessageWindow):
         msgs.append([self.bgcol, '', (255,255,255), 1])
         msgs.append([(255,255,255), self.input, (80,80,80), 1])
         msgs.append([self.bgcol, '', (255,255,255), 1])
-        self.update_message(msgs)
+        self.draw_messages(msgs)
         self.restore_border()
 
-class NodeWindow(BorderedMessageWindow):
+class NodeWindow(MessageWindow):
     """Node-list window, like a tree view."""
 
     def __init__(self,w,h):

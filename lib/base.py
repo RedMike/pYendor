@@ -17,7 +17,7 @@ class Application(object):
     windows with L{set_game_window}, L{set_message_window}, L{set_inventory_window} if you do not wish
     to handle drawing and updating yourself, define your menu callbacks, then use L{add_choice_menu}
     to create a main menu, if you wish it. After this, loop while checking if L{exit} is false, and
-    L{update} every iteration.
+    L{draw_tiles} every iteration.
 
     """
     
@@ -51,7 +51,7 @@ class Application(object):
         self.camera = None
         
         # Initialise default windows with None.
-        self.win_man = graphics.RootWindow(w,h,name)
+        self.win_man = graphics.WindowManager(w,h,name)
         self.game_win = None
         self.msg_win = None
         self.inv_win = None
@@ -199,7 +199,7 @@ class Application(object):
         @type  y: number
         @param y: Y coordinate of top-left corner.
         @rtype number
-        @return Window ID of created window; Use L{graphics.RootWindow.get_window} to get the object.
+        @return Window ID of created window; Use L{graphics.WindowManager.get_window} to get the object.
         """
         win = self.win_man.add_window(layer,type,w,h,x,y)
         return win
@@ -209,9 +209,9 @@ class Application(object):
         self.win_man.clear_layer(layer)
 
     def set_game_window(self,w):
-        """Set game window to update by default.
+        """Set game window to draw_tiles by default.
 
-        In order to update several windows or use a different updating algorithm, leave this as
+        In order to draw_tiles several windows or use a different updating algorithm, leave this as
         I{None} and roll your own updating algorithm following L{update_game_window}.
         """
         self.game_win = w
@@ -219,7 +219,7 @@ class Application(object):
     def set_inventory_window(self,w):
         """Set inventory window to use by default.
 
-        In order to update several windows or use a different updating algorithm, leave this as
+        In order to draw_tiles several windows or use a different updating algorithm, leave this as
         I{None} and roll your own updating algorithm following L{update_inv_window}.
         """
         self.inv_win = w
@@ -227,7 +227,7 @@ class Application(object):
     def set_message_window(self,w):
         """Set message window to use by default.
 
-        In order to update several windows or use a different updating algorithm, leave this as
+        In order to draw_tiles several windows or use a different updating algorithm, leave this as
         I{None} and roll your own updating algorithm following L{add_messages}.
         """
         self.msg_win = w
@@ -248,7 +248,7 @@ class Application(object):
     def toggle_window(self,window):
         """Toggle whether a window is visible or not.
 
-        Convenience function, calls L{window manager <graphics.RootWindow>} functions.
+        Convenience function, calls L{window manager <graphics.WindowManager>} functions.
 
         @type  window: number
         @param window: ID of window to toggle.
@@ -261,14 +261,14 @@ class Application(object):
     def hide_window(self,window):
         """Hide a window.
 
-        Convenience function, calls L{window manager <graphics.RootWindow>} functions.
+        Convenience function, calls L{window manager <graphics.WindowManager>} functions.
         """
         self.win_man.hide_window(window)
 
     def show_window(self,window):
         """Unhide a window.
 
-        Convenience function, calls L{window manager <graphics.RootWindow>} functions.
+        Convenience function, calls L{window manager <graphics.WindowManager>} functions.
         """
         self.win_man.show_window(window)
 
@@ -330,7 +330,7 @@ class Application(object):
     def add_entity(self, x, y, type="entity", delay=1):
         """Create a new entity at a position and return the ID.
 
-        Set delay to I{None} for no calls to the update method.
+        Set delay to I{None} for no calls to the draw_tiles method.
 
         @type  x: number
         @param x: X coordinate of entity position
@@ -339,7 +339,7 @@ class Application(object):
         @type  type: string
         @param type: Type of object to be created, from L{entity.EntityLookup}.
         @type  delay: number
-        @param delay: Number of ticks inbetween calls of the entity's update method.
+        @param delay: Number of ticks inbetween calls of the entity's draw_tiles method.
         """
         id = self.entity_manager.add_entity(self, type)
         self.entity_manager.set_pos(id, (x, y))
