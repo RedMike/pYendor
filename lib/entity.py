@@ -117,7 +117,7 @@ class Humanoid(NPC):
     def __init__(self,parent,id):
         super(Humanoid,self).__init__(parent,id)
         self.nodes = { }
-        for part in ['head', 'neck', 'chest', 'l_hand', 'r_hand', 'l_leg', 'r_leg']:
+        for part in ['head', 'neck', 'chest', 'l_hand', 'r_hand', 'l_leg', 'r_leg', 'back']:
             self.add_node(part)
 
     def get_node(self,name):

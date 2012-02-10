@@ -11,14 +11,28 @@ class Application(object):
     """
     Main application class.
 
-    After creating, set up the graphics options. Create the map or maps, then entities. Initialise any specifics.
-    Then start calling Update every time you want to update.
+    Subclass this to modify basic functionality, or replace a module with one of your own.
+
+    After creating the application object, create any windows using L{add_window}, set the default
+    windows with L{set_game_window}, L{set_message_window}, L{set_inventory_window} if you do not wish
+    to handle drawing and updating yourself, define your menu callbacks, then use L{add_choice_menu}
+    to create a main menu, if you wish it. After this, loop while checking if L{exit} is false, and
+    L{update} every iteration.
 
     """
     
     version = (0, 5, 0, 'b')
     
     def __init__(self, name, w, h):
+        """Initialise the application with basic default values.
+
+        @type  name: string
+        @param name: Main window name.
+        @type  w: number
+        @param w: Main window width.
+        @type  h: number
+        @param h: Main window height.
+        """
         self.exit = 0
         
         # One currently loaded map at any one time, referenced by the index it uses in self.maps.
@@ -53,7 +67,16 @@ class Application(object):
         self.debug = 1
 
     def default_bindings(self):
-        """Bind defaults for game."""
+        """Bind default game keys.
+
+        Any custom bindings are cleared, and keys are only bound if L{get_player} returns non-None.
+        Basic keys are:
+            - B{Movement}: W, A, S, D
+            - B{Inventory}: I
+            - B{Actions}: E, R
+            - B{Application}: Q
+        Where E and R are pick up and drop, respectively, and Q sets L{exit} to I{true}.
+        """
         self.time_passing = 1  # TODO: fix this.
         self.clear_bindings()
         player = self.get_ent(self.get_player())
@@ -64,6 +87,7 @@ class Application(object):
                      ['d',[player.move,(1,0)]],
                      ['i',[self.print_player_inventory,()]],
                      ['e',[self.player_pickup,()]],
+                     ['r',[self.player_drop,()]],
                      ['q',[self.quit,()]] ]
             for set in temp:
                 key = set[0]
@@ -71,6 +95,15 @@ class Application(object):
                 self.add_binding(key,bind)
 
     def menu_bindings(self, window, callback):
+        """Bind default menu keys.
+
+        Any custom bindings are cleared, and keys are bound for the window and callback you pass.
+
+        @type  window: L{graphics.Window}
+        @param window: Window to bind to as menu.
+        @type  callback: Function.
+        @param callback: Function that gets called on accept.
+        """
         self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
         temp = [ ['w', [window.move_up,()]],
@@ -83,7 +116,15 @@ class Application(object):
             self.add_binding(key,bind)
 
     def generate_map(self,w,h,set):
-        """Generates new map using BasicGenerator, then generates basic entities."""
+        """Generates new map using BasicGenerator, then generates basic entities.
+
+        @type  w: number
+        @param w: Width of map.
+        @type  h: height
+        @param h: Height of map.
+        @type  set: bool
+        @param set: If true, sets map as active.
+        """
         self.add_map(map=map.BasicGenerator(w,h).gen_map(),
                     set=set)
 
@@ -91,6 +132,7 @@ class Application(object):
         m = self.get_map()
         m = m.get_rect(0,0,m.width,m.height)
         s = "#$*()[]"
+        n = ["backpack", "bag", "box", "crate"]
         for i in range(len(m)):
             for j in range(len(m[i])):
                 if not m[i][j][0]:
@@ -102,6 +144,7 @@ class Application(object):
                         ent = self.get_ent(id)
                         ent.char = s[random.randint(0,len(s)-1)]
                         ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
+                        ent.name = n[random.randint(0,len(n)-1)]
                         if random.randint(0,100) < 50:
                             id2 = self.add_entity(i, j)
                             self.set_ent_pos(id2,id)
@@ -112,9 +155,16 @@ class Application(object):
                                 self.set_ent_pos(id2,id)
 
 
-
     def add_map(self,file=0,map=0,set=0):
-        """Add map to stack from file or object."""
+        """Add map to stack from file or object.
+
+        @type  file: string
+        @param file: Path to file.
+        @type  map: L{map.Map}
+        @param map: Map object to add to stack.
+        @type  set: bool
+        @param set: If true, set as active.
+        """
         if map:
             self.maps += [map]
         elif file:
@@ -123,18 +173,34 @@ class Application(object):
             self.set_map(len(self.maps)-1)
 
     def set_map(self,id):
-        """Set map as current one."""
+        """Set map as I{id}."""
         if id < len(self.maps):
             self.map = id
     
     def get_map(self):
-        """Get current map."""
+        """Returns current map, or I{None}."""
         if self.map is not None:
             return self.maps[self.map]
         return None
 
     def add_window(self,layer,type,w,h,x,y):
-        """Add new window and return it."""
+        """Create a new window and return its ID.
+
+        @type  layer: number
+        @param layer: Layer to place window on. Higher means drawn on top.
+        @type  type: subclass of graphics.Window or compatible substitute
+        @param type: Window type that gets created.
+        @type  w: number
+        @param w: Width of window.
+        @type  h: number
+        @param h: Height of window.
+        @type  x: number
+        @param x: X coordinate of top-left corner.
+        @type  y: number
+        @param y: Y coordinate of top-left corner.
+        @rtype number
+        @return Window ID of created window; Use L{graphics.RootWindow.get_window} to get the object.
+        """
         win = self.win_man.add_window(layer,type,w,h,x,y)
         return win
 
@@ -143,42 +209,81 @@ class Application(object):
         self.win_man.clear_layer(layer)
 
     def set_game_window(self,w):
-        """Set current game window to use."""
+        """Set game window to update by default.
+
+        In order to update several windows or use a different updating algorithm, leave this as
+        I{None} and roll your own updating algorithm following L{update_game_window}.
+        """
         self.game_win = w
 
     def set_inventory_window(self,w):
-        """Set current inventory window to use."""
+        """Set inventory window to use by default.
+
+        In order to update several windows or use a different updating algorithm, leave this as
+        I{None} and roll your own updating algorithm following L{update_inv_window}.
+        """
         self.inv_win = w
 
     def set_message_window(self,w):
-        """Set current message window to use."""
+        """Set message window to use by default.
+
+        In order to update several windows or use a different updating algorithm, leave this as
+        I{None} and roll your own updating algorithm following L{add_messages}.
+        """
         self.msg_win = w
 
     def add_messages(self,msgs):
-        """Post messages to current message window, takes a list of strings."""
+        """Post messages to current message window, takes a list of strings.
+
+        For using a different updating algorithm, you could, for example, prepend each string
+        with a specific character, and subclass and replace this method to separate into several
+        windows by the prepended character, and ommiting it from display.
+
+        @type  msgs: tuple
+        @param msgs: A list of messages to display.
+        """
         if self.msg_win is not None:
             self.msg_win.add_messages(msgs)
 
     def toggle_window(self,window):
-        """Toggle whether a window is visible or not."""
+        """Toggle whether a window is visible or not.
+
+        Convenience function, calls L{window manager <graphics.RootWindow>} functions.
+
+        @type  window: number
+        @param window: ID of window to toggle.
+        """
         if self.win_man.get_visible(window):
             self.win_man.hide_window(window)
         else:
             self.win_man.show_window(window)
 
     def hide_window(self,window):
-        """Hide a window."""
+        """Hide a window.
+
+        Convenience function, calls L{window manager <graphics.RootWindow>} functions.
+        """
         self.win_man.hide_window(window)
 
     def show_window(self,window):
-        """Unhide a window."""
+        """Unhide a window.
+
+        Convenience function, calls L{window manager <graphics.RootWindow>} functions.
+        """
         self.win_man.show_window(window)
 
     def add_choice_menu(self, labels, choices, callback):
         """Add a single choice menu to the stack and sets it as active.
 
-        Callback is a function that takes one parameter. Parameter is a function called with no parameters of its own
-        that returns the index of the highlighted choice, starting from 0.
+        ID of choice in choices is the ID that gets used in callback, starting from 0.
+
+        @type  labels: tuple
+        @param labels: List of strings that are displayed before choices.
+        @type  choices: tuple
+        @param choices: List of valid choices in the menu.
+        @type  callback: method
+        @param callback: Function that gets called with a function as a parameter, that returns the ID
+                        of the choice selected, when called.
         """
         id = self.win_man.add_window(5, graphics.ChoiceWindow, self.win_man.width, self.win_man.height, 0, 0)
         win = self.win_man.get_window(id)
@@ -202,23 +307,39 @@ class Application(object):
             self.default_bindings()
 
     def add_binding(self,key,bind):
-        """Add a key binding."""
+        """Add a key binding.
+
+        Convenience function, passes to L{interface module <interface.KeyboardListener>}.
+        """
         self.keyboard.add_binding(key,bind)
     
     def remove_binding(self,key):
-        """Remove a key binding."""
+        """Remove a key binding.
+
+        Convenience function, passes to L{interface module <interface.KeyboardListener>}.
+        """
         self.keyboard.remove_binding(key)
 
     def clear_bindings(self):
-        """Clear all key bindings."""
+        """Clear all key bindings.
+
+        Convenience function, passes to L{interface module <interface.KeyboardListener>}.
+        """
         self.keyboard.clear_bindings()
 
-    #entity work
-    #[x,y,ent]
     def add_entity(self, x, y, type="entity", delay=1):
-        """Create a new entity, gives it an ID, adds it to the entity list, schedules it, and returns its ID.
+        """Create a new entity at a position and return the ID.
 
-        Set delay to None for no scheduling.
+        Set delay to I{None} for no calls to the update method.
+
+        @type  x: number
+        @param x: X coordinate of entity position
+        @type  y: number
+        @param y: Y coordinate of entity position
+        @type  type: string
+        @param type: Type of object to be created, from L{entity.EntityLookup}.
+        @type  delay: number
+        @param delay: Number of ticks inbetween calls of the entity's update method.
         """
         id = self.entity_manager.add_entity(self, type)
         self.entity_manager.set_pos(id, (x, y))
@@ -231,7 +352,10 @@ class Application(object):
         return id
 
     def place_player(self,delay):
-        """Add a player entity and camera and set it as the current player."""
+        """Convenience method that adds a player entity, a camera entity, and returns the player ID.
+
+        Player is placed in the first available tile on the first 3 columns of the map.
+        """
         map = self.get_map()
         if map is None:
             raise NoMapError
@@ -251,15 +375,24 @@ class Application(object):
         return pid
 
     def get_ent(self, id):
-        """Raises IDNotFound if entity doesn't exist and NullID if passed None."""
+        """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
+
+        Raises IDNotFound if entity doesn't exist and NullID if passed None.
+        """
         return self.entity_manager.get_ent(id)
 
     def get_ent_at(self, x, y):
-        """Returns list of entities on tile or None."""
+        """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
+
+        Returns list of entities on tile or None.
+        """
         return self.entity_manager.get_at(x, y)
 
     def get_ent_in(self, obj):
-        """Returns list of entities contained by obj or None."""
+        """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
+
+        Returns list of entities contained by obj or None.
+        """
         return self.entity_manager.get_in(obj)
 
     def get_player(self):
@@ -271,30 +404,51 @@ class Application(object):
         return self.camera
 
     def get_ent_pos(self, id):
-        """Returns (x,y) or id of container for entity, can raise IDNotFound."""
+        """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
+
+        Returns (x,y) or id of container for entity, can raise IDNotFound.
+        """
         return self.entity_manager.get_pos(id)
 
     def set_ent_pos(self, id, pos):
-        """Sets an entity's position as the object passed, tuple or int; pass the container id for contained ents."""
+        """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
+
+        @type  id: number
+        @param id: ID of entity to be placed.
+        @type  pos: tuple or number
+        @param pos: Position of entity, (x,y) tuple or ID of container object.
+
+        Sets an entity's position as the object passed, tuple or int.
+        In order to store an entity in a container entity, pass the container's ID as the pos parameter.
+        """
         self.entity_manager.set_pos(id, pos)
 
     def destroy_ents(self):
-        """Destroy all entities."""
+        """Destroy all entities.
+
+        Not yet implemented.
+        """
         pass
 
     def try_entity_move_relative(self, id, x, y):
-        """Checks collisions and restrictions in place, then tries to move an entity; generally only called by Ents."""
+        """Checks collisions and restrictions in place, then tries to move an entity.
+
+        Raises NoMapError when map is not initialised yet.
+        Calls L{entity_move}.
+        """
         can_move = 1
         ex, ey = self.get_ent_pos(id)
         if self.get_map() is not None:
             # check for wall
             if self.get_map().get_tile(x + ex, y + ey)[0]:
                 can_move = 0
-            if self.entity_manager.get_attribute(id,'solid'):
+            # check if we're blocking or not
+            if self.entity_manager.get_attribute(id,'blocks'):
+                # we are, let's check for entities on that spot, if they're blocking
                 ents = self.get_ent_at(x + ex, y + ey)
                 if ents is not None:
                     for ent in ents:
-                        if self.entity_manager.get_attribute(ent,'solid'):
+                        if self.entity_manager.get_attribute(ent,'blocks'):
                             can_move = 0
             if can_move:
                 self.entity_move(id, x + ex, y + ey)
@@ -302,24 +456,45 @@ class Application(object):
             raise NoMapError
 
     def try_entity_move_to_entity(self, id, id2):
-        """Tries moving entity id to entity id2."""
+        """Tries moving entity id to entity id2's location.
+
+        Passes call to L{try_entity_move_relative}.
+        """
         x, y = self.get_ent_pos(id2)
         ex, ey = self.get_ent_pos(id)
         self.try_entity_move_relative(id, x-ex, y-ey)
 
     def entity_move(self, id, x, y):
-        """Directly move an entity, no checks; generally called by try_entity_move_*."""
+        """Directly move an entity to a position.
+
+        No collision checks involved.
+        """
         self.entity_manager.set_pos(id, (x,y))
         if self.get_player() is id:  #TODO: Fix me.
             self.examine_tile(x,y)
 
+    def player_drop(self):
+        """Attempt to have the player drop whatever is in his hand."""
+        pl = self.get_player()
+        pl_ent = self.get_ent(pl)
+        pos = self.get_ent_pos(pl) # TODO: drop menu
+        if self.get_ent_in(pl_ent.nodes['r_hand']):
+            for id in self.get_ent_in(pl_ent.nodes['r_hand']):
+                self.set_ent_pos(id,pos)
+        if self.get_ent_in(pl_ent.nodes['l_hand']):
+            for id in self.get_ent_in(pl_ent.nodes['l_hand']):
+                self.set_ent_pos(id,pos)
+
     def player_pickup(self):
-        """Attempt to have the player pick up everything on the tile he's on."""
+        """Attempt to have the player pick up everything on the tile he's on.
+
+        Places items into r_hand or l_hand by default.
+        """
         pl = self.get_player()
         pl_ent = self.get_ent(pl)
         x, y = self.get_ent_pos(pl)
         ents = self.get_ent_at(x, y)
-        for id in ents:
+        for id in ents: # TODO: pickup menu
             if id is not self.get_player():
                 if self.entity_manager.get_attribute(id,'liftable'):
                     if not self.get_ent_in(pl_ent.nodes['r_hand']):
@@ -328,7 +503,10 @@ class Application(object):
                         self.set_ent_pos(id,pl_ent.nodes['l_hand'])
 
     def print_player_inventory(self):
-        """Prints the player's inventory to the message window."""
+        """Prints the player's inventory to the message window.
+
+        Subclass and replace this if you want a different fashion of displaying the inventory.
+        """
         pl = self.get_player()
         ents = self.get_ent_in(pl)
         if ents is not None:
@@ -336,14 +514,17 @@ class Application(object):
             for id in ents:
                 msg += self.entity_manager.get_name(id) + ', '
             msg = msg[:-2] + '.'
-            self.add_messages([msg])
+            self.add_messages((msg,))
         else:
             msg = 'You have nothing on you.'
-            self.add_messages([msg])
+            self.add_messages((msg,))
 
 
     def examine_tile(self, x, y):
-        """Examines a tile and displays messages that list the entities on it, excluding the current player."""
+        """Examines a tile and displays messages that list the entities on it, excluding the current player.
+
+        Subclass and replace to use your own display format.
+        """
         ents = self.get_ent_at(x, y)
         if ents == [self.get_player()]:
             return None
@@ -353,11 +534,11 @@ class Application(object):
                 if id is not self.get_player():
                     msg += self.entity_manager.get_name(id) + ', '
             msg = msg[:-2] + '.'
-        self.add_messages([msg])
+        self.add_messages((msg,))
         return ents
 
     def _inv_window_recurse(self,id,parents=None,names=None,cur_id=1,parent_id=0):
-        """Internal recursion method for inventory listing."""
+        """Internal recursion method for inventory listing with default node window."""
         if not names: names = {}
         if not parents: parents = {}
         ents = self.get_ent_in(id)
@@ -371,27 +552,23 @@ class Application(object):
         return parents, names, cur_id
 
     def update_inv_window(self):
-        """Default implementation of inventory window updating."""
+        """Default implementation of inventory window updating.
+
+        Subclass and replace to use a different format or a different window type.
+        """
         if self.inv_win is None:
             return  #TODO: Error handling.
         player = self.get_player()
         names = {0:self.entity_manager.get_name(player)}
         parents = {0:None}
-#        cur_id = 1
-#        bodyparts = self.get_ent(player).get_nodes()
-#        for part in bodyparts:
-#            print names
-#            id = bodyparts[part]
-#            names[cur_id] = part
-#            parents[cur_id] = 0
-#            cur_id += 1
-#            parents, names, cur_id = self._inv_window_recurse(id,parents,names,cur_id,0)
         parents, names, cur_id = self._inv_window_recurse(player,parents,names)
-
         self.inv_win.set_nodes(parents,names)
 
     def update_game_window(self):
-        """Default implementation of graphics updating, updates map and entities; doesn't redraw walls."""
+        """Default implementation of graphics updating, updates map and entities; doesn't redraw walls.
+
+        Subclass and replace to use a different format.
+        """
         cam = self.get_camera()
         map = self.get_map()
         win = self.game_win
@@ -422,22 +599,20 @@ class Application(object):
             win.update_layer(5,tiles)
 
     def update(self):
-        """Update function, called every tick."""
+        """Update function, called every tick.
+
+        Subclass and replace to add code to run every working tick, or drawing calls.
+        """
         if self.time_passing:
             self.scheduler.tick()
             if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
                 self.update_game_window()
                 if self.player is not None:
                     self.update_inv_window()
-            #if self.msg_win is not None:
-            #    ticks = self.scheduler.ticks
-            #    self.add_messages(["Ticks: "+str(ticks)])
         self.win_man.draw_all()
 
         #input
         self.keyboard.tick()
-
-
 
     def quit(self):
         """Exit application."""
