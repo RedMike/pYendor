@@ -87,32 +87,55 @@ class Application(object):
                      ['i',[self.print_player_inventory,()]],
                      ['e',[self.player_pickup,()]],
                      ['r',[self.player_drop,()]],
-                     ['q',[self.quit,()]]]
+                     ['q',[self.quit,()]],
+                     ['t',[self.add_input_menu,("Debug statement: ",)]]]
             for set in temp:
                 key = set[0]
                 bind = set[1]
                 self.add_binding(key,bind)
 
-    def input_bindings(self, window, callback):
+    def input_bindings(self, window):
         """Bind default input keys.
 
         Any custom bindings are cleared, and keys are bound for the window and callback you pass.
 
         @type  window: L{graphics.Window}
         @param window: Window to bind to as menu.
-        @type  callback: Function.
-        @param callback: Function that gets called on accept.
         """
         self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
-        temp = [ ['<', [window.backspace,()]],
-                 ['>', [callback,(window.enter,)]]]
-        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz;\'":,.[]()_+- !?':
-            temp.append([char, [window.add_char,(char,)]])
-        for set in temp:
-            key = set[0]
-            bind = set[1]
-            self.add_binding(key,bind)
+        self.keyboard.set_default_binding(self._input_window_callback, (window,))
+
+    def _input_window_callback(self, mods, char, vk, window):
+        """Default input window callback.
+        Gets called while an input window is on the screen and a key is pressed.
+
+        @type  mods: dict
+        @param mods: State of modifiers: {'lalt', 'ralt', 'lctrl', 'rctrl', 'shift'}
+        @type  char: char
+        @param char: If vk is KEY_CHAR, this is the printable character
+        @type  vk: int
+        @param vk: Keycode, check against L{interface.KeyboardListener}.KEY_*
+        """
+        if vk == interface.KeyboardListener.KEY_BACKSPACE:
+            window.backspace()
+        elif vk == interface.KeyboardListener.KEY_ENTER:
+            #DEBUG ONLY!
+            try:
+                s = window.enter()
+                exec s
+            except Exception as e:
+                self.add_messages((str(e),))
+            self.remove_menu()
+        elif vk == interface.KeyboardListener.KEY_SPACE:
+            window.add_char(' ')
+        elif interface.KeyboardListener.KEY_0 <= vk <= interface.KeyboardListener.KEY_9:
+            window.add_char(char)
+        elif vk == interface.KeyboardListener.KEY_CHAR:
+            if mods['shift']:
+                window.add_char(char.upper())
+            else:
+                window.add_char(char)
 
     def menu_bindings(self, window, callback):
         """Bind default menu keys.
@@ -292,23 +315,25 @@ class Application(object):
         """
         self.win_man.show_window(window)
 
-    def add_input_menu(self, label, callback):
+    def get_menu_window(self):
+        """Returns current menu window or None."""
+        if len(self.menu_stack) > 0:
+            return self.win_man.get_window(self.menu_stack[-1][0])
+
+    def add_input_menu(self, label):
         """Adds an input menu to the stack and sets it as active.
 
         Callback gets called with a method that returns the string that was in the list.
 
         @type  label: string
         @param label: Text to display before input bar.
-        @type  callback: method
-        @param callback: Function that gets called with a function as a parameter, that returns the string
-                        that has been input into the window.
         """
         id = self.add_window(6, graphics.InputWindow, self.win_man.width, 6, 0, self.win_man.height-6)
         win = self.win_man.get_window(id)
         win.set_label(label)
         win.set_length(self.win_man.width-6)
-        self.input_bindings(win,callback)
-        self.menu_stack.append([id,callback])
+        self.input_bindings(win)
+        self.menu_stack.append([id])
 
     def add_choice_menu(self, labels, choices, callback):
         """Adds a single choice menu to the stack and sets it as active.
@@ -340,7 +365,10 @@ class Application(object):
         if self.menu_stack:
             id,callback = self.menu_stack[-1]
             win = self.win_man.get_window(id)
-            self.menu_bindings(win,callback)
+            if win == graphics.ChoiceWindow:
+                self.menu_bindings(win,callback)
+            elif win == graphics.InputWindow:
+                self.input_bindings(win,callback)
         else:
             self.default_bindings()
 
