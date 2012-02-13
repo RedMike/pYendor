@@ -130,10 +130,20 @@ class Application(object):
             self.time_passing = 1
             self.default_bindings()
         elif char == 'r':
-            print 'Placeholder!'  # TODO: Inventory management!
+            ent_id, usable = window.get_node_meta(window.highlight)
+            if usable:
+                self.player_drop(ent_id)
         elif char == 'e':
-            print 'Placeholder!'  # TODO: Inventory management!
-
+            pl = self.get_player()
+            pl_ent = self.get_ent(pl)
+            ent_id, usable = window.get_node_meta(window.highlight)
+            if usable and not self.get_ent_in(pl_ent.nodes['r_hand']):
+                self.set_ent_pos(ent_id, pl_ent.nodes['r_hand'])
+            elif not usable and self.get_ent_in(pl_ent.nodes['r_hand']) is not None:
+                for ent in self.get_ent_in(pl_ent.nodes['r_hand']):
+                    if self.get_ent(ent).get_attribute('usable'):
+                        self.set_ent_pos(ent, ent_id)
+        self.update_inv_window()
 
     def input_bindings(self, window):
         """Bind default input keys.
@@ -580,17 +590,20 @@ class Application(object):
         if self.get_player() is id:  #TODO: Fix me.
             self.examine_tile(x,y)
 
-    def player_drop(self):
+    def player_drop(self, id=None):
         """Attempt to have the player drop whatever is in his hand."""
         pl = self.get_player()
         pl_ent = self.get_ent(pl)
-        pos = self.get_ent_pos(pl) # TODO: drop menu
-        if self.get_ent_in(pl_ent.nodes['r_hand']):
-            for id in self.get_ent_in(pl_ent.nodes['r_hand']):
-                self.set_ent_pos(id,pos)
-        if self.get_ent_in(pl_ent.nodes['l_hand']):
-            for id in self.get_ent_in(pl_ent.nodes['l_hand']):
-                self.set_ent_pos(id,pos)
+        pos = self.get_ent_pos(pl)
+        if id is None:
+            if self.get_ent_in(pl_ent.nodes['r_hand']):
+                for id in self.get_ent_in(pl_ent.nodes['r_hand']):
+                    self.set_ent_pos(id,pos)
+            if self.get_ent_in(pl_ent.nodes['l_hand']):
+                for id in self.get_ent_in(pl_ent.nodes['l_hand']):
+                    self.set_ent_pos(id,pos)
+        else:
+            self.set_ent_pos(id,pos)
 
     def player_pickup(self):
         """Attempt to have the player pick up everything on the tile he's on.
@@ -644,19 +657,21 @@ class Application(object):
         self.add_messages((msg,))
         return ents
 
-    def _inv_window_recurse(self,id,parents=None,names=None,cur_id=1,parent_id=0):
+    def _inv_window_recurse(self,id,parents=None,names=None,meta=None,cur_id=1,parent_id=0):
         """Internal recursion method for inventory listing with default node window."""
         if not names: names = {}
         if not parents: parents = {}
+        if not meta: meta = {}
         ents = self.get_ent_in(id)
         if ents is not None:
             for child in ents:
                 orig_id = cur_id
                 names[cur_id] = self.entity_manager.get_name(child)
                 parents[cur_id] = parent_id
+                meta[cur_id] = (child,self.entity_manager.get_ent(child).get_attribute('usable'))
                 cur_id += 1
-                parents, names, cur_id = self._inv_window_recurse(child,parents,names,cur_id,orig_id)
-        return parents, names, cur_id
+                parents, names, meta, cur_id = self._inv_window_recurse(child,parents,names,meta,cur_id,orig_id)
+        return parents, names, meta, cur_id
 
     def update_inv_window(self):
         """Default implementation of inventory window updating.
@@ -668,8 +683,9 @@ class Application(object):
         player = self.get_player()
         names = {0:self.entity_manager.get_name(player)}
         parents = {0:None}
-        parents, names, cur_id = self._inv_window_recurse(player,parents,names)
-        self.inv_win.set_nodes(parents,names)
+        meta = {0:(player,False)}
+        parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
+        self.inv_win.set_nodes(parents,names,meta)
 
     def update_game_window(self):
         """Default implementation of graphics updating, updates map and entities; doesn't redraw walls.

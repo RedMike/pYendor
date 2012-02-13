@@ -16,7 +16,7 @@ class Entity(object):
                 'blocking' : 0,
                 'visible' : 1,
                 'liftable' : 1,
-                'usable' : 0
+                'usable' : 1
             }
         self.name = "generic"
         self.parent = parent

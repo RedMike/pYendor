@@ -670,24 +670,37 @@ class NodeWindow(MessageWindow):
         super(NodeWindow,self).__init__(w,h)
         self.node_list = { }
         self.node_parents = { }
-        self.add_node(0,None,"root")
+        self.node_meta = { }
+        self.add_node(0,None,"root",(0,))
         self.highlight = None
 
-    def set_nodes(self, parents, texts):
+    def set_nodes(self, parents, texts, meta=None):
+        if meta is None:
+            meta = { }
         self.node_list = { }
         self.node_parents = { }
+        self.node_meta = { }
         for id in texts.keys():
-            self.add_node(id, parents[id], texts[id])
+            if id not in meta:
+                meta[id] = ()
+            self.add_node(id, parents[id], texts[id], meta[id])
         self.update()
 
-    def add_node(self, id, parent, text):
+    def add_node(self, id, parent, text, meta=()):
         if id in self.node_list:
             del self.node_list[id]
             del self.node_parents[id]
+            del self.node_meta[id]
         if parent not in self.node_list and parent is not None:
             parent = 0
         self.node_list[id] = text
         self.node_parents[id] = parent
+        self.node_meta[id] = meta
+
+    def get_node_meta(self, id):
+        if id not in self.node_list:
+            return  #TODO: error handling
+        return self.node_meta[id]
 
     def get_node_text(self, id):
         if id not in self.node_list:
