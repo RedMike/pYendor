@@ -183,6 +183,7 @@ class WindowManager(object):
         for layer in l:
             for id in self.layers:
                 if self.layers[id] == layer:
+                    self.get_window(id).update()
                     self.specific_draw_window(id)
         self.specific_flush()
 
@@ -212,6 +213,52 @@ class Window(object):
     def specific_init(self):
         """Library-specific console initialisation."""
         self.con = libtcod.console_new(self.width,self.height)
+
+    def specific_set_bg_col(self,x,y,bgcol):
+        """Library-specific setting a position's background color.
+
+        @type  x: number
+        @param x: X coordinate.
+        @type  y: number
+        @param y: Y coordinate.
+        @type  bgcol: libtcod.Color
+        @param bgcol: Color to set the cell's background color to.
+        """
+        libtcod.console_set_background_color(self.con,bgcol)
+        libtcod.console_set_back(self.con,x,y,bgcol)
+
+    def specific_set_fg_col(self,x,y,bgcol):
+        """Library-specific setting a position's foreground color.
+
+        @type  x: number
+        @param x: X coordinate.
+        @type  y: number
+        @param y: Y coordinate.
+        @type  bgcol: libtcod.Color
+        @param bgcol: Color to set the cell's foreground color to.
+        """
+        libtcod.console_set_foreground_color(self.con,bgcol)
+        libtcod.console_set_fore(self.con,x,y,bgcol)
+
+    def specific_get_bg_col(self,x,y):
+        """Library-specific getting a position's background color.
+
+        @type  x: number
+        @param x: X coordinate.
+        @type  y: number
+        @param y: Y coordinate.
+        """
+        return libtcod.console_get_back(self.con,x,y)
+
+    def specific_get_fg_col(self,x,y):
+        """Library-specific getting a position's foreground color.
+
+        @type  x: number
+        @param x: X coordinate.
+        @type  y: number
+        @param y: Y coordinate.
+        """
+        return libtcod.console_get_fore(self.con,x,y)
 
     def specific_draw_char(self,x,y,char,bgcol,fgcol,bgset):
         """Library-specific drawing a character at a position with a specific color.
@@ -287,6 +334,27 @@ class Window(object):
         libtcod.console_set_foreground_color(self.con,fgcol)
         libtcod.console_clear(self.con)
 
+    def reverse_at(self,x,y):
+        """Reverse the colors in a cell.
+        
+        @type  x: number
+        @param x: X coordinate.
+        @type  y: number
+        @param y: Y coordinate.
+        """
+        colb = self.specific_get_bg_col(x,y)
+        colf = self.specific_get_fg_col(x,y)
+        self.specific_set_bg_col(x,y,colf)
+        self.specific_set_fg_col(x,y,colb)
+
+    def reverse_rect(self,x,y,w,h):
+        for i in range(x, x+w):
+            for j in range(y, y+h):
+                self.reverse_at(i,j)
+
+    def reverse_line(self,y):
+        self.reverse_rect(2,y,self.width-4,1)
+
     def set_border(self,tile):
         """Set the border type, (bgcol, char, fgcol, bgset) or None for no border.
 
@@ -339,7 +407,7 @@ class Window(object):
         """
         for msg in msgs:
             x, y, line = msg
-            self.specific_print_line_rect(convert(self.bgcol), convert(self.fgcol), x, y, self.width-3, 0, line)
+            self.specific_print_line_rect(convert(self.bgcol), convert(self.fgcol), x, y, self.width-4, 0, line)
 
     def clear(self,bgcol = None, fgcol = None):
         """Clear window.
@@ -360,6 +428,10 @@ class Window(object):
         fgcol = convert(fgcol)
         self.specific_console_clear(bgcol,fgcol)
         self.restore_border()
+
+    def update(self):
+        """Internally-called updater method."""
+        pass
 
 
 class LayeredGameWindow(Window):
@@ -405,6 +477,10 @@ class MessageWindow(Window):
         """
         super(MessageWindow,self).__init__(w,h)
         self.messages = [ ]
+
+    def get_msg_y(self,id):
+        """Returns y coordinate of message."""
+        return self.messages[id][1]
         
     def get_current_height(self):
         """Returns current height of messages in window.
@@ -414,8 +490,12 @@ class MessageWindow(Window):
         """
         y = 2  # padding for border
         for msg in self.messages:
-            y += self.specific_get_line_height(2, y, self.width-4, 0, msg[2])
+            y += self.get_msg_height(y, msg[2])
         return y
+
+    def get_msg_height(self, y, msg):
+        """Convenience method."""
+        return self.specific_get_line_height(2, y, self.width-4, 0, msg)
 
     def add_messages(self,msgs):
         """Add messages to queue.
@@ -425,13 +505,13 @@ class MessageWindow(Window):
         """
         for msg in msgs:
             y = self.get_current_height()
-            h = self.specific_get_line_height(2, y, self.width-4, 0, msg)
+            h = self.get_msg_height(y, msg)
             while y + h > self.height - 2:
                 del self.messages[0]
                 y = 2
                 for tmp_msg in self.messages:
                     tmp_msg[1] = y
-                    y += self.specific_get_line_height(2, y, self.width-4, 0, tmp_msg[2])
+                    y += self.get_msg_height(y, tmp_msg[2])
                 y = self.get_current_height()
             self.messages.append([2, y, msg])
         self.clear()
@@ -457,20 +537,20 @@ class ChoiceWindow(MessageWindow):
         self.choices = choices
         if self.highlight is None or self.highlight>=len(self.choices):
             self.highlight = 0
-        self.tick()
+        self.update()
         
     def add_choice(self,choice):
         """Add new choice."""
         self.choices.append(choice)
         if self.highlight is None:
             self.highlight = 0
-        self.tick()
+        self.update()
     
     def set_highlight(self,id):
         """Set currently highlighted choice."""
         if len(self.choices) > id >= 0:
             self.highlight = id
-        self.tick()
+        self.update()
     
     def move_up(self):
         """Move currently selected choice up."""
@@ -484,7 +564,7 @@ class ChoiceWindow(MessageWindow):
         """Returns currently selected choice."""
         return self.highlight
 
-    def tick(self):
+    def update(self):
         """Internally-called updater method."""
         self.messages = [ ]
         self.draw_messages(self.messages)
@@ -493,12 +573,13 @@ class ChoiceWindow(MessageWindow):
         msgs += [' ']
         for id in range(len(self.choices)):
             choice = self.choices[id]
-            if id != self.highlight:
-                line = '  ' + str(id) + '.  ' + choice
-            else:
-                line = '  X.  ' + choice
+            line = '  ' + str(id) + '.  ' + choice
             msgs.append(line)
         self.add_messages(msgs)
+        y = self.get_msg_y(self.highlight+len(self.labels)+1)
+        h = self.get_msg_height(0,self.choices[self.highlight]+'  ' + str(self.highlight) +'.  ')
+        for i in range(h):
+            self.reverse_line(y+i)
 
 
 class InputWindow(MessageWindow):
@@ -576,7 +657,7 @@ class InputWindow(MessageWindow):
     def update(self):
         """Internally-called updater method."""
         self.clear()
-        msgs = [self.label, ">>> " + self.input, '']
+        msgs = [self.label + self.input]
         self.messages = []
         self.add_messages(msgs)
         self.restore_border()
@@ -590,13 +671,14 @@ class NodeWindow(MessageWindow):
         self.node_list = { }
         self.node_parents = { }
         self.add_node(0,None,"root")
+        self.highlight = None
 
     def set_nodes(self, parents, texts):
         self.node_list = { }
         self.node_parents = { }
         for id in texts.keys():
             self.add_node(id, parents[id], texts[id])
-        self.tick()
+        self.update()
 
     def add_node(self, id, parent, text):
         if id in self.node_list:
@@ -632,7 +714,7 @@ class NodeWindow(MessageWindow):
             ret = self._recurse_children(child, ret, depth+1)
         return ret
 
-    def tick(self):
+    def update(self):
         self.clear()
         msgs = ["<" + self.get_node_text(0) + ">"]
         self._depth = 0
@@ -640,4 +722,6 @@ class NodeWindow(MessageWindow):
         self.messages = [ ]
         self.add_messages(msgs)
         self.restore_border()
+        if self.highlight is not None:
+            self.reverse_line(self.get_msg_y(self.highlight))
 

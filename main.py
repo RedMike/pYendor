@@ -71,7 +71,6 @@ def menu_callback(fct):
         app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Recursion.", "Anti-recursion."), menu_callback)
     elif choice == 3:
         app.remove_menu()
-
 app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Recursion"), menu_callback)
 while not app.exit:
     app.update()

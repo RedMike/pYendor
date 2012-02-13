@@ -84,16 +84,56 @@ class Application(object):
                      [self.keyboard.KEY_DOWN,[player.move,(0,1)]],
                      [self.keyboard.KEY_LEFT,[player.move,(-1,0)]],
                      [self.keyboard.KEY_RIGHT,[player.move,(1,0)]],
-                     ['i',[self.print_player_inventory,()]],
+                     ['i',[self.node_bindings,(self.inv_win, self._inventory_window_callback)]],
                      ['e',[self.player_pickup,()]],
                      ['r',[self.player_drop,()]],
                      ['q',[self.quit,()]],
                      [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
-                     ['t',[self.add_input_menu,("Debug statement: ",)]]]
+                     ['t',[self.add_input_menu,(">>> ",)]]]
             for set in temp:
                 key = set[0]
                 bind = set[1]
                 self.add_binding(key,bind)
+
+    def node_bindings(self, window, callback):
+        """Bind default node window keys.
+
+        Any custom bindings are cleared, and keys are bound for the window and callback you pass.
+
+        @type  window: L{graphics.Window}
+        @param window: Window to bind to as menu.
+        """
+        self.time_passing = 0  # TODO: Fix this.
+        self.clear_bindings()
+        if window.highlight is None:
+            window.highlight = 0
+        self.keyboard.set_default_binding(callback, (window,))
+
+    def _inventory_window_callback(self, mods, char, vk, window):
+        """Callback for input when working with inventory windows.
+
+        @type  mods: dict
+        @param mods: State of modifiers in the form of {'lalt', 'ralt', 'lctrl', 'rctrl', 'shift'}
+        @type  char: char
+        @param char: If vk is KEY_CHAR, this is the printable character
+        @type  vk: int
+        @param vk: Keycode, check against L{interface.KeyboardListener}.KEY_*
+        """
+        if vk == self.keyboard.KEY_UP:
+            if window.highlight > 0:
+                window.highlight -= 1
+        elif vk == self.keyboard.KEY_DOWN:
+            if window.highlight < len(window.messages):
+                window.highlight += 1
+        elif char == 'q':
+            window.highlight = None
+            self.time_passing = 1
+            self.default_bindings()
+        elif char == 'r':
+            print 'Placeholder!'  # TODO: Inventory management!
+        elif char == 'e':
+            print 'Placeholder!'  # TODO: Inventory management!
+
 
     def input_bindings(self, window):
         """Bind default input keys.
@@ -112,7 +152,7 @@ class Application(object):
         Gets called while an input window is on the screen and a key is pressed.
 
         @type  mods: dict
-        @param mods: State of modifiers: {'lalt', 'ralt', 'lctrl', 'rctrl', 'shift'}
+        @param mods: Modifier state in the form of {'lalt', 'ralt', 'lctrl', 'rctrl', 'shift'}
         @type  char: char
         @param char: If vk is KEY_CHAR, this is the printable character
         @type  vk: int
