@@ -80,14 +80,15 @@ class Application(object):
         self.clear_bindings()
         player = self.get_ent(self.get_player())
         if player is not None:
-            temp = [ ['w',[player.move,(0,-1)]],
-                     ['s',[player.move,(0,1)]],
-                     ['a',[player.move,(-1,0)]],
-                     ['d',[player.move,(1,0)]],
+            temp = [ [self.keyboard.KEY_UP,[player.move,(0,-1)]],
+                     [self.keyboard.KEY_DOWN,[player.move,(0,1)]],
+                     [self.keyboard.KEY_LEFT,[player.move,(-1,0)]],
+                     [self.keyboard.KEY_RIGHT,[player.move,(1,0)]],
                      ['i',[self.print_player_inventory,()]],
                      ['e',[self.player_pickup,()]],
                      ['r',[self.player_drop,()]],
                      ['q',[self.quit,()]],
+                     [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
                      ['t',[self.add_input_menu,("Debug statement: ",)]]]
             for set in temp:
                 key = set[0]
@@ -149,9 +150,9 @@ class Application(object):
         """
         self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
-        temp = [ ['w', [window.move_up,()]],
-               ['s', [window.move_down,()]],
-               ['d', [callback,(window.enter,)]]
+        temp = [ [self.keyboard.KEY_UP, [window.move_up,()]],
+               [self.keyboard.KEY_DOWN, [window.move_down,()]],
+               [self.keyboard.KEY_ENTER, [callback,(window.enter,)]]
         ]
         for set in temp:
             key = set[0]
@@ -368,7 +369,7 @@ class Application(object):
             if win == graphics.ChoiceWindow:
                 self.menu_bindings(win,callback)
             elif win == graphics.InputWindow:
-                self.input_bindings(win,callback)
+                self.input_bindings(win)
         else:
             self.default_bindings()
 
@@ -377,7 +378,7 @@ class Application(object):
 
         Convenience function, passes to L{interface module <interface.KeyboardListener>}.
         """
-        self.keyboard.add_binding(key,bind)
+        self.keyboard.add_char_binding(key,bind)
     
     def remove_binding(self,key):
         """Remove a key binding.

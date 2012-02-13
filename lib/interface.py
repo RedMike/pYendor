@@ -73,9 +73,8 @@ class KeyboardListener:
     KEY_SPACE = 64
     KEY_CHAR = 65
 
-    def __init__(self, bindings=None):
-        if not bindings: bindings = dict()
-        self.bindings = bindings
+    def __init__(self):
+        self.bindings = { }
         self.default = None
         self.default_params = ()
 
@@ -93,9 +92,24 @@ class KeyboardListener:
         """
         self.default = fct
         self.default_params = params
+
+    def add_bindings(self,vk,bind):
+        """Adds a keycode binding to the listener.
+
+        Does nothing for CHAR or numbers.
+
+        @type  vk: int
+        @param vk: KEY_* keycode.
+        @type  bind: tuple
+        @param bind: Tuple of the form (fct, (param1, param2, ..)).
+        """
+        if (vk < self.KEY_0 or vk > self.KEY_9) and vk != self.KEY_CHAR:
+            self.bindings[vk] = bind
+
+
     
-    def add_binding(self,key,bind):
-        """Adds a binding to the listener.
+    def add_char_binding(self,key,bind):
+        """Adds a character binding to the listener.
 
         @type  key: char
         @param key: Character to which to add a binding.
@@ -124,7 +138,12 @@ class KeyboardListener:
         """
         key = libtcod.console_wait_for_keypress(False)
         k = chr(key.c)
-        if k in self.bindings:
+        vk = key.vk
+        if vk in self.bindings:
+            f = self.bindings[vk][0]
+            vars = self.bindings[vk][1]
+            f(*vars)
+        elif k in self.bindings:
             f = self.bindings[k][0]
             vars = self.bindings[k][1]
             f(*vars)
