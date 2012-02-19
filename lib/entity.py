@@ -91,17 +91,17 @@ class Door(Trap):
     def toggle(self):
         if self.open:
             self.open = 0
-            self.set_attribute('solid',1)
+            self.set_attribute('blocking',1)
         else:
             self.open = 1
-            self.set_attribute('solid',0)
+            self.set_attribute('blocking',0)
 
 class NPC(Entity):
 
     def __init__(self,parent,id):
         """Base blocking, unliftable, unusable entity for subclass."""
         super(NPC,self).__init__(parent,id)
-        self.set_attributes('01100')
+        self.set_attributes('00100') # TODO: Set back to blocking
         self.char = '@'
         self.fgcol = (0,255,255)
         self.dead = 0

@@ -1,0 +1,14 @@
+[dead_end_d]
+width=6
+height=6
+line0=######
+line1=###.##
+line2=##.p.#
+line3=#....#
+line4=#...##
+line5=##..##
+top=no
+bottom=yes
+left=no
+right=no
+p=player_spawn

@@ -219,34 +219,36 @@ class Application(object):
         @type  set: bool
         @param set: If true, sets map as active.
         """
-        self.add_map(map=map.BasicGenerator(w,h).gen_map(),
+        gen = map.BlockGenerator(w,h)
+        gen.set_layout('test')
+        self.add_map(map=gen.gen_map(),
                     set=set)
 
-        # TODO: better entity generation
-        m = self.get_map()
-        m = m.get_rect(0,0,m.width,m.height)
-        s = "#$*()[]"
-        n = ["backpack", "bag", "box", "crate"]
-        for i in range(len(m)):
-            for j in range(len(m[i])):
-                if not m[i][j][0]:
-                    r = random.randint(0,500)
-                    if r < 5:
-                        id = self.add_entity(i, j)
-                        if random.randint(0,100) < 220:
-                            self.entity_manager.set_attribute(id,'solid',0)
-                        ent = self.get_ent(id)
-                        ent.char = s[random.randint(0,len(s)-1)]
-                        ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
-                        ent.name = n[random.randint(0,len(n)-1)]
-                        if random.randint(0,100) < 50:
-                            id2 = self.add_entity(i, j)
-                            self.set_ent_pos(id2,id)
-                            if random.randint(0,100) < 70:
-                                id2 = self.add_entity(i, j)
-                                self.set_ent_pos(id2,id)
-                                id2 = self.add_entity(i, j)
-                                self.set_ent_pos(id2,id)
+#        # TODO: better entity generation
+#        m = self.get_map()
+#        m = m.get_rect(0,0,m.width,m.height)
+#        s = "#$*()[]"
+#        n = ["backpack", "bag", "box", "crate"]
+#        for i in range(len(m)):
+#            for j in range(len(m[i])):
+#                if not m[i][j][0]:
+#                    r = random.randint(0,500)
+#                    if r < 5:
+#                        id = self.add_entity(i, j)
+#                        if random.randint(0,100) < 220:
+#                            self.entity_manager.set_attribute(id,'solid',0)
+#                        ent = self.get_ent(id)
+#                        ent.char = s[random.randint(0,len(s)-1)]
+#                        ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
+#                        ent.name = n[random.randint(0,len(n)-1)]
+#                        if random.randint(0,100) < 50:
+#                            id2 = self.add_entity(i, j)
+#                            self.set_ent_pos(id2,id)
+#                            if random.randint(0,100) < 70:
+#                                id2 = self.add_entity(i, j)
+#                                self.set_ent_pos(id2,id)
+#                                id2 = self.add_entity(i, j)
+#                                self.set_ent_pos(id2,id)
 
 
     def add_map(self,file=0,map=0,set=0):
@@ -557,15 +559,15 @@ class Application(object):
         ex, ey = self.get_ent_pos(id)
         if self.get_map() is not None:
             # check for wall
-            if self.get_map().get_tile(x + ex, y + ey)[0]:
-                can_move = 0
+#            if self.get_map().get_tile(x + ex, y + ey)[0]:
+#                can_move = 0
             # check if we're blocking or not
-            if self.entity_manager.get_attribute(id,'blocks'):
+            if self.entity_manager.get_attribute(id,'blocking'):
                 # we are, let's check for entities on that spot, if they're blocking
                 ents = self.get_ent_at(x + ex, y + ey)
                 if ents is not None:
                     for ent in ents:
-                        if self.entity_manager.get_attribute(ent,'blocks'):
+                        if self.entity_manager.get_attribute(ent,'blocking'):
                             can_move = 0
             if can_move:
                 self.entity_move(id, x + ex, y + ey)
