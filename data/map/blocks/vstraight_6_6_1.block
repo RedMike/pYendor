@@ -1,0 +1,13 @@
+[vstraight_6_6_1]
+WIDTH=6
+HEIGHT=6
+LINE0= #....#
+LINE1= ##..##
+LINE2= ##..##
+LINE3= ##..##
+LINE4= ##..##
+LINE5= #....#
+TOP=1,4
+BOTTOM=1,4
+LEFT=0,0
+RIGHT=0,0

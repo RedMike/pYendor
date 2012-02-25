@@ -478,12 +478,13 @@ class Application(object):
         map = self.get_map()
         if map is None:
             raise NoMapError
-        tiles = map.get_rect(0,0,3,map.height)
+        tiles = map.get_rect(0,0,map.width,map.height)
         x, y = 0, 0
         for i in range(len(tiles)):
             for j in range(len(tiles[i])):
                 if not tiles[i][j][0]:
                     x, y = i, j
+                    break;
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )

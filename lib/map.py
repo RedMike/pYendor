@@ -112,13 +112,16 @@ class BlockGenerator(Generator):
         self.parser.read('data/map/'+name+'.layout')
         self.accepted_sizes = set()
         for id in os.listdir('data/map/blocks/'):
-            print 'Read a block in!'
             id = id.replace('.block','')
             # read in the blocks and add their data to the dicts
             self.parser.read('data/map/blocks/'+id+'.block')
             self.block_widths[id] = self.parser.getint(id,'width')
             self.block_heights[id] = self.parser.getint(id,'height')
-            self.block_dirs[id] = { i : self.parser.getboolean(id,i) for i in ('top','bottom','left','right')}
+            self.block_dirs[id] = { }
+            for dir in ('top', 'bottom', 'left', 'right'):
+                s = self.parser.get(id,dir)
+                # s is a offset, length
+                self.block_dirs[id][dir] = tuple(map(int,s.split(',')))
             self.block_walls[id] = [ ]
             for i in range(self.block_heights[id]):
                 line = self.parser.get(id, 'line' + str(i))
@@ -131,50 +134,57 @@ class BlockGenerator(Generator):
                 self.block_walls[id].append(line_new)
             self.accepted_sizes.add((self.block_widths[id],self.block_heights[id]))
 
-    def choose_block(self,x,y,dir='top'):
-        ret = []
-        for id in self.block_heights.keys():
-            if self.block_dirs[id][dir]:
-                w = self.block_widths[id]
-                h = self.block_heights[id]
-                rect = (x, y, w, h)
-                if not self.check_col(rect):
-                    ret.append(id)
-        if ret:
-            return random.choice(ret)
+    def choose_block(self, old_x, old_y, old_id, old_dir):
+        new_dir = "bottom"
+        if old_dir == "bottom":
+            new_dir = "top"
+        elif old_dir == "left":
+            new_dir = "right"
+        elif old_dir == "right":
+            new_dir = "left"
+        width = self.block_dirs[old_id][old_dir][1]
+        valid_blocks = [ ]
+        for block in self.block_dirs.keys():
+            dir = self.block_dirs[block][new_dir]
+            if 0 < dir[1] <= width:
+                #the exit fits, let's see if it has room from the other blocks
+                x = old_x
+                y = old_y
+                w = self.block_widths[block]
+                h = self.block_heights[block]
+                x += self.block_widths[old_id] * (old_dir == "right") - w * (old_dir == "left")
+                y += self.block_heights[old_id] * (old_dir == "bottom") - h * (old_dir == "top")
+                off = self.block_dirs[old_id][old_dir][0]
+                n_off = dir[0]
+                #we offset the new block so that the two exits more or less line up
+                if old_dir in ("left", "right"):
+                    y -= (n_off - off) - (width - dir[1])/2
+                elif old_dir in ("top", "bottom"):
+                    x -= (n_off - off) - (width - dir[1])/2
+                if not self.check_col((x,y,w,h)):
+                    valid_blocks.append((x,y,block))
+        if valid_blocks:
+            return random.choice(valid_blocks)  # TODO: Add customisable bias!
         return None
 
-    def _recurse_gen(self,x,y,dir):
-        id = self.choose_block(x,y,dir)
-        if id is None:
-            return
-        w = self.block_widths[id]
-        h = self.block_heights[id]
-        self.add_rect(x,y,w,h)
-        self.place_block(x,y,id)
-        for key in self.block_dirs[id].keys():
-            if self.block_dirs[id][key]:
-                new_dir = "top"
-                if key == "top":
-                    new_dir = "bottom"
-                elif key == "left":
-                    new_dir = "right"
-                elif key == "right":
-                    new_dir = "left"
-                new_x = x+(key == "right")*w + (key=="left")*(-w)
-                new_y = y+(key == "bottom")*h + (key=="top")*(-h)
-                if 0 < new_x < self.width and 0 < new_y < self.height:
-                    self._recurse_gen( new_x,new_y,new_dir)
+    def _recurse_gen(self, x, y, block_id):
+        self.add_rect(x, y, self.block_widths[block_id], self.block_heights[block_id])
+        self.place_block(x, y, block_id)
+        for dir in self.block_dirs[block_id].keys():
+            dirs = self.block_dirs[block_id][dir]
+            if dirs[1]:
+                #it's a valid direction for the block, let's find if we've got a block that fits
+                choice = self.choose_block(x, y, block_id, dir)
+                if choice:
+                    #we've got a block!
+                    #recurse over it too
+                    self._recurse_gen(*choice)
 
     def gen_map(self):
         self.map.clear()
-        #x, y = random.randint(0, self.width), random.randint(0, self.height)
-        x, y = 10, 10
-        #self.map.add_rect(0, y, self.width, 1, _FLOOR)
-        #self.map.add_rect(x, 0, 1, self.height, _FLOOR)
-
-        self._recurse_gen(x, y, "bottom")
-
+        x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
+        block = self.parser.get('layout','start')
+        self._recurse_gen(x, y, block)
         return self.map
 
 

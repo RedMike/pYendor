@@ -1,0 +1,14 @@
+[dead_left_7_7]
+WIDTH=7
+HEIGHT=7
+LINE0= #######
+LINE1= ....###
+LINE2= ....###
+LINE3= ....###
+LINE4= ....###
+LINE5= ....###
+LINE6= #######
+TOP=0,0
+BOTTOM=0,0
+LEFT=1,5
+RIGHT=0,0

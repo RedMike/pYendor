@@ -1,0 +1,14 @@
+[dead_up_7_7]
+WIDTH=7
+HEIGHT=7
+LINE0= #.....#
+LINE1= #.....#
+LINE2= #.....#
+LINE3= #.....#
+LINE4= #######
+LINE5= #######
+LINE6= #######
+TOP=1,5
+BOTTOM=0,0
+LEFT=0,0
+RIGHT=0,0
