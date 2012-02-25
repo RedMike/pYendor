@@ -484,7 +484,7 @@ class Application(object):
             for j in range(len(tiles[i])):
                 if not tiles[i][j][0]:
                     x, y = i, j
-                    break;
+                    break
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
@@ -560,8 +560,8 @@ class Application(object):
         ex, ey = self.get_ent_pos(id)
         if self.get_map() is not None:
             # check for wall
-#            if self.get_map().get_tile(x + ex, y + ey)[0]:
-#                can_move = 0
+            if self.get_map().get_tile(x + ex, y + ey)[0]:
+                can_move = 0
             # check if we're blocking or not
             if self.entity_manager.get_attribute(id,'blocking'):
                 # we are, let's check for entities on that spot, if they're blocking
@@ -590,8 +590,6 @@ class Application(object):
         No collision checks involved.
         """
         self.entity_manager.set_pos(id, (x,y))
-        if self.get_player() is id:  #TODO: Fix me.
-            self.examine_tile(x,y)
 
     def player_drop(self, id=None):
         """Attempt to have the player drop whatever is in his hand."""
