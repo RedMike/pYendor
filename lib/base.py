@@ -42,7 +42,7 @@ class Application(object):
         self.scheduler = time.Scheduler()
 
         # Entity management done by EntityManager.
-        self.entity_manager = entity_man.EntityManager()
+        self.entity_manager = entity_man.EntityManager(self)
 
         # Player and camera entities are saved so that you could switch cameras
         # OR players quite easily.
@@ -460,14 +460,9 @@ class Application(object):
         @type  delay: number
         @param delay: Number of ticks inbetween calls of the entity's draw_tiles method.
         """
-        id = self.entity_manager.add_entity(self, type)
+        id = self.entity_manager.add_entity(type,delay)
         self.entity_manager.set_pos(id, (x, y))
-        self.entity_manager.set_attribute(id, 'delay', delay)
-        if delay is not None:
-            self.entity_manager.schedule(self.scheduler, id)
-        self.entity_manager.get_ent(id).id = id
-        if self.debug:
-            self.entity_manager.get_ent(id).name += '#'+str(id)
+        self.entity_manager.get_ent(id).name += '#'+str(id)  # TODO: remove debug ids
         return id
 
     def place_player(self,delay):
@@ -550,18 +545,17 @@ class Application(object):
         """
         pass
 
-    def try_entity_move_relative(self, id, x, y):
-        """Checks collisions and restrictions in place, then tries to move an entity.
+    def collision_check(self, id, x, y):
+        """Checks collisions and restrictions in place, returns I{True} for able to move..
 
         Raises NoMapError when map is not initialised yet.
-        Calls L{entity_move}.
         """
-        can_move = 1
+        can_move = True
         ex, ey = self.get_ent_pos(id)
         if self.get_map() is not None:
             # check for wall
             if self.get_map().get_tile(x + ex, y + ey)[0]:
-                can_move = 0
+                can_move = False
             # check if we're blocking or not
             if self.entity_manager.get_attribute(id,'blocking'):
                 # we are, let's check for entities on that spot, if they're blocking
@@ -569,9 +563,8 @@ class Application(object):
                 if ents is not None:
                     for ent in ents:
                         if self.entity_manager.get_attribute(ent,'blocking'):
-                            can_move = 0
-            if can_move:
-                self.entity_move(id, x + ex, y + ey)
+                            can_move = False
+            return can_move
         else:
             raise NoMapError
 
@@ -580,9 +573,7 @@ class Application(object):
 
         Passes call to L{try_entity_move_relative}.
         """
-        x, y = self.get_ent_pos(id2)
-        ex, ey = self.get_ent_pos(id)
-        self.try_entity_move_relative(id, x-ex, y-ey)
+
 
     def entity_move(self, id, x, y):
         """Directly move an entity to a position.
@@ -620,8 +611,10 @@ class Application(object):
                 if self.entity_manager.get_attribute(id,'liftable'):
                     if not self.get_ent_in(pl_ent.nodes['r_hand']):
                         self.set_ent_pos(id,pl_ent.nodes['r_hand'])
+                        break
                     elif not self.get_ent_in(pl_ent.nodes['l_hand']):
                         self.set_ent_pos(id,pl_ent.nodes['l_hand'])
+                        break
 
     def print_player_inventory(self):
         """Prints the player's inventory to the message window.
@@ -710,7 +703,7 @@ class Application(object):
 
         tiles = [ ]
         for id in self.entity_manager.get_ids():
-            if self.entity_manager.get_ent(id).get_attribute('visible'):
+            if self.entity_manager.get_attribute(id,'visible'):
                 tx, ty = self.get_ent_pos(id)
                 ent = self.get_ent(id)
                 tiles.append([tx-x+cx, ty-y+cy, (0,0,0), ent.char, ent.fgcol, 0])

@@ -22,18 +22,26 @@ class EntityManager(object):
     cur_id is the current free ID to be assigned.
     """
 
-    def __init__(self):
+    def __init__(self,parent):
         self.class_lookup = EntityLookup()
         self.lookup = { }
         self.positions = { }
         self.schedules = { }
+        self.parent = parent
+        self.scheduler = parent.scheduler
         self.cur_id = 0
 
-    def add_entity(self, parent, type):
-        """Adds a new entity of type to entity_list, and returns its ID; does not set anything."""
+    def add_entity(self, type,delay=None):
+        """Adds a new entity of type to entity_list, and returns its ID.
+
+        Sets the parent property of the entity.
+        """
         id = self.cur_id
         type = self.class_lookup.get_class(type)
-        self.lookup[id] = type(parent,id)
+        self.lookup[id] = type(self,id)
+        self.set_attribute(id, 'delay', delay)
+        if delay is not None:
+            self.schedule(self.scheduler, id)
         self.adjust_cur_id()
         return id
 
@@ -121,6 +129,21 @@ class EntityManager(object):
         if delay is not None:
             self.schedules[id] = sched.add_schedule((ent.update, (), delay))
 
+    def move_ent_to_ent(self,id,id2):
+        """Passes call to try to move an entity to another into relative coords."""
+        ret = self.get_pos(id2)
+        x, y = ret
+        ret = self.get_pos(id)
+        ex, ey = ret
+        self.move_ent(id, x-ex, y-ey)
+
+    def move_ent(self,id,x,y):
+        """Tries to move an entity in a relative direction, with collision checking."""
+        if self.parent.collision_check(id,x,y):
+            pos = self.get_pos(id)
+            pos = (pos[0]+x, pos[1]+y)
+            self.set_pos(id,pos)
+
     def set_pos(self, id, obj):
         """Sets the entity's position to the given obj; can be tuple (x, y), or id of other entity."""
         if isinstance(obj,int):
@@ -130,8 +153,6 @@ class EntityManager(object):
 
     def adjust_cur_id(self):
         self.cur_id += 1  # TODO: Make it so it fills back gaps in IDs by destroyed ents.
-
-
 
 class EntityLookup:
     """Simple entity lookup class.

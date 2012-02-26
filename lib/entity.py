@@ -9,7 +9,7 @@ class Entity(object):
     Basically various attributes and utility methods.
     """
 
-    def __init__(self, parent,id=None):
+    def __init__(self, parent, id):
         """Replace attributes, name and callbacks with ones needed after creation."""
         self.attributes = {
                 'fixed' : 0,
@@ -19,10 +19,10 @@ class Entity(object):
                 'usable' : 1
             }
         self.name = "generic"
-        self.parent = parent
         self.id = id
         self.char = '?'
         self.fgcol = (255,255,255)
+        self.parent = parent
 
     def get_id(self):
         """Return entity ID, or raise IDNotAssigned."""
@@ -42,7 +42,10 @@ class Entity(object):
         self.attributes[att] = val
 
     def set_attributes(self,atts):
-        """Set default attributes; takes a string of the form: 'FBVLU'."""
+        """Set default attributes; takes a string of the form: 'FBVLU'.
+
+        Fixed, Blocking, Visible, Liftable, Usable.
+        """
         if len(atts) != 5:
             return
         assoc = {0:'fixed', 1:'blocking', 2:'visible', 3:'liftable', 4:'usable'}
@@ -60,7 +63,7 @@ class Entity(object):
 
     def move(self,x,y):
         """Try to move in the (x,y) direction."""
-        self.parent.try_entity_move_relative(self.id,x,y)
+        self.parent.move_ent(self.id,x,y)
 
     def update(self):
         pass
@@ -129,8 +132,8 @@ class Humanoid(NPC):
         return self.nodes
 
     def add_node(self,name):
-        id = self.parent.add_entity(0,0,'bodypart',0)
-        self.parent.set_ent_pos(id, self.id)
+        id = self.parent.add_entity('bodypart')
+        self.parent.set_pos(id, self.id)
         self.parent.get_ent(id).name = name
         self.nodes[name] = id
 
@@ -166,7 +169,7 @@ class Camera(Ethereal):
 
     def sync_camera(self, pid):
         """Try to move to player's location."""
-        self.parent.try_entity_move_to_entity(self.id,pid)
+        self.parent.move_ent_to_ent(self.id,pid)
 
 class EntityError(Exception):
     """Base class for entity errors."""
