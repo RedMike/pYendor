@@ -72,7 +72,7 @@ class BasicGenerator(Generator):
 class BlockGenerator(Generator):
 
     def __init__(self,w,h):
-        super(BlockGenerator,self).__init__(150,150) # TODO: Fix me
+        super(BlockGenerator,self).__init__(w,h) # TODO: Fix me
         self.block_walls = { }
         self.block_dirs = { }
         self.block_widths = { }
@@ -80,15 +80,26 @@ class BlockGenerator(Generator):
         self.parser = None
         self.accepted_sizes = set()
         self.rects = [ ]
+        self.entities = [ ]
 
     def add_rect(self,x,y,w,h):
         self.rects.append((x,y,w,h))
 
+    def add_ent(self,x,y,block_id,char):
+        if self.parser.has_option(block_id,char) and self.parser.has_option(block_id,char+"_chance"):
+            #it's an actual entity spawner definition
+            lookup_name = self.parser.get(block_id,char)
+            chance = self.parser.getfloat(block_id,char+"_chance")
+            self.entities.append((x,y,lookup_name,chance))
+
     def place_block(self,x,y,id):
         for i in range(len(self.block_walls[id])):
             for j in range(len(self.block_walls[id][i])):
-                if self.block_walls[id][i][j] != '#':
+                char = self.block_walls[id][i][j]
+                if char != '#':
                     self.map.add_tile(x+j,y+i,_FLOOR)
+                    self.add_ent(x+i,y+j,id,char)
+
 
     def check_rect(self,x,y,w,h):
         if x<0 or y<0 or x+w>self.width or y+h>self.height:
@@ -125,13 +136,7 @@ class BlockGenerator(Generator):
             self.block_walls[id] = [ ]
             for i in range(self.block_heights[id]):
                 line = self.parser.get(id, 'line' + str(i))
-                line_new = ''
-                for char in line:
-                    if char != '#':
-                        line_new += '.'
-                    else:
-                        line_new += '#'
-                self.block_walls[id].append(line_new)
+                self.block_walls[id].append(line)
             self.accepted_sizes.add((self.block_widths[id],self.block_heights[id]))
 
     def choose_block(self, old_x, old_y, old_id, old_dir):
@@ -182,6 +187,8 @@ class BlockGenerator(Generator):
 
     def gen_map(self):
         self.map.clear()
+        self.entities = [ ]
+        self.rects = [ ]
         x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
         block = self.parser.get('layout','start')
         self._recurse_gen(x, y, block)

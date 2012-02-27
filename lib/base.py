@@ -221,35 +221,20 @@ class Application(object):
         """
         gen = map.BlockGenerator(w,h)
         gen.set_layout('test')
-        self.add_map(map=gen.gen_map(),
+        m = gen.gen_map()
+        ents = gen.entities
+        self.generate_ents(ents)
+        self.add_map(map=m,
                     set=set)
 
-#        # TODO: better entity generation
-#        m = self.get_map()
-#        m = m.get_rect(0,0,m.width,m.height)
-#        s = "#$*()[]"
-#        n = ["backpack", "bag", "box", "crate"]
-#        for i in range(len(m)):
-#            for j in range(len(m[i])):
-#                if not m[i][j][0]:
-#                    r = random.randint(0,500)
-#                    if r < 5:
-#                        id = self.add_entity(i, j)
-#                        if random.randint(0,100) < 220:
-#                            self.entity_manager.set_attribute(id,'solid',0)
-#                        ent = self.get_ent(id)
-#                        ent.char = s[random.randint(0,len(s)-1)]
-#                        ent.fgcol = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
-#                        ent.name = n[random.randint(0,len(n)-1)]
-#                        if random.randint(0,100) < 50:
-#                            id2 = self.add_entity(i, j)
-#                            self.set_ent_pos(id2,id)
-#                            if random.randint(0,100) < 70:
-#                                id2 = self.add_entity(i, j)
-#                                self.set_ent_pos(id2,id)
-#                                id2 = self.add_entity(i, j)
-#                                self.set_ent_pos(id2,id)
-
+    def generate_ents(self,list):
+        """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),
+            where chance is a float in [0,1]."""
+        for set in list:
+            x, y, ent_string, chance = set
+            r = random.random()
+            if r < chance:
+                self.add_entity(x, y, ent_string)
 
     def add_map(self,file=0,map=0,set=0):
         """Add map to stack from file or object.

@@ -29,6 +29,7 @@ import lib.base as base
 import lib.graphics as graphics
 
 WIDTH, HEIGHT = 100, 50
+MAP_WIDTH, MAP_HEIGHT = 200, 200
 COL1 = (15, 100, 175)
 COL2 = (255, 150, 0)
 
@@ -61,7 +62,7 @@ app.add_messages(("Hello world.",
 def menu_callback(fct):
     choice = fct()
     if not choice:
-        app.generate_map(WIDTH,HEIGHT,set=True)
+        app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         app.place_player(1)
         while app.menu_stack:
             app.remove_menu()
