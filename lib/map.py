@@ -98,7 +98,7 @@ class BlockGenerator(Generator):
                 char = self.block_walls[id][i][j]
                 if char != '#':
                     self.map.add_tile(x+j,y+i,_FLOOR)
-                    self.add_ent(x+i,y+j,id,char)
+                    self.add_ent(x+j,y+i,id,char)
 
 
     def check_rect(self,x,y,w,h):

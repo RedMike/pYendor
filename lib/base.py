@@ -447,7 +447,7 @@ class Application(object):
         """
         id = self.entity_manager.add_entity(type,delay)
         self.entity_manager.set_pos(id, (x, y))
-        self.entity_manager.get_ent(id).name += '#'+str(id)  # TODO: remove debug ids
+        #self.entity_manager.get_ent(id).name += '#'+str(id)  # TODO: remove debug ids
         return id
 
     def place_player(self,delay):

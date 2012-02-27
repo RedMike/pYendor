@@ -3,6 +3,10 @@
 #
 # Entity DOES NOT care about its position.
 
+import random
+
+import entities
+
 class Entity(object):
     """Base entity class.
 
@@ -23,6 +27,14 @@ class Entity(object):
         self.char = '?'
         self.fgcol = (255,255,255)
         self.parent = parent
+
+    def collided(self, id):
+        """Callback for when entity moves I{into} another entity."""
+        pass
+
+    def was_collided(self, id):
+        """Callback for when another entity moves into this entity."""
+        pass
 
     def get_id(self):
         """Return entity ID, or raise IDNotAssigned."""
@@ -84,36 +96,35 @@ class Trap(Entity):
         super(Trap,self).__init__(parent,id)
         self.set_attributes('11100')
 
-class Door(Trap):
-    """Simple door class, subclass of Trap."""
 
-    def __init__(self,parent,id):
-        super(Door,self).__init__(parent,id)
-        self.open = 0
-
-    def toggle(self):
-        if self.open:
-            self.open = 0
-            self.set_attribute('blocking',1)
-        else:
-            self.open = 1
-            self.set_attribute('blocking',0)
 
 class NPC(Entity):
 
     def __init__(self,parent,id):
         """Base blocking, unliftable, unusable entity for subclass."""
         super(NPC,self).__init__(parent,id)
-        self.set_attributes('00100') # TODO: Set back to blocking
+        self.set_attributes('01100')
         self.char = '@'
+        self.name = 'kobold'
         self.fgcol = (0,255,255)
         self.dead = 0
 
-    def check_health(self):
+    def was_collided(self, id):
+        ent = self.parent.get_ent(id)
+        if isinstance(ent,NPC):
+            self.die()
+
+    def die(self):
         """Verify if dead, and change into corpse of being."""
-        if self.dead:
+        if not self.dead:
+            self.dead = 1
             self.set_attributes('00110')
             self.name += ' corpse'  # TODO: generalise!
+
+    def update(self):
+        if not self.dead:
+            dx, dy = random.randint(-1,1), random.randint(-1,1)
+            self.move(dx, dy)
 
 class Humanoid(NPC):
 
@@ -145,6 +156,21 @@ class Player(Humanoid):
         self.char = '@'
         self.fgcol = (255,100,100)
         self.name = "Player"
+
+    def collided(self, id):
+        """Called BEFORE interaction itself."""
+        super(Player,self).collided(id)
+        ent = self.parent.get_ent(id)
+        if isinstance(ent,entities.traps.Door):
+            if not ent.open:
+                self.parent.post_message("You open the "+self.parent.get_name(id)+".")
+        elif isinstance(ent,NPC):
+            if not ent.dead:
+                self.parent.post_message("You slice at the "+self.parent.get_name(id)+".")
+
+    def update(self):
+        pass
+
 
 class Ethereal(Entity):
     """Class for entities like cameras, with which you don't interact ingame."""

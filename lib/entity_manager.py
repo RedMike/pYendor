@@ -1,5 +1,5 @@
-import entity
-
+import lib.entity
+import entities.traps
 
 # Entities are kept in a dictionary as an id.
 # This allows for fast checking for entities in tiles, and raises
@@ -31,6 +31,10 @@ class EntityManager(object):
         self.parent = parent
         self.scheduler = parent.scheduler
         self.cur_id = 0
+
+    def post_message(self, msg):
+        """Convenience method for entities to call to post messages to the message window."""
+        self.parent.add_messages((msg,))
 
     def add_entity(self, type, delay=None):
         """Adds a new entity of type to entity_list, and returns its ID.
@@ -153,10 +157,18 @@ class EntityManager(object):
         self.move_ent(id, x-ex, y-ey)
 
     def move_ent(self,id,x,y):
-        """Tries to move an entity in a relative direction, with collision checking."""
+        """Tries to move an entity in a relative direction, with collision checking and interaction."""
+        pos = self.get_pos(id)
+        pos = (pos[0] + x, pos[1] + y)
+        #check for interactions to raise
+        if self.get_at(pos[0],pos[1]):
+            for victim_id in self.get_at(pos[0],pos[1]):
+                if id is not victim_id:
+                    self.get_ent(id).collided(victim_id)
+                    self.get_ent(victim_id).was_collided(id)
+
+        #check for collisions
         if self.parent.collision_check(id,x,y):
-            pos = self.get_pos(id)
-            pos = (pos[0]+x, pos[1]+y)
             self.set_pos(id,pos)
 
     def set_pos(self, id, pos):
@@ -185,15 +197,16 @@ class EntityLookup:
 
     def __init__(self):
         self.lookup = dict()
-        self.lookup['item'] = entity.Item
-        self.lookup['npc'] = entity.NPC
-        self.lookup['player'] = entity.Player
-        self.lookup['camera'] = entity.Camera
-        self.lookup['bodypart'] = entity.Bodypart
+        self.lookup['item'] = lib.entity.Item
+        self.lookup['npc'] = lib.entity.NPC
+        self.lookup['player'] = lib.entity.Player
+        self.lookup['camera'] = lib.entity.Camera
+        self.lookup['bodypart'] = lib.entity.Bodypart
+        self.lookup['door'] = entities.traps.Door
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""
-        return self.lookup.get(str.lower(),entity.Entity)
+        return self.lookup.get(str.lower(),lib.entity.Entity)
 
 
 class IDNotFound(Exception):
