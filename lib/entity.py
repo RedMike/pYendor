@@ -133,7 +133,7 @@ class Humanoid(NPC):
 
     def add_node(self,name):
         id = self.parent.add_entity('bodypart')
-        self.parent.set_pos(id, self.id)
+        self.parent.set_parent(id, self.id)
         self.parent.get_ent(id).name = name
         self.nodes[name] = id
 

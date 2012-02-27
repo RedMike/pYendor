@@ -16,8 +16,8 @@ class EntityManager(object):
 
     Contains class_lookup for string<->class associations.
     lookup contains the ID <-> object referencing.
-    positions contains the position of the entity, as either a tuple (x,y) or an int id. For IDs, get_pos searches
-    recursively and returns the position of the top-level container.
+    positions contains the position of the entity, or None.
+    parents contains the ID of the containing entity, or None.
     schedules contains the IDs of the scheduling tasks assigned to each entity.
     cur_id is the current free ID to be assigned.
     """
@@ -26,12 +26,13 @@ class EntityManager(object):
         self.class_lookup = EntityLookup()
         self.lookup = { }
         self.positions = { }
+        self.parents = { }
         self.schedules = { }
         self.parent = parent
         self.scheduler = parent.scheduler
         self.cur_id = 0
 
-    def add_entity(self, type,delay=None):
+    def add_entity(self, type, delay=None):
         """Adds a new entity of type to entity_list, and returns its ID.
 
         Sets the parent property of the entity.
@@ -65,23 +66,39 @@ class EntityManager(object):
 
     def get_in(self,ent):
         """Returns list of ids of entities contained directly by ent or None."""
-        if ent in self.positions.itervalues():
+        if ent in self.parents.itervalues():
             ret = [ ]
-            for id in self.positions:
-                if self.positions[id] == ent:
+            for id in self.parents:
+                if self.parents[id] == ent:
                     ret.append(id)
             return ret
         return None
 
     def get_pos(self,id):
-        """Returns (x,y) or id of container for entity."""
+        """Returns (x,y) of entity; Recurses up container entities to return real position."""
         ent = self.get_ent(id)
         if ent is None:
             raise IDNotFound
-        pos = self.positions[id]
-        if isinstance(pos,int):
-            pos = self.get_pos(pos)
+        cur_id = id
+        pos = None
+        while not pos and cur_id is not None:
+            pos = self.positions[cur_id]
+            cur_id = self.parents[cur_id]
         return pos
+
+    def get_parent(self,id):
+        """Returns ID of directly containing entity or None."""
+        if self.get_ent(id) is None:
+            raise IDNotFound
+        return self.parents[id]
+
+    def get_ancestor(self,id):
+        """Returns ID of top containing entity or None."""
+        if self.get_ent(id) is None:
+            raise IDNotFound
+        if self.parents[id] is None:
+            return id
+        return self.get_ancestor(id)
 
     def set_attribute(self, id, att, val):
         """Sets the entity's attribute to the given value."""
@@ -131,10 +148,8 @@ class EntityManager(object):
 
     def move_ent_to_ent(self,id,id2):
         """Passes call to try to move an entity to another into relative coords."""
-        ret = self.get_pos(id2)
-        x, y = ret
-        ret = self.get_pos(id)
-        ex, ey = ret
+        x, y = self.get_pos(id2)
+        ex, ey = self.get_pos(id)
         self.move_ent(id, x-ex, y-ey)
 
     def move_ent(self,id,x,y):
@@ -144,12 +159,19 @@ class EntityManager(object):
             pos = (pos[0]+x, pos[1]+y)
             self.set_pos(id,pos)
 
-    def set_pos(self, id, obj):
-        """Sets the entity's position to the given obj; can be tuple (x, y), or id of other entity."""
-        if isinstance(obj,int):
-            if self.get_ent(obj) is None:
-                raise IDNotFound
-        self.positions[id] = obj
+    def set_pos(self, id, pos):
+        """Sets the entity's position to the given tuple, unsetting parent."""
+        if self.get_ent(id) is None:
+            raise IDNotFound
+        self.positions[id] = pos
+        self.parents[id] = None
+
+    def set_parent(self, id, parent_id):
+        """Sets the entity's containing entity to the given ID, unsetting its position."""
+        if self.get_ent(id) is None or self.get_ent(parent_id) is None:
+            raise IDNotFound
+        self.positions[id] = None
+        self.parents[id] = parent_id
 
     def adjust_cur_id(self):
         self.cur_id += 1  # TODO: Make it so it fills back gaps in IDs by destroyed ents.

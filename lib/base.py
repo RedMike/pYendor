@@ -138,11 +138,11 @@ class Application(object):
             pl_ent = self.get_ent(pl)
             ent_id, usable = window.get_node_meta(window.highlight)
             if usable and not self.get_ent_in(pl_ent.nodes['r_hand']):
-                self.set_ent_pos(ent_id, pl_ent.nodes['r_hand'])
+                self.set_ent_parent(ent_id, pl_ent.nodes['r_hand'])
             elif not usable and self.get_ent_in(pl_ent.nodes['r_hand']) is not None:
                 for ent in self.get_ent_in(pl_ent.nodes['r_hand']):
                     if self.get_ent(ent).get_attribute('usable'):
-                        self.set_ent_pos(ent, ent_id)
+                        self.set_ent_parent(ent, ent_id)
         self.update_inv_window()
 
     def input_bindings(self, window):
@@ -521,7 +521,7 @@ class Application(object):
     def get_ent_pos(self, id):
         """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
 
-        Returns (x,y) or id of container for entity, can raise IDNotFound.
+        Returns (x,y), can raise IDNotFound.
         """
         return self.entity_manager.get_pos(id)
 
@@ -530,13 +530,25 @@ class Application(object):
 
         @type  id: number
         @param id: ID of entity to be placed.
-        @type  pos: tuple or number
-        @param pos: Position of entity, (x,y) tuple or ID of container object.
+        @type  pos: tuple
+        @param pos: Position of entity, (x,y) tuple.
 
-        Sets an entity's position as the object passed, tuple or int.
-        In order to store an entity in a container entity, pass the container's ID as the pos parameter.
+        Sets an entity's position as the object passed, tuple of shape (x,y).
+        Unsets parenting, so the entity is placed directly onto the map, if called.
         """
         self.entity_manager.set_pos(id, pos)
+
+    def set_ent_parent(self, id, parent_id):
+        """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
+
+        @type  id: number
+        @param id: ID of entity to be contained.
+        @type  parent_id: ID of container.
+        @param parent_id: Container object to place entity in.
+
+        Unsets position.
+        """
+        self.entity_manager.set_parent(id, parent_id)
 
     def destroy_ents(self):
         """Destroy all entities.
@@ -546,7 +558,7 @@ class Application(object):
         pass
 
     def collision_check(self, id, x, y):
-        """Checks collisions and restrictions in place, returns I{True} for able to move..
+        """Checks collisions and restrictions in place, returns I{True} for able to move.
 
         Raises NoMapError when map is not initialised yet.
         """
@@ -567,20 +579,6 @@ class Application(object):
             return can_move
         else:
             raise NoMapError
-
-    def try_entity_move_to_entity(self, id, id2):
-        """Tries moving entity id to entity id2's location.
-
-        Passes call to L{try_entity_move_relative}.
-        """
-
-
-    def entity_move(self, id, x, y):
-        """Directly move an entity to a position.
-
-        No collision checks involved.
-        """
-        self.entity_manager.set_pos(id, (x,y))
 
     def player_drop(self, id=None):
         """Attempt to have the player drop whatever is in his hand."""
@@ -610,10 +608,10 @@ class Application(object):
             if id is not self.get_player():
                 if self.entity_manager.get_attribute(id,'liftable'):
                     if not self.get_ent_in(pl_ent.nodes['r_hand']):
-                        self.set_ent_pos(id,pl_ent.nodes['r_hand'])
+                        self.set_ent_parent(id,pl_ent.nodes['r_hand'])
                         break
                     elif not self.get_ent_in(pl_ent.nodes['l_hand']):
-                        self.set_ent_pos(id,pl_ent.nodes['l_hand'])
+                        self.set_ent_parent(id,pl_ent.nodes['l_hand'])
                         break
 
     def print_player_inventory(self):
