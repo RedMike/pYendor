@@ -4,6 +4,7 @@ import lib.map as map
 import lib.entity_manager as entity_man
 import lib.interface as interface
 import lib.time as time
+import lib.fov as fov
 
 
 class Application(object):
@@ -19,9 +20,7 @@ class Application(object):
     run L{self.update} every iteration.
 
     """
-    
-    version = (0, 5, 0, 'b')
-    
+
     def __init__(self, name, w, h):
         """Initialise the application with basic default values.
 
@@ -54,6 +53,9 @@ class Application(object):
         self.game_win = None
         self.msg_win = None
         self.inv_win = None
+        self.fov_win = None
+
+        self.fov_map = fov.FovMap()
         
         # Initialise keyboard interface.
         self.keyboard = interface.KeyboardListener()
@@ -257,6 +259,7 @@ class Application(object):
         """Set map as I{id}."""
         if id < len(self.maps):
             self.map = id
+            self.fov_map.process_map(self.maps[id])
     
     def get_map(self):
         """Returns current map, or I{None}."""
@@ -264,7 +267,7 @@ class Application(object):
             return self.maps[self.map]
         return None
 
-    def add_window(self,layer,type,w,h,x,y):
+    def add_window(self,layer,type,w,h,x,y,alpha=1.0):
         """Create a new window and return its ID.
 
         @type  layer: number
@@ -282,7 +285,7 @@ class Application(object):
         @rtype: number
         @return: Window ID of created window; Use L{graphics.WindowManager.get_window} to get the object.
         """
-        win = self.win_man.add_window(layer,type,w,h,x,y)
+        win = self.win_man.add_window(layer,type,w,h,x,y,alpha)
         return win
 
     def clear_layer(self,layer):
@@ -312,6 +315,13 @@ class Application(object):
         I{None} and roll your own updating algorithm following L{add_messages}.
         """
         self.msg_win = w
+
+    def set_fov_window(self,w):
+        """Set fov window to use by default.
+
+        In order to roll your own fov implementation, you might have to overwrite this.
+        """
+        self.fov_win = w
 
     def add_messages(self,msgs):
         """Post messages to current message window, takes a list of strings.
@@ -468,11 +478,18 @@ class Application(object):
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
+        self.scheduler.add_schedule( (self.fov_map.compute, [self.get_player_pos], 1))
         self.entity_manager.set_sched(cam, sch_id)
         self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
         self.player = pid
         self.camera = cam
         return pid
+
+    def get_player_pos(self):
+        if not self.get_player():
+            return 0,0
+        else:
+            return self.get_ent_pos(self.get_player())
 
     def get_ent(self, id):
         """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
@@ -642,11 +659,12 @@ class Application(object):
         x, y = pos
         cx, cy = win.width/2, win.height/2
         ox, oy = x - cx, y - cy
+
         map = map.get_rect(ox, oy, win.width, win.height)
         tiles = [ ]
         for i in range(win.width):
             for j in range(win.height):
-                if map[i][j] == (0,0):
+                if self.fov_map.get_lit:
                     tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
         win.update_layer(0,tiles)
 
@@ -657,14 +675,9 @@ class Application(object):
                 if ret is not None:
                     tx, ty = ret
                     ent = self.get_ent(id)
-                    tiles.append([tx-x+cx, ty-y+cy, (0,0,0), ent.char, ent.fgcol, 0])
+                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
         win.update_layer(4,tiles)
 
-        #tiles = [ ]
-        #pid = self.get_player()
-        #if pid is not None:
-        #    tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
-        #    win.update_layer(5,tiles)
 
     def update(self):
         """Update function, called every update.
