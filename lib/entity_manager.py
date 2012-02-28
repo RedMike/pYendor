@@ -20,7 +20,11 @@ class EntityManager(object):
     parents contains the ID of the containing entity, or None.
     schedules contains the IDs of the scheduling tasks assigned to each entity.
     cur_id is the current free ID to be assigned.
+    Entity ID #0 is 'garbage collection' of entities. Parent to this to remove next tick.
     """
+
+    DIRECT_INTERACTION = 0
+    RANGED_INTERACTION = 1
 
     def __init__(self,parent):
         self.class_lookup = EntityLookup()
@@ -31,16 +35,15 @@ class EntityManager(object):
         self.parent = parent
         self.scheduler = parent.scheduler
         self.cur_id = 0
+        self.garbage_id = self.add_entity("ethereal")
+        self.set_pos(self.garbage_id,(0, 0))
 
     def post_message(self, msg):
         """Convenience method for entities to call to post messages to the message window."""
         self.parent.add_messages((msg,))
 
     def add_entity(self, type, delay=None):
-        """Adds a new entity of type to entity_list, and returns its ID.
-
-        Sets the parent property of the entity.
-        """
+        """Adds a new entity of type to entity_list, and returns its ID."""
         id = self.cur_id
         type = self.class_lookup.get_class(type)
         self.lookup[id] = type(self,id)
@@ -79,6 +82,13 @@ class EntityManager(object):
         return None
 
     def get_pos(self,id):
+        """Returns (x,y) of entity if not contained, or None."""
+        ent = self.get_ent(id)
+        if ent is None:
+            raise IDNotFound
+        return self.positions[id]
+
+    def get_abs_pos(self,id):
         """Returns (x,y) of entity; Recurses up container entities to return real position."""
         ent = self.get_ent(id)
         if ent is None:
@@ -152,24 +162,31 @@ class EntityManager(object):
 
     def move_ent_to_ent(self,id,id2):
         """Passes call to try to move an entity to another into relative coords."""
-        x, y = self.get_pos(id2)
-        ex, ey = self.get_pos(id)
+        x, y = self.get_pos(id2) or (0,0)
+        ex, ey = self.get_pos(id) or (0,0)
         self.move_ent(id, x-ex, y-ey)
 
     def move_ent(self,id,x,y):
         """Tries to move an entity in a relative direction, with collision checking and interaction."""
-        pos = self.get_pos(id)
+        pos = self.get_pos(id) or (0,0)
         pos = (pos[0] + x, pos[1] + y)
+        has_moved = False
+        #check for collisions
+        if self.parent.collision_check(id,x,y):
+            has_moved = True
+            self.set_pos(id,pos)
+
         #check for interactions to raise
+        if has_moved:
+            interaction = self.DIRECT_INTERACTION
+        else:
+            interaction = self.RANGED_INTERACTION
         if self.get_at(pos[0],pos[1]):
             for victim_id in self.get_at(pos[0],pos[1]):
                 if id is not victim_id:
-                    self.get_ent(id).collided(victim_id)
-                    self.get_ent(victim_id).was_collided(id)
-
-        #check for collisions
-        if self.parent.collision_check(id,x,y):
-            self.set_pos(id,pos)
+                    self.get_ent(id).collided(victim_id, interaction)
+                    success = self.get_ent(victim_id).was_collided(id, interaction)
+                    self.get_ent(id).finished_colliding(victim_id, success)
 
     def set_pos(self, id, pos):
         """Sets the entity's position to the given tuple, unsetting parent."""
@@ -200,9 +217,11 @@ class EntityLookup:
         self.lookup['item'] = lib.entity.Item
         self.lookup['npc'] = lib.entity.NPC
         self.lookup['player'] = lib.entity.Player
+        self.lookup['ethereal'] = lib.entity.Ethereal
         self.lookup['camera'] = lib.entity.Camera
         self.lookup['bodypart'] = lib.entity.Bodypart
-        self.lookup['door'] = entities.traps.Door
+        self.lookup['door'] = entities.traps.AutoDoor
+        self.lookup['arrow_trap'] = entities.traps.ArrowTrap
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""

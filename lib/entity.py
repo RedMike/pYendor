@@ -28,12 +28,16 @@ class Entity(object):
         self.fgcol = (255,255,255)
         self.parent = parent
 
-    def collided(self, id):
+    def collided(self, id, type):
         """Callback for when entity moves I{into} another entity."""
         pass
 
-    def was_collided(self, id):
-        """Callback for when another entity moves into this entity."""
+    def was_collided(self, id, type):
+        """Callback for when another entity moves into this entity, returns True for success."""
+        return False
+
+    def finished_colliding(self, id, success_value, metadata=None):
+        """Callback for when the entity has finished trying to move I{into} another entity."""
         pass
 
     def get_id(self):
@@ -109,17 +113,30 @@ class NPC(Entity):
         self.fgcol = (0,255,255)
         self.dead = 0
 
-    def was_collided(self, id):
-        ent = self.parent.get_ent(id)
-        if isinstance(ent,NPC):
-            self.die()
+    def collided(self, id, type):
+        #super(NPC,self).collided(id, type) # Do I need this?
+        if type == self.parent.RANGED_INTERACTION:
+            ent = self.parent.get_ent(id)
+            if isinstance(ent, NPC):
+                hit = ent.deal_damage(1)
+
+    def was_collided(self, id, type):
+        return False
+
+    def deal_damage(self, amount):
+        # TODO: Stop dying immediately.
+        # TODO: Add more return information than a boolean.
+        self.die()
+        return True
 
     def die(self):
-        """Verify if dead, and change into corpse of being."""
+        """Verify if not already dead, and change into corpse of being."""
         if not self.dead:
             self.dead = 1
-            self.set_attributes('00110')
-            self.name += ' corpse'  # TODO: generalise!
+            id = self.parent.add_entity("item")
+            self.parent.set_pos(id,self.parent.get_pos(self.id))
+            self.parent.get_ent(id).name = self.name + " corpse"
+            self.parent.set_parent(self.id,0)
 
     def update(self):
         if not self.dead:
@@ -157,16 +174,26 @@ class Player(Humanoid):
         self.fgcol = (255,100,100)
         self.name = "Player"
 
-    def collided(self, id):
-        """Called BEFORE interaction itself."""
-        super(Player,self).collided(id)
+    def collided(self, id, type):
+        super(Player,self).collided(id, type)
+        ent = self.parent.get_ent(id)
+        if type == self.parent.DIRECT_INTERACTION:
+            if isinstance(ent,entities.traps.ArrowTrap):
+                self.parent.post_message("You're hit by an arrow and collapse. You die..")
+        if type == self.parent.RANGED_INTERACTION:
+            if isinstance(ent,NPC):
+                self.parent.post_message("You slice at the "+self.parent.get_name(id)+'.')
+
+    def finished_colliding(self, id, success_value, metadata=None):
+        """Called AFTER interaction itself."""
+        super(Player,self).finished_colliding(id, success_value, metadata)
         ent = self.parent.get_ent(id)
         if isinstance(ent,entities.traps.Door):
-            if not ent.open:
-                self.parent.post_message("You open the "+self.parent.get_name(id)+".")
+            if success_value:
+                self.parent.post_message("You open the "+self.parent.get_name(id)+'.')
         elif isinstance(ent,NPC):
-            if not ent.dead:
-                self.parent.post_message("You slice at the "+self.parent.get_name(id)+".")
+            if success_value:
+                self.parent.post_message("You kill the "+self.parent.get_name(id)+'.')
 
     def update(self):
         pass

@@ -506,7 +506,7 @@ class Application(object):
     def get_ent_pos(self, id):
         """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
 
-        Returns (x,y), can raise IDNotFound.
+        Returns (x,y) or None, can raise IDNotFound.
         """
         return self.entity_manager.get_pos(id)
 
@@ -599,40 +599,6 @@ class Application(object):
                         self.set_ent_parent(id,pl_ent.nodes['l_hand'])
                         break
 
-    def print_player_inventory(self):
-        """Prints the player's inventory to the message window.
-
-        Subclass and replace this if you want a different fashion of displaying the inventory.
-        """
-        pl = self.get_player()
-        ents = self.get_ent_in(pl)
-        if ents is not None:
-            msg = 'You currently have: '
-            for id in ents:
-                msg += self.entity_manager.get_name(id) + ', '
-            msg = msg[:-2] + '.'
-            self.add_messages((msg,))
-        else:
-            msg = 'You have nothing on you.'
-            self.add_messages((msg,))
-
-
-    def examine_tile(self, x, y):
-        """Examines a tile and displays messages that list the entities on it, excluding the current player.
-
-        Subclass and replace to use your own display format.
-        """
-        ents = self.get_ent_at(x, y)
-        if ents == [self.get_player()]:
-            return None
-        else:
-            msg = 'You see here: '
-            for id in ents:
-                if id is not self.get_player():
-                    msg += self.entity_manager.get_name(id) + ', '
-            msg = msg[:-2] + '.'
-        self.add_messages((msg,))
-        return ents
 
     def _inv_window_recurse(self,id,parents=None,names=None,meta=None,cur_id=1,parent_id=0):
         """Internal recursion method for inventory listing with default node window."""
@@ -687,16 +653,18 @@ class Application(object):
         tiles = [ ]
         for id in self.entity_manager.get_ids():
             if self.entity_manager.get_attribute(id,'visible'):
-                tx, ty = self.get_ent_pos(id)
-                ent = self.get_ent(id)
-                tiles.append([tx-x+cx, ty-y+cy, (0,0,0), ent.char, ent.fgcol, 0])
+                ret = self.get_ent_pos(id)
+                if ret is not None:
+                    tx, ty = ret
+                    ent = self.get_ent(id)
+                    tiles.append([tx-x+cx, ty-y+cy, (0,0,0), ent.char, ent.fgcol, 0])
         win.update_layer(4,tiles)
 
-        tiles = [ ]
-        pid = self.get_player()
-        if pid is not None:
-            tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
-            win.update_layer(5,tiles)
+        #tiles = [ ]
+        #pid = self.get_player()
+        #if pid is not None:
+        #    tiles.append([cx, cy, (255,0,0), '@', (255,255,255), 0])
+        #    win.update_layer(5,tiles)
 
     def update(self):
         """Update function, called every update.
