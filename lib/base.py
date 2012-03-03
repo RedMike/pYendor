@@ -65,7 +65,6 @@ class Application(object):
 
         self.time_passing = None
 
-        self.debug = 1
 
     def default_bindings(self):
         """Bind default game keys.
@@ -225,18 +224,21 @@ class Application(object):
         gen.set_layout('test')
         m = gen.gen_map()
         ents = gen.entities
-        self.generate_ents(ents)
+        self.generate_ents(m,ents)
         self.add_map(map=m,
                     set=set)
 
-    def generate_ents(self,list):
+    def generate_ents(self,map,list):
         """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),
             where chance is a float in [0,1]."""
         for set in list:
             x, y, ent_string, chance = set
             r = random.random()
             if r < chance:
-                self.add_entity(x, y, ent_string)
+                ent = self.add_entity(x, y, ent_string)
+                if self.entity_manager.get_attribute(ent,'fixed') and self.entity_manager.get_attribute(ent,'blocking'):
+                    map.add_tile(x, y, (0,1))
+
 
     def add_map(self,file=0,map=0,set=0):
         """Add map to stack from file or object.
@@ -659,13 +661,28 @@ class Application(object):
         x, y = pos
         cx, cy = win.width/2, win.height/2
         ox, oy = x - cx, y - cy
-
         map = map.get_rect(ox, oy, win.width, win.height)
         tiles = [ ]
         for i in range(win.width):
             for j in range(win.height):
-                if self.fov_map.get_lit:
-                    tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
+                x, y = i+ox, j+oy
+                if self.fov_map:
+                    lit = self.fov_map.get_lit(x,y)[0]
+                    wall = self.fov_map.get_wall(x,y)
+                    explored = self.fov_map.get_explored(x,y)
+                    if lit:
+                        if not wall:
+                            tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
+                            self.fov_map.set_explored(x,y)
+                    else:
+                        if explored and not wall:
+                            tiles.append([i, j, (5, 50, 125), ' ', (0,0,0), 1])
+                else:
+                    wall = map[i][j][1]
+                    if not wall:
+                        tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
+
+
         win.update_layer(0,tiles)
 
         tiles = [ ]
@@ -674,8 +691,13 @@ class Application(object):
                 ret = self.get_ent_pos(id)
                 if ret is not None:
                     tx, ty = ret
-                    ent = self.get_ent(id)
-                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+                    if self.fov_map:
+                        if self.fov_map.get_lit(tx,ty)[0]:
+                            ent = self.get_ent(id)
+                            tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+                    else:
+                        ent = self.get_ent(id)
+                        tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
         win.update_layer(4,tiles)
 
 

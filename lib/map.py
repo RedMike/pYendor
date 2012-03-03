@@ -214,14 +214,6 @@ class Map:
         for i in range(w):
             for j in range(h):
                 self.add_tile(x+i, y+j, tile)
-
-    def add_circle(self, x, y, r, tile):
-        """Draws a circle centered on (x,y), with the diameter r."""
-        r /= 2
-        for i in range(-r,r):
-            for j in range(-r,r):
-                if float((i*i+j*j)**(1/2.0)) < r:
-                    self.add_tile(x+i, y+j, tile)
     
     def get_tiles(self):
         """Returns the whole map."""
