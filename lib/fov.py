@@ -15,8 +15,8 @@ class FovMap(object):
     def specific_set_properties(self,x,y,blocks_light,blocks):
         libtcod.map_set_properties(self.map,x,y,blocks_light,blocks)
 
-    def specific_compute(self,x,y,radius=0,light_walls=False):
-        libtcod.map_compute_fov(self.map,x,y,radius,light_walls,libtcod.FOV_SHADOW)
+    def specific_compute(self,x,y,radius=0,light_walls=True):
+        libtcod.map_compute_fov(self.map,x,y,radius,light_walls,libtcod.FOV_PERMISSIVE_2)
 
     def specific_get_lit(self,x,y):
         return libtcod.map_is_in_fov(self.map,x,y)
@@ -29,6 +29,8 @@ class FovMap(object):
 
     def compute(self,pos_fct):
         pos = pos_fct()
+        if not pos:
+            return
         self.specific_compute(pos[0],pos[1])
         self.last_pos = pos
 

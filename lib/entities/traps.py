@@ -1,3 +1,4 @@
+import mobs
 import lib.entity
 
 class Door(lib.entity.Trap):
@@ -11,9 +12,9 @@ class Door(lib.entity.Trap):
         self.fgcol = (255, 150, 0)
 
     def was_collided(self,id,type):
-        if type == self.parent.RANGED_INTERACTION:
+        if type == self.parent.ATTEMPTED_INTERACTION:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, lib.entity.Humanoid) and not self.opened:
+            if isinstance(ent, mobs.Humanoid) and not self.opened:
                 self.open()
                 return True
         return False
@@ -60,7 +61,8 @@ class StepTrap(lib.entity.Trap):
 
     def __init__(self,parent,id):
         super(StepTrap,self).__init__(parent,id)
-        self.set_attribute("blocking", False)
+        self.set_attribute("blocking", 0)
+
 
     def was_collided(self, id, type):
         """When subclassing, remember that a DIRECT interaction type means the entity has successfully moved."""
@@ -80,10 +82,10 @@ class ArrowTrap(StepTrap):
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION and self.can_fire:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, lib.entity.NPC):
+            if isinstance(ent, mobs.Mob):
                 self.ticker = 5
                 self.can_fire = False
-                ent.deal_damage(1)
+                ent.deal_damage(10)
                 return True
         return False
 
@@ -92,4 +94,25 @@ class ArrowTrap(StepTrap):
             self.ticker -= 1
         if not self.ticker and not self.can_fire:
             self.can_fire = True
+
+class StoneTrap(StepTrap):
+
+    def __init__(self,parent,id):
+        super(StoneTrap,self).__init__(parent,id)
+        self.can_fire = True
+
+    def fire(self,ent):
+        ent.deal_damage(100)
+        self.can_fire = False
+        id = self.parent.add_entity("boulder")
+        pos = self.parent.get_pos(self.id)
+        self.parent.set_pos(id,pos)
+
+    def was_collided(self, id, type):
+        if type == self.parent.DIRECT_INTERACTION and self.can_fire:
+            ent = self.parent.get_ent(id)
+            if isinstance(ent, mobs.Mob):
+                self.fire(ent)
+                return True
+        return False
 

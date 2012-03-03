@@ -567,7 +567,10 @@ class Application(object):
         Raises NoMapError when map is not initialised yet.
         """
         can_move = True
-        ex, ey = self.get_ent_pos(id)
+        pos = self.get_ent_pos(id)
+        if not pos:
+            return False
+        ex, ey = pos
         if self.get_map() is not None:
             # check for wall
             if self.get_map().get_tile(x + ex, y + ey)[0]:
@@ -602,21 +605,14 @@ class Application(object):
     def player_pickup(self):
         """Attempt to have the player pick up everything on the tile he's on.
 
-        Places items into r_hand or l_hand by default.
+        Places items into r_hand by default.
         """
         pl = self.get_player()
-        pl_ent = self.get_ent(pl)
         x, y = self.get_ent_pos(pl)
         ents = self.get_ent_at(x, y)
         for id in ents: # TODO: pickup menu
-            if id is not self.get_player():
-                if self.entity_manager.get_attribute(id,'liftable'):
-                    if not self.get_ent_in(pl_ent.nodes['r_hand']):
-                        self.set_ent_parent(id,pl_ent.nodes['r_hand'])
-                        break
-                    elif not self.get_ent_in(pl_ent.nodes['l_hand']):
-                        self.set_ent_parent(id,pl_ent.nodes['l_hand'])
-                        break
+            if id is not pl:
+                self.entity_manager.ent_lift(pl,id)
 
 
     def _inv_window_recurse(self,id,parents=None,names=None,meta=None,cur_id=1,parent_id=0):

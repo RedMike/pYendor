@@ -1,5 +1,6 @@
 import lib.entity
 import entities.traps
+import entities.mobs
 
 # Entities are kept in a dictionary as an id.
 # This allows for fast checking for entities in tiles, and raises
@@ -24,7 +25,8 @@ class EntityManager(object):
     """
 
     DIRECT_INTERACTION = 0
-    RANGED_INTERACTION = 1
+    ATTEMPTED_INTERACTION = 1
+    INDIRECT_INTERACTION = 2
 
     def __init__(self,parent):
         self.class_lookup = EntityLookup()
@@ -42,15 +44,16 @@ class EntityManager(object):
         """Convenience method for entities to call to post messages to the message window."""
         self.parent.add_messages((msg,))
 
-    def add_entity(self, type, delay=None):
+    def add_entity(self, type, delay=1):
         """Adds a new entity of type to entity_list, and returns its ID."""
         id = self.cur_id
+        self.adjust_cur_id()
         type = self.class_lookup.get_class(type)
+        self.lookup[id] = 1
         self.lookup[id] = type(self,id)
         self.set_attribute(id, 'delay', delay)
         if delay is not None:
             self.schedule(self.scheduler, id)
-        self.adjust_cur_id()
         return id
 
     def get_ids(self):
@@ -160,6 +163,17 @@ class EntityManager(object):
         if delay is not None:
             self.schedules[id] = sched.add_schedule((ent.update, (), delay))
 
+    def ent_lift(self, lifter, liftee):
+        """Lifter attempts to lift liftee."""
+        ent = self.get_ent(lifter)
+        victim = self.get_ent(liftee)
+        interaction = self.INDIRECT_INTERACTION
+        if self.get_pos(lifter) == self.get_pos(liftee):
+            interaction = self.DIRECT_INTERACTION
+        ent.lifted(liftee, interaction)
+        success = victim.was_lifted(lifter,interaction)
+        ent.finished_lifting(liftee,success)
+
     def move_ent_to_ent(self,id,id2):
         """Passes call to try to move an entity to another into relative coords."""
         x, y = self.get_pos(id2) or (0,0)
@@ -180,7 +194,7 @@ class EntityManager(object):
         if has_moved:
             interaction = self.DIRECT_INTERACTION
         else:
-            interaction = self.RANGED_INTERACTION
+            interaction = self.ATTEMPTED_INTERACTION
         if self.get_at(pos[0],pos[1]):
             for victim_id in self.get_at(pos[0],pos[1]):
                 if id is not victim_id:
@@ -215,13 +229,19 @@ class EntityLookup:
     def __init__(self):
         self.lookup = dict()
         self.lookup['item'] = lib.entity.Item
-        self.lookup['npc'] = lib.entity.NPC
-        self.lookup['player'] = lib.entity.Player
+        self.lookup['mob'] = entities.mobs.Mob
+        self.lookup['humanoid'] = entities.mobs.Humanoid
+        self.lookup['player'] = entities.mobs.Player
         self.lookup['ethereal'] = lib.entity.Ethereal
         self.lookup['camera'] = lib.entity.Camera
         self.lookup['bodypart'] = lib.entity.Bodypart
+        self.lookup['wound'] = lib.entity.Wound
         self.lookup['door'] = entities.traps.AutoDoor
         self.lookup['arrow_trap'] = entities.traps.ArrowTrap
+        self.lookup['stone_trap'] = entities.traps.StoneTrap
+        self.lookup['obstacle'] = lib.entity.Obstacle
+        self.lookup['boulder'] = lib.entity.Boulder
+
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""

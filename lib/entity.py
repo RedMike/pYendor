@@ -28,6 +28,18 @@ class Entity(object):
         self.fgcol = (255,255,255)
         self.parent = parent
 
+    def was_lifted(self, id, type):
+        """Callback for when entity was picked up by another entity."""
+        return self.get_attribute('liftable')
+
+    def lifted(self, id, type):
+        """Callback for when entity picks up another entity."""
+        pass
+
+    def finished_lifting(self, id, success_value, metadata=None):
+        """Callback for when the entity has finished trying to pick up another entity."""
+        pass
+
     def collided(self, id, type):
         """Callback for when entity moves I{into} another entity."""
         pass
@@ -93,6 +105,18 @@ class Item(Entity):
         self.set_attributes('00111')
         self.char = '('
 
+class Obstacle(Entity):
+    """Base blocking, visible, non-liftable, non-usable entity for subclassing."""
+
+    def __init__(self,parent,id):
+        super(Obstacle,self).__init__(parent,id)
+        self.set_attributes('01100')
+        self.char = 'O'
+
+class Boulder(Obstacle):
+
+    pass
+
 class Trap(Entity):
     """Base class for fixed, blocking, unliftable, unusable ents for subclass."""
 
@@ -101,110 +125,39 @@ class Trap(Entity):
         self.set_attributes('11100')
 
 
-
-class NPC(Entity):
-
-    def __init__(self,parent,id):
-        """Base blocking, unliftable, unusable entity for subclass."""
-        super(NPC,self).__init__(parent,id)
-        self.set_attributes('01100')
-        self.char = '@'
-        self.name = 'kobold'
-        self.fgcol = (0,255,255)
-        self.dead = 0
-
-    def collided(self, id, type):
-        #super(NPC,self).collided(id, type) # Do I need this?
-        if type == self.parent.RANGED_INTERACTION:
-            ent = self.parent.get_ent(id)
-            if isinstance(ent, NPC):
-                hit = ent.deal_damage(1)
-
-    def was_collided(self, id, type):
-        return False
-
-    def deal_damage(self, amount):
-        # TODO: Stop dying immediately.
-        # TODO: Add more return information than a boolean.
-        self.die()
-        return True
-
-    def die(self):
-        """Verify if not already dead, and change into corpse of being."""
-        if not self.dead:
-            self.dead = 1
-            id = self.parent.add_entity("item")
-            self.parent.set_pos(id,self.parent.get_pos(self.id))
-            self.parent.get_ent(id).name = self.name + " corpse"
-            self.parent.set_parent(self.id,0)
-
-    def update(self):
-        if not self.dead:
-            dx, dy = random.randint(-1,1), random.randint(-1,1)
-            self.move(dx, dy)
-
-class Humanoid(NPC):
-
-    def __init__(self,parent,id):
-        super(Humanoid,self).__init__(parent,id)
-        self.nodes = { }
-        for part in ['head', 'neck', 'chest', 'l_hand', 'r_hand', 'l_leg', 'r_leg', 'back']:
-            self.add_node(part)
-
-    def get_node(self,name):
-        if name not in self.nodes:
-            raise IDNotAssignedError
-        return self.nodes[name]
-
-    def get_nodes(self):
-        return self.nodes
-
-    def add_node(self,name):
-        id = self.parent.add_entity('bodypart')
-        self.parent.set_parent(id, self.id)
-        self.parent.get_ent(id).name = name
-        self.nodes[name] = id
-
-class Player(Humanoid):
-    """Simple player class."""
-
-    def __init__(self,parent,id):
-        super(Player,self).__init__(parent,id)
-        self.char = '@'
-        self.fgcol = (255,100,100)
-        self.name = "Player"
-
-    def collided(self, id, type):
-        super(Player,self).collided(id, type)
-        ent = self.parent.get_ent(id)
-        if type == self.parent.DIRECT_INTERACTION:
-            if isinstance(ent,entities.traps.ArrowTrap):
-                self.parent.post_message("You're hit by an arrow and collapse. You die..")
-        if type == self.parent.RANGED_INTERACTION:
-            if isinstance(ent,NPC):
-                self.parent.post_message("You slice at the "+self.parent.get_name(id)+'.')
-
-    def finished_colliding(self, id, success_value, metadata=None):
-        """Called AFTER interaction itself."""
-        super(Player,self).finished_colliding(id, success_value, metadata)
-        ent = self.parent.get_ent(id)
-        if isinstance(ent,entities.traps.Door):
-            if success_value:
-                self.parent.post_message("You open the "+self.parent.get_name(id)+'.')
-        elif isinstance(ent,NPC):
-            if success_value:
-                self.parent.post_message("You kill the "+self.parent.get_name(id)+'.')
-
-    def update(self):
-        pass
-
-
 class Ethereal(Entity):
     """Class for entities like cameras, with which you don't interact ingame."""
 
     def __init__(self, parent,id):
         super(Ethereal,self).__init__(parent,id)
         self.set_attributes('00000')
+
+class Wound(Ethereal):
+    """Class for simulating injuries."""
+
+    def __init__(self,parent,id):
+        super(Wound,self).__init__(parent,id)
+        self.set_attributes('00000')
+        self.damage = None
+        self.worsen_chance = 20
+        self.heal_chance = 20
+        self.name = "Wound"
+
+    def set_damage(self,amount):
+        self.damage = amount
+        self.name = "Wound ("+str(amount)+")"
+
+    def update(self):
+        if self.damage:
+            if 100 > self.damage > 50:    # TODO: Turn into global constant for ease of use.
+                if random.randint(0,100) < self.worsen_chance:
+                    self.set_damage(self.damage+1)
+            elif self.damage < 20:        # TODO: Turn into global constant for ease of use.
+                if random.randint(0,100) < self.heal_chance:
+                    self.set_damage(self.damage-1)
+        if not self.damage:
+            self.parent.set_parent(self.id, 0)
+
 
 class Bodypart(Ethereal):
     """Class for simulating bodyparts."""
