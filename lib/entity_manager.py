@@ -1,6 +1,7 @@
-import lib.entity
+import entities.entity
 import entities.traps
 import entities.mobs
+import entities.ethereal
 
 # Entities are kept in a dictionary as an id.
 # This allows for fast checking for entities in tiles, and raises
@@ -228,24 +229,24 @@ class EntityLookup:
 
     def __init__(self):
         self.lookup = dict()
-        self.lookup['item'] = lib.entity.Item
-        self.lookup['mob'] = entities.mobs.Mob
+        self.lookup['item'] = entities.entity.Item
+        self.lookup['mob'] = entities.entity.Mob
         self.lookup['humanoid'] = entities.mobs.Humanoid
         self.lookup['player'] = entities.mobs.Player
-        self.lookup['ethereal'] = lib.entity.Ethereal
-        self.lookup['camera'] = lib.entity.Camera
-        self.lookup['bodypart'] = lib.entity.Bodypart
-        self.lookup['wound'] = lib.entity.Wound
+        self.lookup['ethereal'] = entities.entity.Ethereal
+        self.lookup['camera'] = entities.ethereal.Camera
+        self.lookup['bodypart'] = entities.ethereal.Bodypart
+        self.lookup['wound'] = entities.ethereal.Wound
         self.lookup['door'] = entities.traps.AutoDoor
         self.lookup['arrow_trap'] = entities.traps.ArrowTrap
         self.lookup['stone_trap'] = entities.traps.StoneTrap
-        self.lookup['obstacle'] = lib.entity.Obstacle
-        self.lookup['boulder'] = lib.entity.Boulder
+        self.lookup['obstacle'] = entities.entity.Obstacle
+        self.lookup['boulder'] = entities.entity.Boulder
 
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""
-        return self.lookup.get(str.lower(),lib.entity.Entity)
+        return self.lookup.get(str.lower(), entities.entity.Entity)
 
 
 class IDNotFound(Exception):

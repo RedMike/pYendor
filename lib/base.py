@@ -685,16 +685,30 @@ class Application(object):
         for id in self.entity_manager.get_ids():
             if self.entity_manager.get_attribute(id,'visible'):
                 ret = self.get_ent_pos(id)
-                if ret is not None:
+                if ret:
                     tx, ty = ret
+                    drawn = True
                     if self.fov_map:
-                        if self.fov_map.get_lit(tx,ty)[0]:
-                            ent = self.get_ent(id)
-                            tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
-                    else:
+                        if not self.fov_map.get_lit(tx,ty)[0]:
+                            drawn = False
+                    if drawn:
                         ent = self.get_ent(id)
                         tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
         win.update_layer(4,tiles)
+
+        tiles = [ ]
+        pl_pos = self.get_ent_pos(self.get_player())
+        if pl_pos:
+            tx, ty = pl_pos
+            drawn = True
+            if self.fov_map:
+                if not self.fov_map.get_lit(tx,ty)[0]:
+                    drawn = False
+            if drawn:
+                ent = self.get_ent(self.get_player())
+                tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+        win.update_layer(5,tiles)
+
 
 
     def update(self):

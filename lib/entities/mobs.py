@@ -1,56 +1,14 @@
-import lib.entity
+import entity
 import traps
+import ethereal
 
 import random
 
-class Mob(lib.entity.Entity):
-
-    def __init__(self,parent,id):
-        """Base blocking, unliftable, unusable entity for subclass."""
-        super(Mob,self).__init__(parent,id)
-        self.set_attributes('01100')
-        self.char = '@'
-        self.name = 'kobold'
-        self.fgcol = (0,255,255)
-        self.dead = 0
-
-    def collided(self, id, type):
-        if type == self.parent.ATTEMPTED_INTERACTION:
-            ent = self.parent.get_ent(id)
-            if isinstance(ent, Mob):
-                hit = ent.deal_damage(10)
-
-    def was_collided(self, id, type):
-        return True
-
-    def deal_damage(self, amount):
-        # TODO: Add more return information than a boolean.
-        self.die()
-        return self.check_damage()
-
-    def check_damage(self):
-        if not self.dead:
-            return False
-        return True
-
-    def die(self):
-        """Verify if not already dead, and change into corpse of being."""
-        if not self.dead:
-            self.dead = 1
-            id = self.parent.add_entity("item")
-            self.parent.set_pos(id,self.parent.get_pos(self.id))
-            self.parent.get_ent(id).name = self.name + " corpse"
-            self.parent.set_parent(self.id,0)
-
-    def update(self):
-        if not self.check_damage():
-            dx, dy = random.randint(-1,1), random.randint(-1,1)
-            self.move(dx, dy)
-
-class Humanoid(Mob):
+class Humanoid(entity.Mob):
 
     def __init__(self,parent,id):
         super(Humanoid,self).__init__(parent,id)
+        self.name = "humanoid"
         self.nodes = { }
         self.bodyparts = ['head', 'neck', 'chest', 'back', 'l_hand', 'r_hand', 'l_leg', 'r_leg']
         for part in self.bodyparts:
@@ -59,7 +17,7 @@ class Humanoid(Mob):
     def was_collided(self, id, type):
         if type == self.parent.ATTEMPTED_INTERACTION:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, Mob):
+            if isinstance(ent, entity.Mob):
                 return self.check_damage()
 
     def get_injury(self,node):
@@ -68,7 +26,7 @@ class Humanoid(Mob):
         if ents:
             for id in self.parent.get_in(node):
                 ent = self.parent.get_ent(id)
-                if isinstance(ent, lib.entity.Wound):
+                if isinstance(ent, ethereal.Wound):
                     return ent
         return None
 
@@ -79,7 +37,7 @@ class Humanoid(Mob):
         if ents:
             for id in self.parent.get_in(node):
                 ent = self.parent.get_ent(id)
-                if isinstance(ent, lib.entity.Wound):
+                if isinstance(ent, ethereal.Wound):
                     total += ent.damage
         return total
 
@@ -156,7 +114,7 @@ class Player(Humanoid):
     def finished_lifting(self, id, success_value, metadata=None):
         super(Player,self).finished_lifting(id, type)
         ent = self.parent.get_ent(id)
-        if isinstance(ent,lib.entity.Item):
+        if isinstance(ent, entity.Item):
             if self.can_lift():
                 self.add_pickup(id)
 
@@ -164,7 +122,7 @@ class Player(Humanoid):
         super(Player,self).collided(id, type)
         ent = self.parent.get_ent(id)
         if type == self.parent.ATTEMPTED_INTERACTION:
-            if isinstance(ent,Mob):
+            if isinstance(ent, entity.Mob):
                 self.parent.post_message("You slice at the "+self.parent.get_name(id)+'.')
 
     def finished_colliding(self, id, success_value, metadata=None):
@@ -173,7 +131,7 @@ class Player(Humanoid):
         if isinstance(ent,traps.Door):
             if success_value:
                 self.parent.post_message("You open the "+self.parent.get_name(id)+'.')
-        elif isinstance(ent,Mob):
+        elif isinstance(ent, entity.Mob):
             if success_value:
                 self.parent.post_message("You kill the "+self.parent.get_name(id)+'.')
         elif isinstance(ent,traps.ArrowTrap):

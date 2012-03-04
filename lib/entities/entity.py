@@ -5,7 +5,6 @@
 
 import random
 
-import entities
 
 class Entity(object):
     """Base entity class.
@@ -96,6 +95,49 @@ class Entity(object):
     def update(self):
         pass
 
+class Mob(Entity):
+
+    def __init__(self,parent,id):
+        """Base blocking, unliftable, unusable entity for subclass."""
+        super(Mob,self).__init__(parent,id)
+        self.set_attributes('01100')
+        self.char = '@'
+        self.name = 'mob'
+        self.fgcol = (0,255,255)
+        self.dead = 0
+
+    def collided(self, id, type):
+        if type == self.parent.ATTEMPTED_INTERACTION:
+            ent = self.parent.get_ent(id)
+            if isinstance(ent, Mob):
+                hit = ent.deal_damage(10)
+
+    def was_collided(self, id, type):
+        return True
+
+    def deal_damage(self, amount):
+        # TODO: Add more return information than a boolean.
+        self.die()
+        return self.check_damage()
+
+    def check_damage(self):
+        if not self.dead:
+            return False
+        return True
+
+    def die(self):
+        """Verify if not already dead, and change into corpse of being."""
+        if not self.dead:
+            self.dead = 1
+            id = self.parent.add_entity("item")
+            self.parent.set_pos(id,self.parent.get_pos(self.id))
+            self.parent.get_ent(id).name = self.name + " corpse"
+            self.parent.set_parent(self.id,0)
+
+    def update(self):
+        if not self.check_damage():
+            dx, dy = random.randint(-1,1), random.randint(-1,1)
+            self.move(dx, dy)
 
 class Item(Entity):
     """Base non-blocking, visible, liftable and usable entity for subclassing."""
@@ -113,10 +155,6 @@ class Obstacle(Entity):
         self.set_attributes('01100')
         self.char = 'O'
 
-class Boulder(Obstacle):
-
-    pass
-
 class Trap(Entity):
     """Base class for fixed, blocking, unliftable, unusable ents for subclass."""
 
@@ -124,58 +162,12 @@ class Trap(Entity):
         super(Trap,self).__init__(parent,id)
         self.set_attributes('11100')
 
-
 class Ethereal(Entity):
     """Class for entities like cameras, with which you don't interact ingame."""
 
     def __init__(self, parent,id):
         super(Ethereal,self).__init__(parent,id)
         self.set_attributes('00000')
-
-class Wound(Ethereal):
-    """Class for simulating injuries."""
-
-    def __init__(self,parent,id):
-        super(Wound,self).__init__(parent,id)
-        self.set_attributes('00000')
-        self.damage = None
-        self.worsen_chance = 20
-        self.heal_chance = 20
-        self.name = "Wound"
-
-    def set_damage(self,amount):
-        self.damage = amount
-        self.name = "Wound ("+str(amount)+")"
-
-    def update(self):
-        if self.damage:
-            if 100 > self.damage > 50:    # TODO: Turn into global constant for ease of use.
-                if random.randint(0,100) < self.worsen_chance:
-                    self.set_damage(self.damage+1)
-            elif self.damage < 20:        # TODO: Turn into global constant for ease of use.
-                if random.randint(0,100) < self.heal_chance:
-                    self.set_damage(self.damage-1)
-        if not self.damage:
-            self.parent.set_parent(self.id, 0)
-
-
-class Bodypart(Ethereal):
-    """Class for simulating bodyparts."""
-
-    def __init__(self, parent,id):
-        super(Bodypart,self).__init__(parent,id)
-        self.name = "bodypart"
-
-class Camera(Ethereal):
-    """Simple camera class."""
-
-    def __init__(self, parent,id):
-        super(Camera,self).__init__(parent,id)
-        self.name = "camera"
-
-    def sync_camera(self, pid):
-        """Try to move to player's location."""
-        self.parent.move_ent_to_ent(self.id,pid)
 
 class EntityError(Exception):
     """Base class for entity errors."""

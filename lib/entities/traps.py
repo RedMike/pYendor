@@ -1,7 +1,7 @@
+import entity
 import mobs
-import lib.entity
 
-class Door(lib.entity.Trap):
+class Door(entity.Trap):
     """Simple door class, subclass of X{Entity.Trap}."""
 
     def __init__(self,parent,id):
@@ -56,7 +56,7 @@ class AutoDoor(Door):
             self.close()
             self.ticker = -1
 
-class StepTrap(lib.entity.Trap):
+class StepTrap(entity.Trap):
     """Trap activated when an NPC steps onto it; subclass and replace was_collided."""
 
     def __init__(self,parent,id):
@@ -82,7 +82,7 @@ class ArrowTrap(StepTrap):
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION and self.can_fire:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, mobs.Mob):
+            if isinstance(ent, entity.Mob):
                 self.ticker = 5
                 self.can_fire = False
                 ent.deal_damage(10)
@@ -111,7 +111,7 @@ class StoneTrap(StepTrap):
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION and self.can_fire:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, mobs.Mob):
+            if isinstance(ent, entity.Mob):
                 self.fire(ent)
                 return True
         return False
