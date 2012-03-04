@@ -2,6 +2,8 @@ import entities.entity
 import entities.traps
 import entities.mobs
 import entities.ethereal
+import entities.obstacle
+import entities.items
 
 # Entities are kept in a dictionary as an id.
 # This allows for fast checking for entities in tiles, and raises
@@ -50,8 +52,8 @@ class EntityManager(object):
         id = self.cur_id
         self.adjust_cur_id()
         type = self.class_lookup.get_class(type)
-        self.lookup[id] = 1
         self.lookup[id] = type(self,id)
+        self.lookup[id].init()
         self.set_attribute(id, 'delay', delay)
         if delay is not None:
             self.schedule(self.scheduler, id)
@@ -164,6 +166,15 @@ class EntityManager(object):
         if delay is not None:
             self.schedules[id] = sched.add_schedule((ent.update, (), delay))
 
+    def ent_equip(self, equip_node, equipment):
+        """Equipper attempts to equip equipment to equip_node."""
+        node = self.get_ent(equip_node)
+        victim = self.get_ent(equipment)
+        interaction = self.DIRECT_INTERACTION
+        node.equipped(victim, interaction)
+        success = victim.was_equipped(equip_node, interaction)
+        node.finished_equipping(equipment, success)
+
     def ent_lift(self, lifter, liftee):
         """Lifter attempts to lift liftee."""
         ent = self.get_ent(lifter)
@@ -241,7 +252,10 @@ class EntityLookup:
         self.lookup['arrow_trap'] = entities.traps.ArrowTrap
         self.lookup['stone_trap'] = entities.traps.StoneTrap
         self.lookup['obstacle'] = entities.entity.Obstacle
-        self.lookup['boulder'] = entities.entity.Boulder
+        self.lookup['boulder'] = entities.obstacle.Boulder
+        self.lookup['glove'] = entities.items.Glove
+        self.lookup['breastplate'] = entities.items.Breastplate
+        self.lookup['backpack'] = entities.items.Backpack
 
 
     def get_class(self,str):

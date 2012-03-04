@@ -6,6 +6,9 @@ class Door(entity.Trap):
 
     def __init__(self,parent,id):
         super(Door,self).__init__(parent,id)
+
+    def init(self):
+        super(Door,self).init()
         self.opened = 0
         self.char = "+"
         self.name = "door"
@@ -42,6 +45,9 @@ class AutoDoor(Door):
 
     def __init__(self,parent,id):
         super(AutoDoor,self).__init__(parent,id)
+
+    def init(self):
+        super(AutoDoor,self).init()
         self.ticker = -1
 
     def open(self):
@@ -76,6 +82,9 @@ class ArrowTrap(StepTrap):
 
     def __init__(self,parent,id):
         super(ArrowTrap,self).__init__(parent,id)
+
+    def init(self):
+        super(ArrowTrap,self).init()
         self.ticker = 0
         self.can_fire = True
 
@@ -99,6 +108,9 @@ class StoneTrap(StepTrap):
 
     def __init__(self,parent,id):
         super(StoneTrap,self).__init__(parent,id)
+
+    def init(self):
+        super(StoneTrap,self).init()
         self.can_fire = True
 
     def fire(self,ent):

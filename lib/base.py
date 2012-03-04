@@ -138,12 +138,12 @@ class Application(object):
             pl = self.get_player()
             pl_ent = self.get_ent(pl)
             ent_id, usable = window.get_node_meta(window.highlight)
-            if usable and not self.get_ent_in(pl_ent.nodes['r_hand']):
+            if usable and pl_ent.can_lift():
                 self.set_ent_parent(ent_id, pl_ent.nodes['r_hand'])
-            elif not usable and self.get_ent_in(pl_ent.nodes['r_hand']) is not None:
+            elif not usable and self.get_ent_in(pl_ent.nodes['r_hand']):
                 for ent in self.get_ent_in(pl_ent.nodes['r_hand']):
                     if self.get_ent(ent).get_attribute('usable'):
-                        self.set_ent_parent(ent, ent_id)
+                        self.entity_manager.ent_equip(ent_id, ent)
         self.update_inv_window()
 
     def input_bindings(self, window):

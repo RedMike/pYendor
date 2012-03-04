@@ -21,11 +21,31 @@ class Entity(object):
                 'liftable' : 1,
                 'usable' : 1
             }
-        self.name = "generic"
         self.id = id
+        self.parent = parent
+
+    def init(self):
+        self.name = "generic"
         self.char = '?'
         self.fgcol = (255,255,255)
-        self.parent = parent
+        self.acceptable_nodes = None
+
+    def was_equipped(self, id, type):
+        """Callback for when entity is being equipped to a humanoid node."""
+        success = True
+        if self.acceptable_nodes:
+            if self.parent.get_name(id) not in self.acceptable_nodes:
+                success = False
+        return success
+
+    def equipped(self, id, type):
+        """Callback for when entity is attaching another entity to itself."""
+        pass
+
+    def finished_equipping(self, id, success_value, metadata=None):
+        """Callback for when the entity has finished trying to attach an entity to itself."""
+        if success_value:
+            self.parent.set_parent(id, self.id)
 
     def was_lifted(self, id, type):
         """Callback for when entity was picked up by another entity."""
@@ -95,12 +115,16 @@ class Entity(object):
     def update(self):
         pass
 
+
 class Mob(Entity):
 
     def __init__(self,parent,id):
         """Base blocking, unliftable, unusable entity for subclass."""
         super(Mob,self).__init__(parent,id)
         self.set_attributes('01100')
+
+    def init(self):
+        super(Mob,self).init()
         self.char = '@'
         self.name = 'mob'
         self.fgcol = (0,255,255)
@@ -139,13 +163,18 @@ class Mob(Entity):
             dx, dy = random.randint(-1,1), random.randint(-1,1)
             self.move(dx, dy)
 
+
 class Item(Entity):
     """Base non-blocking, visible, liftable and usable entity for subclassing."""
 
     def __init__(self,parent,id):
         super(Item,self).__init__(parent,id)
         self.set_attributes('00111')
+
+    def init(self):
+        super(Item,self).init()
         self.char = '('
+
 
 class Obstacle(Entity):
     """Base blocking, visible, non-liftable, non-usable entity for subclassing."""
@@ -153,7 +182,11 @@ class Obstacle(Entity):
     def __init__(self,parent,id):
         super(Obstacle,self).__init__(parent,id)
         self.set_attributes('01100')
+
+    def init(self):
+        super(Obstacle,self).init()
         self.char = 'O'
+
 
 class Trap(Entity):
     """Base class for fixed, blocking, unliftable, unusable ents for subclass."""
@@ -162,12 +195,14 @@ class Trap(Entity):
         super(Trap,self).__init__(parent,id)
         self.set_attributes('11100')
 
+
 class Ethereal(Entity):
     """Class for entities like cameras, with which you don't interact ingame."""
 
     def __init__(self, parent,id):
         super(Ethereal,self).__init__(parent,id)
         self.set_attributes('00000')
+
 
 class EntityError(Exception):
     """Base class for entity errors."""

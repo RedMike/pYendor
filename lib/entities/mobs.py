@@ -8,6 +8,9 @@ class Humanoid(entity.Mob):
 
     def __init__(self,parent,id):
         super(Humanoid,self).__init__(parent,id)
+
+    def init(self):
+        super(Humanoid,self).init()
         self.name = "humanoid"
         self.nodes = { }
         self.bodyparts = ['head', 'neck', 'chest', 'back', 'l_hand', 'r_hand', 'l_leg', 'r_leg']
@@ -57,7 +60,8 @@ class Humanoid(entity.Mob):
 
     def add_node(self,name):
         id = self.parent.add_entity('bodypart')
-        self.parent.set_parent(id, self.id)
+        #self.parent.set_parent(id, self.id)
+        self.parent.ent_equip(self.id, id)
         self.parent.get_ent(id).name = name
         self.nodes[name] = id
 
@@ -88,11 +92,15 @@ class Player(Humanoid):
 
     def __init__(self,parent,id):
         super(Player,self).__init__(parent,id)
+
+    def init(self):
+        super(Player,self).init()
         self.char = '@'
         self.fgcol = (255,100,100)
         self.name = "Player"
-        self.inventory = self.nodes['r_hand']
         self.pickup_queue = [ ]
+        self.inventory = self.parent.add_entity("backpack")
+        self.parent.set_parent(self.inventory, self.nodes["back"])
 
     def add_pickup(self, obj):
         self.pickup_queue.append(obj)
@@ -107,9 +115,10 @@ class Player(Humanoid):
             self.pickup_queue = [ ]
 
     def can_lift(self):
-        if not self.parent.get_in(self.inventory):
-            return True
-        return False
+        #if not self.parent.get_in(self.inventory):
+        #    return True
+        #return False
+        return True
 
     def finished_lifting(self, id, success_value, metadata=None):
         super(Player,self).finished_lifting(id, type)
