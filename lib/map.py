@@ -151,7 +151,8 @@ class BlockGenerator(Generator):
         valid_blocks = [ ]
         for block in self.block_dirs.keys():
             dir = self.block_dirs[block][new_dir]
-            if 0 < dir[1] <= width:
+            #if 0 < dir[1] <= width: # TODO: Add handling differing sizes again
+            if dir[1] == width:
                 #the exit fits, let's see if it has room from the other blocks
                 x = old_x
                 y = old_y
