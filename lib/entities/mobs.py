@@ -13,7 +13,7 @@ class Humanoid(entity.Mob):
         super(Humanoid,self).init()
         self.name = "humanoid"
         self.nodes = { }
-        self.bodyparts = ['head', 'neck', 'chest', 'back', 'l_hand', 'r_hand', 'l_leg', 'r_leg']
+        self.bodyparts = ['head', 'hands', 'chest', 'back', 'legs']
         for part in self.bodyparts:
             self.add_node(part)
 
@@ -96,7 +96,7 @@ class Player(Humanoid):
     def init(self):
         super(Player,self).init()
         self.char = '@'
-        self.fgcol = (4, 58, 107)
+        self.fgcol = (255, 255, 255)
         self.name = "Player"
         self.pickup_queue = [ ]
         self.inventory = self.parent.add_entity("backpack")

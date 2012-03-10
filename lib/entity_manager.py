@@ -250,7 +250,7 @@ class EntityLookup:
         self.lookup['wound'] = entities.ethereal.Wound
         self.lookup['door'] = entities.traps.AutoDoor
         self.lookup['arrow_trap'] = entities.traps.ArrowTrap
-        self.lookup['stone_trap'] = entities.traps.StoneTrap
+        self.lookup['sdftone_trap'] = entities.traps.StoneTrap
         self.lookup['obstacle'] = entities.entity.Obstacle
         self.lookup['boulder'] = entities.obstacle.Boulder
         self.lookup['glove'] = entities.items.Glove
@@ -258,6 +258,7 @@ class EntityLookup:
         self.lookup['backpack'] = entities.items.Backpack
         self.lookup['kobold'] = entities.entity.Item
         self.lookup['salve'] = entities.items.HealingSalve
+        self.lookup['player_spawn'] = entities.ethereal.PlayerSpawn
 
 
     def get_class(self,str):

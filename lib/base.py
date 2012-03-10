@@ -90,11 +90,12 @@ class Application(object):
                      ['r',[self.player_drop,()]],
                      ['q',[self.quit,()]],
                      [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
-                     ['t',[self.add_input_menu,(">>> ",)]]]
+                     ['t',[self.add_input_menu,(">>> ",self._debug_window_callback)]]]
             for set in temp:
                 key = set[0]
                 bind = set[1]
                 self.add_binding(key,bind)
+
 
     def node_bindings(self, window, callback):
         """Bind default node window keys.
@@ -109,6 +110,14 @@ class Application(object):
         if window.highlight is None:
             window.highlight = 0
         self.keyboard.set_default_binding(callback, (window,))
+
+    def _debug_window_callback(self, input):
+        try:
+            exec input
+        except Exception as e:
+            self.add_messages((str(e),))
+        self.remove_menu()
+
 
     def _inventory_window_callback(self, mods, char, vk, window):
         """Callback for input when working with inventory windows.
@@ -467,13 +476,19 @@ class Application(object):
         map = self.get_map()
         if map is None:
             raise NoMapError
-        tiles = map.get_rect(0,0,map.width,map.height)
+        ents = self.entity_manager.get_ids()
         x, y = 0, 0
-        for i in range(len(tiles)):
-            for j in range(len(tiles[i])):
-                if not tiles[i][j][0]:
-                    x, y = i, j
-                    break
+        for ent in ents:
+            if self.get_ent(ent).name=="player_spawn":
+                x, y = self.get_ent_pos(ent)
+                break
+#        tiles = map.get_rect(0,0,map.width,map.height)
+#        x, y = 0, 0
+#        for i in range(len(tiles)):
+#            for j in range(len(tiles[i])):
+#                if not tiles[i][j][0]:
+#                    x, y = i, j
+#                    break
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )

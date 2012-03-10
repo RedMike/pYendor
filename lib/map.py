@@ -77,6 +77,7 @@ class BlockGenerator(Generator):
         self.block_dirs = { }
         self.block_widths = { }
         self.block_heights = { }
+        self.block_weights = { }
         self.parser = None
         self.accepted_sizes = set()
         self.rects = [ ]
@@ -128,6 +129,10 @@ class BlockGenerator(Generator):
             self.parser.read('data/map/blocks/'+id+'.block')
             self.block_widths[id] = self.parser.getint(id,'width')
             self.block_heights[id] = self.parser.getint(id,'height')
+            if self.parser.has_option('layout', id[:-2]):
+                self.block_weights[id] = self.parser.getfloat('layout', id[:-2])
+            else:
+                self.block_weights[id] = 0.1
             self.block_dirs[id] = { }
             for dir in ('top', 'bottom', 'left', 'right'):
                 s = self.parser.get(id,dir)
@@ -170,7 +175,13 @@ class BlockGenerator(Generator):
                 if not self.check_col((x,y,w,h)):
                     valid_blocks.append((x,y,block))
         if valid_blocks:
-            return random.choice(valid_blocks)  # TODO: Add customisable bias!
+            #return random.choice(valid_blocks)  # TODO: Add customisable bias!
+            choices = []
+            for block in valid_blocks:
+                x, y, id = block
+                chance = int(self.block_weights[id]*100)
+                choices += [block for i in range(chance)]
+            return random.choice(choices)
         return None
 
     def _recurse_gen(self, x, y, block_id):
@@ -190,7 +201,8 @@ class BlockGenerator(Generator):
         self.map.clear()
         self.entities = [ ]
         self.rects = [ ]
-        x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
+        #x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
+        x, y = random.randint(15, 25), random.randint( 10, self.height-50)
         block = self.parser.get('layout','start')
         self._recurse_gen(x, y, block)
         return self.map

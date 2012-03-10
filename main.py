@@ -30,16 +30,16 @@ import lib.base as base
 import lib.graphics as graphics
 
 WIDTH, HEIGHT = 80, 50
-MAP_WIDTH, MAP_HEIGHT = 100, 100
-COLBORD1 = (4, 58, 107)
-COLBORD2 = (64, 141, 210)
+MAP_WIDTH, MAP_HEIGHT = 150, 150
+COLBORD1 = (14, 83, 120)
+COLBORD2 = (61, 157, 208)
 
 COLWALL1 = (255, 149, 0)
 COLWALL2 = (255, 176, 64)
 COLWALL3 = (191, 168, 48)
 
-COLFLOOR1 = (191, 55, 48)
-COLFLOOR2 = (166, 8, 0)
+COLFLOOR1 = (166, 8, 0)
+COLFLOOR2 = (191, 55, 48)
 COLWALLS = [COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1,
             COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1,
             COLWALL2, COLWALL2, COLWALL3]
@@ -113,6 +113,21 @@ class CustomApp(base.Application):
                 self.update_craft_window()
         self.update_inv_window()
 
+    def update_inv_window(self):
+        """Default implementation of inventory window updating.
+
+        Subclass and replace to use a different format or a different window type.
+        """
+        if self.inv_win is None:
+            return  #TODO: Error handling.
+        player = self.get_player()
+        name = self.entity_manager.get_name(player) + ' (' + str(self.get_ent(self.player).get_injuries()) + ')'
+        names = {0:name}
+        parents = {0:None}
+        meta = {0:(player,False)}
+        parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
+        self.inv_win.set_nodes(parents,names,meta)
+
     def update_craft_window(self):
         """Default implementation of inventory window updating.
 
@@ -158,7 +173,7 @@ class CustomApp(base.Application):
         self.menu_stack.append([id,callback])
 
     def add_input_menu(self, label, callback):
-        id = self.add_window(6, graphics.InputWindow, 40, 5, 20, 20)
+        id = self.add_window(6, graphics.InputWindow, 60, 5, 0, 20)
         win = self.win_man.get_window(id)
         win.set_border([COLBORD1,' ',(0,0,0),1])
         win.bgcol = COLBORD2

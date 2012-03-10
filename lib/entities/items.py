@@ -1,4 +1,5 @@
 import entity
+import ethereal
 
 class EquippableItem(entity.Item):
 
@@ -10,6 +11,11 @@ class EquippableItem(entity.Item):
         super(EquippableItem,self).init()
         self.name = "generic equippable item"
 
+    def check_acceptable(self,node):
+        if self.acceptable_nodes:
+            return node in self.acceptable_nodes
+        return True
+
 class Armor(EquippableItem):
 
     def __init__(self,parent,id):
@@ -20,11 +26,6 @@ class Armor(EquippableItem):
         self.name = "armor"
         self.rating = 10
 
-    def check_acceptable(self,node):
-        if self.acceptable_nodes:
-            return node in self.acceptable_nodes
-        return True
-
 class Glove(Armor):
 
     def __init__(self,parent,id):
@@ -33,7 +34,7 @@ class Glove(Armor):
     def init(self):
         super(Glove,self).init()
         self.name = "glove"
-        self.acceptable_nodes = ("r_hand", "l_hand")
+        self.acceptable_nodes = ("hands")
 
 class Breastplate(Armor):
 
@@ -53,7 +54,7 @@ class Weapon(EquippableItem):
     def init(self):
         super(Weapon,self).init()
         self.name = "generic weapon"
-        self.acceptable_nodes = ("r_hand", "l_hand")
+        self.acceptable_nodes = ("hands")
 
 
 class Sword(Weapon):
@@ -88,4 +89,15 @@ class HealingSalve(NonEquippableItem):
 
     def init(self):
         super(HealingSalve,self).init()
-        self.name = "Healing Salve (5)"
+        self.potency = 5
+        self.name = "healing salve"
+
+    def was_equipped(self, id, type):
+        success = False
+        ent = self.parent.get_ent(id)
+        if isinstance(ent, ethereal.Wound):
+            if self.potency > 4 < ent.damage <= 15:
+                success = True
+                self.parent.set_parent(self.id, 0)
+                ent.treat(self.potency)
+        return success

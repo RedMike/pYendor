@@ -1,31 +1,59 @@
 import entity
 
 import random
+from lib.entities import items
+
+class PlayerSpawn(entity.Ethereal):
+
+    def init(self):
+        super(PlayerSpawn,self).init()
+        self.name = "player_spawn"
 
 class Wound(entity.Ethereal):
     """Class for simulating injuries."""
 
-    def __init__(self,parent,id):
-        super(Wound,self).__init__(parent,id)
+    def init(self):
         self.set_attributes('00000')
         self.damage = None
-        self.worsen_chance = 20
-        self.heal_chance = 20
+        self.threshold = 25
+        self.worsen_chance = 0.02
+        self.heal_chance = 0.05
         self.name = "Wound"
+        self.treated = None
+
+    def finished_equipping(self, id, success_value, metadata=None):
+        """Callback for when the entity has finished trying to attach an entity to itself."""
+        ent = self.parent.get_ent(id)
+        if success_value:
+            if isinstance(ent, items.HealingSalve):
+                self.parent.post_message("You apply the salve.")
+            else:
+                #self.parent.set_parent(id, self.id)
+                pass
+        else:
+            if isinstance(ent, items.HealingSalve):
+                self.parent.post_message("You fail to apply the salve.")
+
+    def treat(self,potency):
+        self.treated = potency
+        self.set_damage(self.damage-potency)
 
     def set_damage(self,amount):
         self.damage = amount
-        self.name = "Wound ("+str(amount)+")"
+        if not self.treated:
+            self.name = "Wound ("+str(amount)+")"
+        else:
+            self.name = "Treated Wound ("+str(amount)+")"
 
     def update(self):
         if self.damage:
-            if 100 > self.damage > 50:    # TODO: Turn into global constant for ease of use.
-                if random.randint(0,100) < self.worsen_chance:
+            if 100 > self.damage > self.threshold and not self.treated:
+                if random.random()  < self.worsen_chance:
                     self.set_damage(self.damage+1)
-            elif self.damage < 20:        # TODO: Turn into global constant for ease of use.
-                if random.randint(0,100) < self.heal_chance:
+            elif self.damage <= self.threshold or self.treated:
+                if random.random() < self.heal_chance:
                     self.set_damage(self.damage-1)
-        if not self.damage:
+        if self.damage <= 0:
             self.parent.set_parent(self.id, 0)
 
 

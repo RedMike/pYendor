@@ -494,7 +494,11 @@ class MessageWindow(Window):
 
     def get_msg_y(self,id):
         """Returns y coordinate of message."""
-        return self.messages[id][1]
+        if id < len(self.messages):
+            return self.messages[id][1]
+        else:
+            self.highlight = 0
+            return 2
         
     def get_current_height(self):
         """Returns current height of messages in window.
