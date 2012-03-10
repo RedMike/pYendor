@@ -261,7 +261,8 @@ class Application(object):
         """Set map as I{id}."""
         if id < len(self.maps):
             self.map = id
-            self.fov_map.process_map(self.maps[id])
+            if self.fov_map is not None:
+                self.fov_map.process_map(self.maps[id])
     
     def get_map(self):
         """Returns current map, or I{None}."""
@@ -480,7 +481,8 @@ class Application(object):
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
-        self.scheduler.add_schedule( (self.fov_map.compute, [self.get_player_pos], 1))
+        if self.fov_map is not None:
+            self.scheduler.add_schedule( (self.fov_map.compute, [self.get_player_pos], 1))
         self.entity_manager.set_sched(cam, sch_id)
         self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
         self.player = pid

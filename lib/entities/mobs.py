@@ -96,7 +96,7 @@ class Player(Humanoid):
     def init(self):
         super(Player,self).init()
         self.char = '@'
-        self.fgcol = (255,100,100)
+        self.fgcol = (4, 58, 107)
         self.name = "Player"
         self.pickup_queue = [ ]
         self.inventory = self.parent.add_entity("backpack")

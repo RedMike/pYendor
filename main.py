@@ -24,32 +24,100 @@
 #The views and conclusions contained in the software and documentation are those
 #of the authors and should not be interpreted as representing official policies,
 #either expressed or implied, of the FreeBSD Project.
+import random
 
 import lib.base as base
 import lib.graphics as graphics
 
-WIDTH, HEIGHT = 100, 50
-MAP_WIDTH, MAP_HEIGHT = 200, 200
-COL1 = (15, 100, 175)
-COL2 = (255, 150, 0)
+WIDTH, HEIGHT = 80, 50
+MAP_WIDTH, MAP_HEIGHT = 100, 100
+COLBORD1 = (4, 58, 107)
+COLBORD2 = (64, 141, 210)
 
-app = base.Application("pYendor Test Game ",WIDTH,HEIGHT)
+COLWALL1 = (255, 149, 0)
+COLWALL2 = (255, 176, 64)
+COLWALL3 = (191, 168, 48)
+
+COLFLOOR1 = (166, 8, 0)
+COLFLOOR2 = (255, 13, 0)
+COLFLOOR3 = (191, 55, 48)
+COLWALLS = [COLWALL1, COLWALL1, COLWALL1, COLWALL1,  COLWALL2, COLWALL2, COLWALL3]
+COLFLOORS = [COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR3, COLFLOOR3, COLFLOOR3]
+
+class CustomApp(base.Application):
+
+    def __init__(self, name, w, h):
+        super(CustomApp,self).__init__(name, w, h)
+        self.fov_map = None
+
+    def get_wall_color(self, x, y):
+        col = int((x**2 * 1023 + y*120)**1.9)%len(COLWALLS)
+        return COLWALLS[col]
+
+    def get_floor_color(self, x, y):
+        col = int((x**2 * 1023 + y*120)**1.9)%len(COLFLOORS)
+        return COLFLOORS[col]
+
+
+    def update_game_window(self):
+        cam = self.get_camera()
+        map = self.get_map()
+        win = self.game_win
+        pos = self.get_ent_pos(cam)
+        x, y = pos
+        cx, cy = win.width/2, win.height/2
+        ox, oy = x - cx, y - cy
+        map = map.get_rect(ox, oy, win.width, win.height)
+        tiles = [ ]
+        for i in range(win.width):
+            for j in range(win.height):
+                wall = map[i][j][1]
+                if wall:
+                    col = self.get_wall_color(i + ox, j + oy)
+                    tiles.append([i, j, col, ' ', (0,0,0), 1])
+                if not wall:
+                    col = self.get_floor_color(i + ox, j + oy)
+                    tiles.append([i, j, col, ' ', (0,0,0), 1])
+
+
+        win.update_layer(0,tiles)
+
+        tiles = [ ]
+        for id in self.entity_manager.get_ids():
+            if self.entity_manager.get_attribute(id,'visible'):
+                ret = self.get_ent_pos(id)
+                if ret:
+                    tx, ty = ret
+                    ent = self.get_ent(id)
+                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+        win.update_layer(4,tiles)
+
+        tiles = [ ]
+        pl_pos = self.get_ent_pos(self.get_player())
+        if pl_pos:
+            tx, ty = pl_pos
+            ent = self.get_ent(self.get_player())
+            tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+        win.update_layer(5,tiles)
+
+
+app = CustomApp("Working Name",WIDTH,HEIGHT)
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT-20,0,0)
 game_win = app.win_man.get_window(game_win)
-game_win.set_border([COL2,' ',(0,0,0),1])
-game_win.bgcol = COL1
+game_win.set_border([COLBORD1,' ',(0,0,0),1])
+game_win.bgcol = (0, 0, 0)
 game_win.clear()
 
 msg_win = app.add_window(0,graphics.MessageWindow,WIDTH,20,0,HEIGHT-20)
 msg_win = app.win_man.get_window(msg_win)
-msg_win.set_border([COL1,' ',(0,0,0),1])
-msg_win.bgcol = (0,0,0)
+msg_win.set_border([COLBORD1,' ',(0,0,0),1])
+msg_win.bgcol = (0, 0, 0)
 msg_win.clear()
 
 inv_win = app.add_window(0,graphics.NodeWindow,30,HEIGHT-20,WIDTH-30,0)
 inv_win = app.win_man.get_window(inv_win)
-inv_win.set_border([COL1,' ',(0,0,0),1])
-inv_win.bgcol = (0,0,0)
+inv_win.set_border([COLBORD1,' ',(0,0,0),1])
+inv_win.bgcol = (0, 0, 0)
 inv_win.clear()
 
 app.set_game_window(game_win)
