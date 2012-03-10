@@ -146,7 +146,7 @@ class Application(object):
                         self.entity_manager.ent_equip(ent_id, ent)
         self.update_inv_window()
 
-    def input_bindings(self, window):
+    def input_bindings(self, window, callback):
         """Bind default input keys.
 
         Any custom bindings are cleared, and keys are bound for the window and callback you pass.
@@ -156,9 +156,9 @@ class Application(object):
         """
         self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
-        self.keyboard.set_default_binding(self._input_window_callback, (window,))
+        self.keyboard.set_default_binding(self._input_window_callback, (window,callback))
 
-    def _input_window_callback(self, mods, char, vk, window):
+    def _input_window_callback(self, mods, char, vk, window, callback):
         """Default input window callback.
         Gets called while an input window is on the screen and a key is pressed.
 
@@ -172,13 +172,7 @@ class Application(object):
         if vk == interface.KeyboardListener.KEY_BACKSPACE:
             window.backspace()
         elif vk == interface.KeyboardListener.KEY_ENTER:
-            #DEBUG ONLY!
-            try:
-                s = window.enter()
-                exec s
-            except Exception as e:
-                self.add_messages((str(e),))
-            self.remove_menu()
+            callback(window.enter())
         elif vk == interface.KeyboardListener.KEY_SPACE:
             window.add_char(' ')
         elif interface.KeyboardListener.KEY_0 <= vk <= interface.KeyboardListener.KEY_9:
@@ -229,15 +223,17 @@ class Application(object):
                     set=set)
 
     def generate_ents(self,map,list):
-        """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),
+        """Populates map with entities, takes a list of (x, y, charandblockid, entity_lookup_name, chance),
             where chance is a float in [0,1]."""
+        chances = { }
         for set in list:
-            x, y, ent_string, chance = set
-            r = random.random()
-            if r < chance:
+            x, y, char, ent_string, chance = set
+            if char not in chances:
+                chances[char] = random.random()
+            if chances[char] < chance:
                 ent = self.add_entity(x, y, ent_string)
-                if self.entity_manager.get_attribute(ent,'fixed') and self.entity_manager.get_attribute(ent,'blocking'):
-                    map.add_tile(x, y, (0,1))
+                #if self.entity_manager.get_attribute(ent,'fixed') and self.entity_manager.get_attribute(ent,'blocking'):
+                #    map.add_tile(x, y, (0,1))
 
 
     def add_map(self,file=0,map=0,set=0):
@@ -371,7 +367,7 @@ class Application(object):
         if len(self.menu_stack) > 0:
             return self.win_man.get_window(self.menu_stack[-1][0])
 
-    def add_input_menu(self, label):
+    def add_input_menu(self, label, callback):
         """Adds an input menu to the stack and sets it as active.
 
         Callback gets called with a method that returns the string that was in the list.
@@ -383,8 +379,8 @@ class Application(object):
         win = self.win_man.get_window(id)
         win.set_label(label)
         win.set_length(self.win_man.width-6)
-        self.input_bindings(win)
-        self.menu_stack.append([id])
+        self.input_bindings(win, callback)
+        self.menu_stack.append([id, callback])
 
     def add_choice_menu(self, labels, choices, callback):
         """Adds a single choice menu to the stack and sets it as active.

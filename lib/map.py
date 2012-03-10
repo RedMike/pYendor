@@ -72,7 +72,7 @@ class BasicGenerator(Generator):
 class BlockGenerator(Generator):
 
     def __init__(self,w,h):
-        super(BlockGenerator,self).__init__(w,h) # TODO: Fix me
+        super(BlockGenerator,self).__init__(w,h)
         self.block_walls = { }
         self.block_dirs = { }
         self.block_widths = { }
@@ -90,7 +90,7 @@ class BlockGenerator(Generator):
             #it's an actual entity spawner definition
             lookup_name = self.parser.get(block_id,char)
             chance = self.parser.getfloat(block_id,char+"_chance")
-            self.entities.append((x,y,lookup_name,chance))
+            self.entities.append((x,y,char+block_id,lookup_name,chance))
 
     def place_block(self,x,y,id):
         for i in range(len(self.block_walls[id])):

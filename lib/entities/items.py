@@ -80,3 +80,12 @@ class Backpack(NonEquippableItem):
     def init(self):
         super(Backpack,self).init()
         self.name = "backpack"
+
+class HealingSalve(NonEquippableItem):
+
+    def __init__(self,parent,id):
+        super(HealingSalve,self).__init__(parent,id)
+
+    def init(self):
+        super(HealingSalve,self).init()
+        self.name = "Healing Salve (5)"

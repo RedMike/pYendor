@@ -665,7 +665,7 @@ class InputWindow(MessageWindow):
     def update(self):
         """Internally-called updater method."""
         self.clear()
-        msgs = [self.label + self.input]
+        msgs = [self.label + " " + self.input]
         self.messages = []
         self.add_messages(msgs)
         self.restore_border()

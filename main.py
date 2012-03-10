@@ -64,11 +64,24 @@ class CustomApp(base.Application):
         self.menu_bindings(win,callback)
         self.menu_stack.append([id,callback])
 
+    def add_input_menu(self, label, callback):
+        id = self.add_window(6, graphics.InputWindow, 40, 5, 20, 20)
+        win = self.win_man.get_window(id)
+        win.set_border([COLBORD1,' ',(0,0,0),1])
+        win.bgcol = COLBORD2
+        win.clear()
+        win.set_label(label)
+        win.set_length(self.win_man.width-6)
+        self.input_bindings(win, callback)
+        self.menu_stack.append([id, callback])
+
     def get_wall_color(self, x, y):
+        x, y = abs(x), abs(y)
         col = int((x**2 * 1023 + y*120)**1.9)%len(COLWALLS)
         return COLWALLS[col]
 
     def get_floor_color(self, x, y):
+        x, y = abs(x), abs(y)
         col = int((x**2 * 1023 + y*120)**1.9)%len(COLFLOORS)
         return COLFLOORS[col]
 
@@ -140,19 +153,51 @@ app.set_inventory_window(inv_win)
 #                  "This is a test message which should be long enough to wrap, hopefully. "
 #                 +"However, that's not enough, so hey, there we go, another line, awesome."))
 
-def menu_callback(fct):
+def main_menu_callback(fct):
     choice = fct()
     if not choice:
         app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         app.place_player(1)
         while app.menu_stack:
             app.remove_menu()
+        app.add_input_menu("What is your name?", name_menu_callback)
     elif choice == 1:
         app.quit()
     elif choice == 2:
         pass
 
-app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Debug."), menu_callback)
+def name_menu_callback(input):
+    input = input.strip()
+    if input != "":
+        app.get_ent(app.get_player()).name = input
+    while app.menu_stack:
+        app.remove_menu()
+    app.add_choice_menu(("Choose your difficulty: ",), ("Waa~ waaa~ I want my mommy~", "I AM a grownup, you big meanie!",
+        "Not bad.", "Here we go."), difficulty_menu_callback)
+
+def difficulty_menu_callback(fct):
+    choice = fct()
+    if not choice:
+        items = 5
+    elif choice == 1:
+        items = 3
+    elif choice == 2:
+        items = 1
+    else:
+        while app.menu_stack:
+            app.remove_menu()
+        return
+    pl = app.get_ent(app.get_player())
+    inv = pl.inventory
+    for i in range(5):
+        it = app.add_entity(0,0,"salve")
+        app.set_ent_parent(it,inv)
+    while app.menu_stack:
+        app.remove_menu()
+
+
+
+app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Debug."), main_menu_callback)
 while not app.exit:
     app.update()
 
