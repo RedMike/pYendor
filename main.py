@@ -52,6 +52,99 @@ class CustomApp(base.Application):
     def __init__(self, name, w, h):
         super(CustomApp,self).__init__(name, w, h)
         self.fov_map = None
+        self.craft_win = None
+
+    def _craft_window_callback(self, mods, char, vk, window):
+        if vk == self.keyboard.KEY_UP:
+            if window.highlight > 0:
+                window.highlight -= 1
+        elif vk == self.keyboard.KEY_DOWN:
+            if window.highlight < len(window.messages):
+                window.highlight += 1
+        elif char == 'q':
+            window.highlight = None
+            inv_win.highlight = None
+            self.time_passing = 1
+            self.close_craft_window()
+            self.default_bindings()
+        elif vk == self.keyboard.KEY_LEFT:
+            self.close_craft_window()
+        elif vk == self.keyboard.KEY_RIGHT or char == 'e':
+            ent_id, usable = window.get_node_meta(window.highlight)
+            orig_id, orig_usable = inv_win.get_node_meta(inv_win.highlight)
+            if not usable:
+                #it's either a node, the player, or a wound
+                self.entity_manager.ent_equip(ent_id, orig_id)
+                self.close_craft_window()
+            else:
+                #it's another item, we need to craft.
+                self.close_craft_window()
+        self.update_craft_window()
+        self.update_inv_window()
+
+    def _inventory_window_callback(self, mods, char, vk, window):
+        """Callback for input when working with inventory windows.
+
+        @type  mods: dict
+        @param mods: State of modifiers in the form of {'lalt', 'ralt', 'lctrl', 'rctrl', 'shift'}
+        @type  char: char
+        @param char: If vk is KEY_CHAR, this is the printable character
+        @type  vk: int
+        @param vk: Keycode, check against L{interface.KeyboardListener}.KEY_*
+        """
+        if vk == self.keyboard.KEY_UP:
+            if window.highlight > 0:
+                window.highlight -= 1
+        elif vk == self.keyboard.KEY_DOWN:
+            if window.highlight < len(window.messages):
+                window.highlight += 1
+        elif char == 'q' or vk == self.keyboard.KEY_LEFT:
+            window.highlight = None
+            self.time_passing = 1
+            self.default_bindings()
+        elif char == 'r':
+            ent_id, usable = window.get_node_meta(window.highlight)
+            if usable:
+                self.player_drop(ent_id)
+        elif char == 'e' or vk == self.keyboard.KEY_RIGHT:
+            ent_id, usable = window.get_node_meta(window.highlight)
+            if usable:
+                self.node_bindings(self.open_craft_window(),self._craft_window_callback)
+                self.update_craft_window()
+        self.update_inv_window()
+
+    def update_craft_window(self):
+        """Default implementation of inventory window updating.
+
+        Subclass and replace to use a different format or a different window type.
+        """
+        if self.craft_win is None:
+            return  #TODO: Error handling.
+        player = self.get_player()
+        names = {0:self.entity_manager.get_name(player)}
+        parents = {0:None}
+        meta = {0:(player,False)}
+        parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
+        self.craft_win.set_nodes(parents,names,meta)
+
+    def show_window(self,window):
+        id = self.win_man.get_id(window)
+        self.win_man.show_window(id)
+
+    def hide_window(self,window):
+        id = self.win_man.get_id(window)
+        self.win_man.hide_window(id)
+
+    def open_craft_window(self):
+        if self.craft_win:
+            self.show_window(self.craft_win)
+            return self.craft_win
+        else:
+            raise Exception
+
+    def close_craft_window(self):
+        self.hide_window(self.craft_win)
+        self.node_bindings(self.inv_win, self._inventory_window_callback)
 
     def add_choice_menu(self, labels, choices, callback):
         id = self.add_window(5, graphics.ChoiceWindow, self.win_man.width-30, self.win_man.height-20, 15, 10)
@@ -84,6 +177,9 @@ class CustomApp(base.Application):
         x, y = abs(x), abs(y)
         col = int((x**2 * 1023 + y*120)**1.9)%len(COLFLOORS)
         return COLFLOORS[col]
+
+    def set_craft_window(self,win):
+        self.craft_win = win
 
     def update_game_window(self):
         cam = self.get_camera()
@@ -146,9 +242,17 @@ inv_win.set_border([COLBORD1,' ',(0,0,0),1])
 inv_win.bgcol = COLBORD2
 inv_win.clear()
 
+craft_win = app.add_window(5,graphics.NodeWindow,30,HEIGHT-20,30,0)
+craft_win = app.win_man.get_window(craft_win)
+craft_win.set_border([COLBORD1,' ',(0,0,0),1])
+craft_win.bgcol = COLBORD2
+craft_win.clear()
+app.hide_window(craft_win)
+
 app.set_game_window(game_win)
 app.set_message_window(msg_win)
 app.set_inventory_window(inv_win)
+app.set_craft_window(craft_win)
 #app.add_messages(("Hello world.",
 #                  "This is a test message which should be long enough to wrap, hopefully. "
 #                 +"However, that's not enough, so hey, there we go, another line, awesome."))

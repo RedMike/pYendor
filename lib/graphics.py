@@ -98,6 +98,12 @@ class WindowManager(object):
         self.current_id += 1
         return id
 
+    def get_id(self, win):
+        for id in self.window_list.keys():
+            if win == self.window_list[id]:
+                return id
+        return None
+
     def get_window(self, id):
         """Looks up and returns a window object by ID.
 
@@ -183,7 +189,7 @@ class WindowManager(object):
         l.sort()
         for layer in l:
             for id in self.layers:
-                if self.layers[id] == layer:
+                if self.layers[id] == layer and self.visibilities[id]:
                     self.get_window(id).update()
                     self.specific_draw_window(id)
         self.specific_flush()
