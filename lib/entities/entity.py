@@ -27,7 +27,7 @@ class Entity(object):
     def init(self):
         self.name = "generic"
         self.char = '?'
-        self.fgcol = (255,255,255)
+        self.fgcol = (4, 58, 107)
         self.acceptable_nodes = None
 
     def was_equipped(self, id, type):

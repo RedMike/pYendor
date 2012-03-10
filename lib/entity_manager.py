@@ -256,6 +256,7 @@ class EntityLookup:
         self.lookup['glove'] = entities.items.Glove
         self.lookup['breastplate'] = entities.items.Breastplate
         self.lookup['backpack'] = entities.items.Backpack
+        self.lookup['kobold'] = entities.entity.Item
 
 
     def get_class(self,str):

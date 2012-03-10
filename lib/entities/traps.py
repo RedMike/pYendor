@@ -12,7 +12,7 @@ class Door(entity.Trap):
         self.opened = 0
         self.char = "+"
         self.name = "door"
-        self.fgcol = (255, 150, 0)
+        self.fgcol = (64, 141, 210)
 
     def was_collided(self,id,type):
         if type == self.parent.ATTEMPTED_INTERACTION:

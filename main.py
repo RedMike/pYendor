@@ -38,17 +38,31 @@ COLWALL1 = (255, 149, 0)
 COLWALL2 = (255, 176, 64)
 COLWALL3 = (191, 168, 48)
 
-COLFLOOR1 = (166, 8, 0)
-COLFLOOR2 = (255, 13, 0)
-COLFLOOR3 = (191, 55, 48)
-COLWALLS = [COLWALL1, COLWALL1, COLWALL1, COLWALL1,  COLWALL2, COLWALL2, COLWALL3]
-COLFLOORS = [COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR3, COLFLOOR3, COLFLOOR3]
+COLFLOOR1 = (191, 55, 48)
+COLFLOOR2 = (166, 8, 0)
+COLWALLS = [COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1,
+            COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1,
+            COLWALL2, COLWALL2, COLWALL3]
+COLFLOORS = [COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1,
+             COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1,
+             COLFLOOR2, COLFLOOR2]
 
 class CustomApp(base.Application):
 
     def __init__(self, name, w, h):
         super(CustomApp,self).__init__(name, w, h)
         self.fov_map = None
+
+    def add_choice_menu(self, labels, choices, callback):
+        id = self.add_window(5, graphics.ChoiceWindow, self.win_man.width-30, self.win_man.height-20, 15, 10)
+        win = self.win_man.get_window(id)
+        win.set_border([COLBORD1,' ',(0,0,0),1])
+        win.bgcol = COLBORD2
+        win.clear()
+        win.set_label(labels)
+        win.set_choices(choices)
+        self.menu_bindings(win,callback)
+        self.menu_stack.append([id,callback])
 
     def get_wall_color(self, x, y):
         col = int((x**2 * 1023 + y*120)**1.9)%len(COLWALLS)
@@ -57,7 +71,6 @@ class CustomApp(base.Application):
     def get_floor_color(self, x, y):
         col = int((x**2 * 1023 + y*120)**1.9)%len(COLFLOORS)
         return COLFLOORS[col]
-
 
     def update_game_window(self):
         cam = self.get_camera()
@@ -102,30 +115,30 @@ class CustomApp(base.Application):
 
 
 app = CustomApp("Working Name",WIDTH,HEIGHT)
-game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT-20,0,0)
+game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT,30,0)
 game_win = app.win_man.get_window(game_win)
 game_win.set_border([COLBORD1,' ',(0,0,0),1])
-game_win.bgcol = (0, 0, 0)
+game_win.bgcol = COLWALLS[0]
 game_win.clear()
 
-msg_win = app.add_window(0,graphics.MessageWindow,WIDTH,20,0,HEIGHT-20)
+msg_win = app.add_window(0,graphics.MessageWindow,30,20,0,HEIGHT-20)
 msg_win = app.win_man.get_window(msg_win)
 msg_win.set_border([COLBORD1,' ',(0,0,0),1])
-msg_win.bgcol = (0, 0, 0)
+msg_win.bgcol = COLBORD2
 msg_win.clear()
 
-inv_win = app.add_window(0,graphics.NodeWindow,30,HEIGHT-20,WIDTH-30,0)
+inv_win = app.add_window(0,graphics.NodeWindow,30,HEIGHT-20,0,0)
 inv_win = app.win_man.get_window(inv_win)
 inv_win.set_border([COLBORD1,' ',(0,0,0),1])
-inv_win.bgcol = (0, 0, 0)
+inv_win.bgcol = COLBORD2
 inv_win.clear()
 
 app.set_game_window(game_win)
 app.set_message_window(msg_win)
 app.set_inventory_window(inv_win)
-app.add_messages(("Hello world.",
-                  "This is a test message which should be long enough to wrap, hopefully. "
-                 +"However, that's not enough, so hey, there we go, another line, awesome."))
+#app.add_messages(("Hello world.",
+#                  "This is a test message which should be long enough to wrap, hopefully. "
+#                 +"However, that's not enough, so hey, there we go, another line, awesome."))
 
 def menu_callback(fct):
     choice = fct()
@@ -137,10 +150,9 @@ def menu_callback(fct):
     elif choice == 1:
         app.quit()
     elif choice == 2:
-        app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Recursion.", "Anti-recursion."), menu_callback)
-    elif choice == 3:
-        app.remove_menu()
-app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Recursion"), menu_callback)
+        pass
+
+app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Debug."), menu_callback)
 while not app.exit:
     app.update()
 
