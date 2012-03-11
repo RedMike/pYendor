@@ -78,6 +78,7 @@ class CustomApp(base.Application):
                 self.close_craft_window()
             else:
                 #it's another item, we need to craft.
+                self.entity_manager.ent_equip(ent_id, orig_id)
                 self.close_craft_window()
         self.update_craft_window()
         self.update_inv_window()
@@ -256,8 +257,8 @@ class CustomApp(base.Application):
 #                    ent = self.get_ent(id)
 #                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
 
-        for i in range(-5, 5):
-            for j in range(-5, 5):
+        for i in range(-10, 10):
+            for j in range(-10, 10):
                 ret = self.get_ent_at(x+i, y+j)
                 if ret is not None:
                     for id in ret:

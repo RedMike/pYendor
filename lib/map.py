@@ -211,7 +211,7 @@ class BlockGenerator(Generator):
 
     def gen_map(self):
         it = 0
-        while not self.finished and len(self.rects) < 20:
+        while not self.finished or len(self.rects) < 20:
             self.map.clear()
             self.entities = [ ]
             self.rects = [ ]
@@ -221,7 +221,7 @@ class BlockGenerator(Generator):
             self.finish_block = self.parser.get('layout','end')
             self.finished = False
             self._recurse_gen(x, y, block)
-            if it > 100:
+            if it > 500:
                 raise Exception
         return self.map
 

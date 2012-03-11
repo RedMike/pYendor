@@ -42,9 +42,9 @@ class Wound(entity.Ethereal):
     def set_damage(self,amount):
         self.damage = amount
         if not self.treated:
-            self.name = "Wound ("+str(amount)+")"
+            self.name = "Wound ("+str(amount)+" damage)"
         else:
-            self.name = "Treated Wound ("+str(amount)+")"
+            self.name = "Treated Wound ("+str(amount)+" damage)"
 
     def update(self):
         if self.damage:

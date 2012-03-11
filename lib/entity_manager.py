@@ -268,6 +268,8 @@ class EntityLookup:
         self.lookup['grate_trap'] = entities.traps.GrateTrap
         self.lookup['pillar_trap'] = entities.traps.PillarTrap
         self.lookup['blade_trap'] = entities.traps.BladeTrap
+        self.lookup['cloth_strips'] = entities.items.ClothStrips
+        self.lookup['herb_packet'] = entities.items.HerbPacket
 
 
     def get_class(self,str):

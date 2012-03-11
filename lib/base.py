@@ -246,6 +246,7 @@ class Application(object):
                 for set in meta:
                     att, val = set
                     setattr(ent_obj, att, float(val))
+                ent_obj.update()
                 #if self.entity_manager.get_attribute(ent,'fixed') and self.entity_manager.get_attribute(ent,'blocking'):
                 #    map.add_tile(x, y, (0,1))
 
@@ -603,7 +604,8 @@ class Application(object):
                             can_move = False
             return can_move
         else:
-            raise NoMapError
+            pass
+            #raise NoMapError
 
     def player_jump(self):
         pl = self.get_player()
