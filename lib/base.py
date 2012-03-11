@@ -232,15 +232,19 @@ class Application(object):
                     set=set)
 
     def generate_ents(self,map,list):
-        """Populates map with entities, takes a list of (x, y, charandblockid, entity_lookup_name, chance),
+        """Populates map with entities, takes a list of (x, y, charandblockid, entity_lookup_name, chance, meta),
             where chance is a float in [0,1]."""
         chances = { }
         for set in list:
-            x, y, char, ent_string, chance = set
+            x, y, char, ent_string, chance, meta = set
             if char not in chances:
                 chances[char] = random.random()
             if chances[char] < chance:
                 ent = self.add_entity(x, y, ent_string)
+                ent_obj = self.get_ent(ent)
+                for set in meta:
+                    att, val = set
+                    setattr(ent_obj, att, float(val))
                 #if self.entity_manager.get_attribute(ent,'fixed') and self.entity_manager.get_attribute(ent,'blocking'):
                 #    map.add_tile(x, y, (0,1))
 

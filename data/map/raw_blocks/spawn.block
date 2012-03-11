@@ -15,7 +15,7 @@
 [META]
 t,south_move_trap,1.0
 p,player_spawn,1.0
-d,door,1.0
+d,door,1.0,(timer=10,auto=1)
 a,arrow_trap,0.4
 s,stone_trap,0.3
 q,stone_trap,0.3

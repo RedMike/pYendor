@@ -27,8 +27,11 @@ def write_block(name, width, height, map, dirs, meta):
         for set in meta:
             s = set[0]+"="+set[1]+'\n'
             f.writelines(s)
-            s = set[0]+"_chance="+set[2]+'\n'
-            f.writelines(s)
+            for i in range(2, len(set)):
+                s = set[0]+'_'+set[i][0]+'='+set[i][1]+'\n'
+                f.writelines(s)
+#            s = set[0]+"_chance="+set[2]+'\n'
+#            f.writelines(s)
 
 def spin_dirs(dirs, w, h):
     ret = { }
@@ -73,7 +76,16 @@ def main():
                 else:
                     if line.count(',') == 2:
                         char,ent,chance = line.split(',',2)
-                        meta_data.append([char,ent,chance])
+                        meta_data.append([char,ent,("chance", chance)])
+                    elif line.count(',') > 2:
+                        char, ent, chance, meta = line.split(',',3)
+                        meta = meta.replace('(','').replace(')','')
+                        ret = [char, ent, ("chance", chance)]
+                        for set in meta.split(','):
+                            att, val = set.split('=',1)
+                            ret += [(att, val)]
+                        meta_data.append(ret)
+
         #top exit:
         exit = 0
         width = 0

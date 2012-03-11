@@ -45,6 +45,7 @@ class AutoDoor(Door):
 
     def __init__(self,parent,id):
         super(AutoDoor,self).__init__(parent,id)
+        self.timer = 5
 
     def init(self):
         super(AutoDoor,self).init()
@@ -53,7 +54,7 @@ class AutoDoor(Door):
     def open(self):
         super(AutoDoor,self).open()
         if self.opened:
-            self.ticker = 5
+            self.ticker = self.timer
 
     def update(self):
         if self.ticker>0:

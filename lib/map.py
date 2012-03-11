@@ -90,8 +90,15 @@ class BlockGenerator(Generator):
         if self.parser.has_option(block_id,char) and self.parser.has_option(block_id,char+"_chance"):
             #it's an actual entity spawner definition
             lookup_name = self.parser.get(block_id,char)
-            chance = self.parser.getfloat(block_id,char+"_chance")
-            self.entities.append((x,y,char+block_id,lookup_name,chance))
+            ret = [x, y, char+block_id, lookup_name, self.parser.getfloat(block_id,char+'_chance')]
+            ret2 = []
+            for items in self.parser.items(block_id):
+                name, val = items
+                if name.startswith(char+'_') and name != char+"_chance":
+                    att = name.replace(char+'_','')
+                    ret2.append((att,val))
+            ret.append(ret2)
+            self.entities.append(tuple(ret))
 
     def place_block(self,x,y,id):
         for i in range(len(self.block_walls[id])):
