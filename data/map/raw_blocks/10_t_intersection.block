@@ -3,8 +3,8 @@
 .s###oa#####
 .##tf..#####
 .##.#....###
-..a..ss..o.#
-..a..ss..o.#
+..a..ss..og#
+..a..ss..og#
 .##f#....###
 .##t.....###
 ..###ao#####
@@ -17,3 +17,4 @@ q,random_move_trap,0.1
 o,stone_trap,0.9
 f,trip_trap,0.5
 a,stone_trap,0.7
+g,grate_trap,0.65

@@ -51,7 +51,7 @@ class CustomApp(base.Application):
 
     def __init__(self, name, w, h):
         super(CustomApp,self).__init__(name, w, h)
-        self.fov_map = None
+#        self.fov_map = None
         self.craft_win = None
 
     def _craft_window_callback(self, mods, char, vk, window):
@@ -173,7 +173,7 @@ class CustomApp(base.Application):
         self.menu_stack.append([id,callback])
 
     def add_input_menu(self, label, callback):
-        id = self.add_window(6, graphics.InputWindow, 60, 5, 0, 20)
+        id = self.add_window(6, graphics.InputWindow, 40, 5, 20, 20)
         win = self.win_man.get_window(id)
         win.set_border([COLBORD1,' ',(0,0,0),1])
         win.bgcol = COLBORD2
@@ -208,25 +208,71 @@ class CustomApp(base.Application):
         tiles = [ ]
         for i in range(win.width):
             for j in range(win.height):
-                wall = map[i][j][1]
-                if wall:
-                    col = self.get_wall_color(i + ox, j + oy)
-                    tiles.append([i, j, col, ' ', (0,0,0), 1])
-                if not wall:
-                    col = self.get_floor_color(i + ox, j + oy)
-                    tiles.append([i, j, col, ' ', (0,0,0), 1])
+                if self.fov_map:
+                    lit = self.fov_map.get_lit(i + ox, j + oy)
+                    wall = self.fov_map.get_wall(i + ox, j + oy)
+                    explored = self.fov_map.get_explored(i + ox, j + oy)
+                    if lit[0]:
+                        if lit[1] <5 or explored:
+                            if wall:
+                                col = self.get_wall_color(i + ox, j + oy)
+                                tiles.append([i, j, col, ' ', (0,0,0), 1])
+                            if not wall:
+                                col = self.get_floor_color(i + ox, j + oy)
+                                tiles.append([i, j, col, ' ', (0,0,0), 1])
+                            self.fov_map.set_explored(i+ox,j+oy)
+                        else:
+                            pass
+                            #tiles.append([i, j, COLBORD2, ' ', (0,0,0), 1])
+                    else:
+                        if not explored:
+                            pass
+                            #tiles.append([i, j, COLBORD2, ' ', (0,0,0), 1])
+                        else:
+                            if wall:
+                                col = self.get_wall_color(i + ox, j + oy)
+                                tiles.append([i, j, col, ' ', (0,0,0), 1])
+                            if not wall:
+                                col = self.get_floor_color(i + ox, j + oy)
+                                tiles.append([i, j, col, ' ', (0,0,0), 1])
+                else:
+                    wall = map[i][j][1]
+                    if wall:
+                        col = self.get_wall_color(i + ox, j + oy)
+                        tiles.append([i, j, col, ' ', (0,0,0), 1])
+                    if not wall:
+                        col = self.get_floor_color(i + ox, j + oy)
+                        tiles.append([i, j, col, ' ', (0,0,0), 1])
 
 
         win.update_layer(0,tiles)
 
         tiles = [ ]
-        for id in self.entity_manager.get_ids():
-            if self.entity_manager.get_attribute(id,'visible'):
-                ret = self.get_ent_pos(id)
-                if ret:
-                    tx, ty = ret
-                    ent = self.get_ent(id)
-                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+#        for id in self.entity_manager.get_ids():
+#            if self.entity_manager.get_attribute(id,'visible'):
+#                ret = self.get_ent_pos(id)
+#                if ret:
+#                    tx, ty = ret
+#                    ent = self.get_ent(id)
+#                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+
+        for i in range(-5, 5):
+            for j in range(-5, 5):
+                ret = self.get_ent_at(x+i, y+j)
+                if ret is not None:
+                    for id in ret:
+                        if self.fov_map:
+                            lit = self.fov_map.get_lit(i + x, j + y)
+                            explored = self.fov_map.get_explored(i + x, j + y)
+                            if lit[0] and explored and self.entity_manager.get_attribute(id,'visible'):
+                                tx, ty = self.get_ent_pos(id)
+                                ent = self.get_ent(id)
+                                tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+                        else:
+                            if self.entity_manager.get_attribute(id,'visible'):
+                                tx, ty = self.get_ent_pos(id)
+                                ent = self.get_ent(id)
+                                tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
         win.update_layer(4,tiles)
 
         tiles = [ ]
@@ -254,7 +300,7 @@ app = CustomApp("Working Name",WIDTH,HEIGHT)
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT,30,0)
 game_win = app.win_man.get_window(game_win)
 game_win.set_border([COLBORD1,' ',(0,0,0),1])
-game_win.bgcol = COLWALLS[0]
+game_win.bgcol = COLBORD2
 game_win.clear()
 
 msg_win = app.add_window(0,graphics.MessageWindow,30,20,0,HEIGHT-20)
@@ -320,7 +366,7 @@ def difficulty_menu_callback(fct):
         return
     pl = app.get_ent(app.get_player())
     inv = pl.inventory
-    for i in range(5):
+    for i in range(items):
         it = app.add_entity(0,0,"salve")
         app.set_ent_parent(it,inv)
     while app.menu_stack:
@@ -328,7 +374,10 @@ def difficulty_menu_callback(fct):
 
 
 
-app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Debug."), main_menu_callback)
+app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Debug.", "Arrow keys to move;",
+    "I, then arrowkeys for inventory;", "R in inventory to drop;", "In inventory, right or E to use an item;",
+    "In the use item window, right or E to use it on the selected object, Q to go back to the game directly;",
+    "Q to quit the game.", "Report bugs to mike@codingden.net."), main_menu_callback)
 while not app.exit:
     app.update()
 

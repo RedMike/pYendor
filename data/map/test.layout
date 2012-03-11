@@ -5,5 +5,7 @@ start=spawn_0
 10_x_intersection=0.5
 10_corridor=0.9
 10_turn=0.6
+10_thin=0.8
 2_start_corridor_10=0.3
 spawn=0
+pre_special_room=0.8

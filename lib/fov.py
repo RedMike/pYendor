@@ -36,7 +36,7 @@ class FovMap(object):
 
     def get_lit(self,x,y):
         #returns [lit or not, distance]
-        d = ((self.last_pos[0]-x)**2 - (self.last_pos[1]-y)**2)**(1/2)
+        d = (float(self.last_pos[0]-x)**2 + float(self.last_pos[1]-y)**2)**(1/2.0)
         return self.specific_get_lit(x,y),d
 
     def set_explored(self,x,y):

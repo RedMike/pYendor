@@ -111,7 +111,7 @@ class Entity(object):
 
     def move(self,x,y):
         """Try to move in the (x,y) direction."""
-        self.parent.move_ent(self.id,x,y)
+        return self.parent.move_ent(self.id,x,y)
 
     def update(self):
         pass
@@ -137,7 +137,7 @@ class Mob(Entity):
     def was_collided(self, id, type):
         return True
 
-    def deal_damage(self, amount):
+    def deal_damage(self, amount, target=None):
         # TODO: Add more return information than a boolean.
         self.die()
         return self.check_damage()

@@ -86,11 +86,11 @@ class BlockGenerator(Generator):
     def add_rect(self,x,y,w,h):
         self.rects.append((x,y,w,h))
 
-    def add_ent(self,x,y,block_id,char):
+    def add_ent(self,x,ox,y,oy,block_id,char):
         if self.parser.has_option(block_id,char) and self.parser.has_option(block_id,char+"_chance"):
             #it's an actual entity spawner definition
             lookup_name = self.parser.get(block_id,char)
-            ret = [x, y, char+block_id, lookup_name, self.parser.getfloat(block_id,char+'_chance')]
+            ret = [x+ox, y+oy, char+str(x)+str(y), lookup_name, self.parser.getfloat(block_id,char+'_chance')]
             ret2 = []
             for items in self.parser.items(block_id):
                 name, val = items
@@ -106,7 +106,7 @@ class BlockGenerator(Generator):
                 char = self.block_walls[id][i][j]
                 if char != '#':
                     self.map.add_tile(x+j,y+i,_FLOOR)
-                    self.add_ent(x+j,y+i,id,char)
+                    self.add_ent(x,j,y,i,id,char)
 
 
     def check_rect(self,x,y,w,h):

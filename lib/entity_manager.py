@@ -87,6 +87,13 @@ class EntityManager(object):
             return ret
         return None
 
+    def get_all_in(self,ent):
+        ret = [ ]
+        for id in self.lookup.keys():
+            if self.get_ancestor(id) == ent:
+                ret.append(id)
+        return ret
+
     def get_pos(self,id):
         """Returns (x,y) of entity if not contained, or None."""
         ent = self.get_ent(id)
@@ -118,7 +125,7 @@ class EntityManager(object):
             raise IDNotFound
         if self.parents[id] is None:
             return id
-        return self.get_ancestor(id)
+        return self.get_ancestor(self.parents[id])
 
     def set_attribute(self, id, att, val):
         """Sets the entity's attribute to the given value."""
@@ -213,6 +220,7 @@ class EntityManager(object):
                     self.get_ent(id).collided(victim_id, interaction)
                     success = self.get_ent(victim_id).was_collided(id, interaction)
                     self.get_ent(id).finished_colliding(victim_id, success)
+        return has_moved
 
     def set_pos(self, id, pos):
         """Sets the entity's position to the given tuple, unsetting parent."""
@@ -241,24 +249,25 @@ class EntityLookup:
     def __init__(self):
         self.lookup = dict()
         self.lookup['item'] = entities.entity.Item
-        self.lookup['mob'] = entities.entity.Mob
-        self.lookup['humanoid'] = entities.mobs.Humanoid
         self.lookup['player'] = entities.mobs.Player
-        self.lookup['ethereal'] = entities.entity.Ethereal
         self.lookup['camera'] = entities.ethereal.Camera
         self.lookup['bodypart'] = entities.ethereal.Bodypart
         self.lookup['wound'] = entities.ethereal.Wound
         self.lookup['door'] = entities.traps.AutoDoor
         self.lookup['arrow_trap'] = entities.traps.ArrowTrap
-        self.lookup['sdftone_trap'] = entities.traps.StoneTrap
-        self.lookup['obstacle'] = entities.entity.Obstacle
+        self.lookup['stone_trap'] = entities.traps.StoneTrap
         self.lookup['boulder'] = entities.obstacle.Boulder
         self.lookup['glove'] = entities.items.Glove
         self.lookup['breastplate'] = entities.items.Breastplate
         self.lookup['backpack'] = entities.items.Backpack
-        self.lookup['kobold'] = entities.entity.Item
         self.lookup['salve'] = entities.items.HealingSalve
         self.lookup['player_spawn'] = entities.ethereal.PlayerSpawn
+        self.lookup['trip_trap'] = entities.traps.TripTrap
+        self.lookup['random_move_trap'] = entities.traps.MoveTrap
+        self.lookup['move_trap'] = entities.traps.MoveTrap
+        self.lookup['grate_trap'] = entities.traps.GrateTrap
+        self.lookup['pillar_trap'] = entities.traps.PillarTrap
+        self.lookup['blade_trap'] = entities.traps.BladeTrap
 
 
     def get_class(self,str):

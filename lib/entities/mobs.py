@@ -4,6 +4,7 @@ import ethereal
 
 import random
 
+
 class Humanoid(entity.Mob):
 
     def __init__(self,parent,id):
@@ -134,6 +135,16 @@ class Player(Humanoid):
             if isinstance(ent, entity.Mob):
                 self.parent.post_message("You slice at the "+self.parent.get_name(id)+'.')
 
+    def was_collided(self, id, type):
+        super(Player,self).was_collided(id, type)
+        ent = self.parent.get_ent(id)
+        if type == self.parent.DIRECT_INTERACTION:
+            if isinstance(ent, traps.BladeTrap):
+                self.parent.post_message("The blade cuts straight through your flesh.")
+        elif type == self.parent.ATTEMPTED_INTERACTION:
+            if isinstance(ent, traps.PillarTrap):
+                self.parent.post_message("The pillar barrels into you, throwing you backwards.")
+
     def finished_colliding(self, id, success_value, metadata=None):
         super(Player,self).finished_colliding(id, success_value, metadata)
         ent = self.parent.get_ent(id)
@@ -145,10 +156,24 @@ class Player(Humanoid):
                 self.parent.post_message("You kill the "+self.parent.get_name(id)+'.')
         elif isinstance(ent,traps.ArrowTrap):
             if success_value:
-                self.parent.post_message("You're hit by an arrow and collapse.")
+                self.parent.post_message("You're hit by an arrow.")
         elif isinstance(ent,traps.StoneTrap):
             if success_value:
                 self.parent.post_message("A stone falls on your head.")
+        elif isinstance(ent,traps.TripTrap):
+            if success_value:
+                self.parent.post_message("You trip on a wire and stumble.")
+            else:
+                self.parent.post_message("You notice a loose wire around your feet.")
+        elif isinstance(ent,traps.MoveTrap):
+            if success_value:
+                self.parent.post_message("You feel yourself being pushed around.")
+        elif isinstance(ent,traps.GrateTrap):
+            self.parent.post_message("You slip and collapse onto the grate.")
+            if success_value:
+                 self.parent.post_message("You get up, but feel somehow lighter.")
+            else:
+                self.parent.post_message("You get back to your feet.")
 
     def die(self):
         if not self.dead:
