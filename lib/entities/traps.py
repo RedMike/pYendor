@@ -146,14 +146,12 @@ class TripTrap(StepTrap):
 
     def init(self):
         super(TripTrap,self).init()
-        self.char = '|'
         self.triggered = False
         self.targets = ("head","legs")
 
     def fire(self,ent):
         if not self.triggered:
             ent.deal_damage(5, random.choice(self.targets))
-            self.set_attribute('visible', True)
             return True
         return False
 
@@ -235,8 +233,9 @@ class PillarTrap(entity.Trap):
     def was_collided(self, id, type):
         if type == self.parent.ATTEMPTED_INTERACTION:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
-                ent.deal_damage(14)
+#            if isinstance(ent, entity.Mob):
+#                ent.deal_damage(14)
+#                return True
 
     def finished_colliding(self, id, success_value, metadata=None):
         ent = self.parent.get_ent(id)

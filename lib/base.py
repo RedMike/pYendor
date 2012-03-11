@@ -88,6 +88,7 @@ class Application(object):
                      ['i',[self.node_bindings,(self.inv_win, self._inventory_window_callback)]],
                      ['e',[self.player_pickup,()]],
                      ['r',[self.player_drop,()]],
+                     ['f',[self.player_jump,()]],
                      ['q',[self.quit,()]],
                      [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
                      ['t',[self.add_input_menu,(">>> ",self._debug_window_callback)]]]
@@ -213,7 +214,7 @@ class Application(object):
             bind = set[1]
             self.add_binding(key,bind)
 
-    def generate_map(self,w,h,set):
+    def generate_map(self,layout,w,h,set):
         """Generates new map using BasicGenerator, then generates basic entities.
 
         @type  w: number
@@ -224,7 +225,7 @@ class Application(object):
         @param set: If true, sets map as active.
         """
         gen = map.BlockGenerator(w,h)
-        gen.set_layout('test')
+        gen.set_layout(layout)
         m = gen.gen_map()
         ents = gen.entities
         self.generate_ents(m,ents)
@@ -603,6 +604,11 @@ class Application(object):
             return can_move
         else:
             raise NoMapError
+
+    def player_jump(self):
+        pl = self.get_player()
+        pl_ent = self.get_ent(pl)
+        pl_ent.jump()
 
     def player_drop(self, id=None):
         """Attempt to have the player drop whatever is in his hand."""

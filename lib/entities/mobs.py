@@ -102,6 +102,19 @@ class Player(Humanoid):
         self.pickup_queue = [ ]
         self.inventory = self.parent.add_entity("backpack")
         self.parent.set_parent(self.inventory, self.nodes["back"])
+        self.jumping = False
+        self.jumping_ticker = 15
+
+    def jump(self):
+        if not self.jumping:
+            if not self.jumping_ticker:
+                self.jumping = True
+                self.parent.post_message("You get ready to jump.")
+                self.jumping_ticker = 15
+            else:
+                self.parent.post_message("You're too exhausted!")
+        else:
+            self.parent.post_message("You're already ready to jump!")
 
     def add_pickup(self, obj):
         self.pickup_queue.append(obj)
@@ -175,6 +188,14 @@ class Player(Humanoid):
             else:
                 self.parent.post_message("You get back to your feet.")
 
+    def move(self,x,y):
+        if self.jumping:
+            self.jumping = False
+            self.parent.post_message("You leap through the air.")
+            return self.parent.move_ent(self.id,2 * x,2 * y)
+        else:
+            return self.parent.move_ent(self.id,x, y)
+
     def die(self):
         if not self.dead:
             self.dead = 1
@@ -183,6 +204,8 @@ class Player(Humanoid):
     def update(self):
         super(Player,self).update()
         self.handle_pickups()
+        if not self.jumping and self.jumping_ticker:
+            self.jumping_ticker -= 1
 
 class IDNotAssignedError(Exception):
     """Raised when an entity was asked to give its ID, but it has none assigned."""

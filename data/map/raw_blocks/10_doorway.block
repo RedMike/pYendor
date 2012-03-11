@@ -21,4 +21,4 @@ s,stone_trap,0.25
 t,stone_trap,0.1
 f,arrow_trap,0.3
 d,door,0.85,(timer=20)
-h,arrow_trap,0.6
+h,arrow_trap,0.3

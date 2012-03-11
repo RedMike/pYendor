@@ -11,10 +11,10 @@
 ...##....###
 #..........#
 [META]
-t,arrow_trap,0.4
+t,arrow_trap,0.3
 s,stone_trap,0.1
 q,random_move_trap,0.1
-o,stone_trap,0.9
+o,stone_trap,0.35
 f,trip_trap,0.5
-a,stone_trap,0.7
-g,grate_trap,0.65
+a,stone_trap,0.2
+g,grate_trap,0.5

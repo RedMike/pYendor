@@ -35,6 +35,8 @@ class Generator(object):
         self.map.add_rect(5, 8, 2, 1, _WALL)
         return self.map
 
+
+
 class BasicGenerator(Generator):
     """Generates a simple directional map, left to right."""
 
@@ -82,6 +84,7 @@ class BlockGenerator(Generator):
         self.accepted_sizes = set()
         self.rects = [ ]
         self.entities = [ ]
+        self.finished = False
 
     def add_rect(self,x,y,w,h):
         self.rects.append((x,y,w,h))
@@ -202,16 +205,24 @@ class BlockGenerator(Generator):
                 if choice:
                     #we've got a block!
                     #recurse over it too
+                    if choice[2].startswith(self.finish_block):
+                        self.finished = True
                     self._recurse_gen(*choice)
 
     def gen_map(self):
-        self.map.clear()
-        self.entities = [ ]
-        self.rects = [ ]
-        #x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
-        x, y = random.randint(15, 25), random.randint( 10, self.height-50)
-        block = self.parser.get('layout','start')
-        self._recurse_gen(x, y, block)
+        it = 0
+        while not self.finished and len(self.rects) < 20:
+            self.map.clear()
+            self.entities = [ ]
+            self.rects = [ ]
+            #x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
+            x, y = random.randint(15, 25), random.randint( 10, self.height-50)
+            block = self.parser.get('layout','start')
+            self.finish_block = self.parser.get('layout','end')
+            self.finished = False
+            self._recurse_gen(x, y, block)
+            if it > 100:
+                raise Exception
         return self.map
 
 

@@ -333,7 +333,7 @@ app.set_craft_window(craft_win)
 def main_menu_callback(fct):
     choice = fct()
     if not choice:
-        app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
+        app.generate_map("pre1",MAP_WIDTH,MAP_HEIGHT,set=True)
         app.place_player(1)
         while app.menu_stack:
             app.remove_menu()
@@ -375,8 +375,9 @@ def difficulty_menu_callback(fct):
 
 
 app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Debug.", "Arrow keys to move;",
-    "I, then arrowkeys for inventory;", "R in inventory to drop;", "In inventory, right or E to use an item;",
+    "I, then arrow keys for inventory;", "R in inventory to drop;", "In inventory, right or E to use an item;",
     "In the use item window, right or E to use it on the selected object, Q to go back to the game directly;",
+    "E to pick up an item, and F to try and jump, but there's a 15 tick cooldown.",
     "Q to quit the game.", "Report bugs to mike@codingden.net."), main_menu_callback)
 while not app.exit:
     app.update()
