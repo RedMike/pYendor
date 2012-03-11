@@ -46,6 +46,7 @@ class AutoDoor(Door):
     def __init__(self,parent,id):
         super(AutoDoor,self).__init__(parent,id)
         self.timer = 5
+        self.updating = True
 
     def init(self):
         super(AutoDoor,self).init()
@@ -88,6 +89,7 @@ class ArrowTrap(StepTrap):
         super(ArrowTrap,self).init()
         self.ticker = 0
         self.can_fire = True
+        self.updating = True
 
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION and self.can_fire:

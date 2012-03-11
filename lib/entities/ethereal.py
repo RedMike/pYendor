@@ -20,6 +20,7 @@ class Wound(entity.Ethereal):
         self.heal_chance = 0.05
         self.name = "Wound"
         self.treated = None
+        self.updating = True
 
     def finished_equipping(self, id, success_value, metadata=None):
         """Callback for when the entity has finished trying to attach an entity to itself."""

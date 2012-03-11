@@ -29,6 +29,7 @@ class Entity(object):
         self.char = '?'
         self.fgcol = (255, 255, 255)
         self.acceptable_nodes = None
+        self.updating = False
 
     def was_equipped(self, id, type):
         """Callback for when entity is being equipped to a humanoid node."""
@@ -118,17 +119,14 @@ class Entity(object):
 
 class Mob(Entity):
 
-    def __init__(self,parent,id):
-        """Base blocking, unliftable, unusable entity for subclass."""
-        super(Mob,self).__init__(parent,id)
-        self.set_attributes('01100')
-
     def init(self):
         super(Mob,self).init()
+        self.set_attributes('01100')
         self.char = '@'
         self.name = 'mob'
         self.fgcol = (0,255,255)
         self.dead = 0
+        self.updating = True
 
     def collided(self, id, type):
         if type == self.parent.ATTEMPTED_INTERACTION:

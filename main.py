@@ -237,6 +237,18 @@ class CustomApp(base.Application):
             tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
         win.update_layer(5,tiles)
 
+    def update(self):
+        if self.time_passing:
+            self.scheduler.tick()
+            if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
+                self.update_game_window()
+                if self.player is not None:
+                    self.update_inv_window()
+        self.win_man.draw_all()
+
+        #input
+        self.keyboard.tick()
+
 
 app = CustomApp("Working Name",WIDTH,HEIGHT)
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT,30,0)

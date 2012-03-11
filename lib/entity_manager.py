@@ -55,7 +55,7 @@ class EntityManager(object):
         self.lookup[id] = type(self,id)
         self.lookup[id].init()
         self.set_attribute(id, 'delay', delay)
-        if delay is not None:
+        if self.lookup[id].updating:
             self.schedule(self.scheduler, id)
         return id
 
