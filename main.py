@@ -340,7 +340,6 @@ def main_menu_callback(fct):
     if not choice:
         app.layout = "level_1"
         app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
-        app.place_player(1)
         while app.menu_stack:
             app.remove_menu()
         app.add_input_menu("What is your name?", name_menu_callback)
@@ -362,11 +361,15 @@ def difficulty_menu_callback(fct):
     choice = fct()
     if not choice:
         items = 5
+        app.place_player(1)
     elif choice == 1:
         items = 3
+        app.place_player(1)
     elif choice == 2:
         items = 1
+        app.place_player(3)
     else:
+        app.place_player(6)
         while app.menu_stack:
             app.remove_menu()
         return
@@ -380,9 +383,7 @@ def difficulty_menu_callback(fct):
 
 
 
-app.add_choice_menu(("Arrow keys to move; I, then arrow keys for inventory; R in inventory to drop; In inventory, right arrow or E to use an item;", "",
-                     "In the use item window, right or E to use it on the selected object, Q to go back to the game directly; E to pick up an item, and F to try and jump, but there's a 15 tick cooldown.", "",
-                     "Q to quit the game.", "Report bugs to mike@codingden.net."), ("Start Game", "Quit", "Debug."), main_menu_callback)
+app.add_choice_menu(("Please report bugs to mike@codingden.net.",), ("Start Game", "Quit", "Debug."), main_menu_callback)
 while not app.exit:
     app.update()
 

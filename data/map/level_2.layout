@@ -13,4 +13,4 @@ spawn=0
 10_thin_x=0.7
 10_thin_long=0.3
 2_start_corridor_10=0.6
-pre_special_room=0.5
+pre_special_room=0.7
