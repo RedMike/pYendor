@@ -161,7 +161,14 @@ class Player(Humanoid):
     def finished_colliding(self, id, success_value, metadata=None):
         super(Player,self).finished_colliding(id, success_value, metadata)
         ent = self.parent.get_ent(id)
-        if isinstance(ent,traps.Door):
+        if isinstance(ent,ethereal.LevelEnd):
+            if success_value:
+                self.parent.post_message("You slip and start sliding down the tunnel.")
+                self.parent.parent.layout = "level_"+str(int(self.parent.parent.layout.split('_',1)[1])+1)
+                self.parent.parent.destroy_ents()
+                self.parent.parent.generate_map(self.parent.parent.get_map().width, self.parent.parent.get_map().height, set=True)
+                self.parent.parent.place_player(1)
+        elif isinstance(ent,traps.Door):
             if success_value:
                 self.parent.post_message("You open the "+self.parent.get_name(id)+'.')
         elif isinstance(ent, entity.Mob):
@@ -190,9 +197,11 @@ class Player(Humanoid):
 
     def move(self,x,y):
         if self.jumping:
-            self.jumping = False
             self.parent.post_message("You leap through the air.")
-            return self.parent.move_ent(self.id,2 * x,2 * y)
+            ok = self.parent.move_ent(self.id,x,y)
+            ok = ok and self.parent.move_ent(self.id,x,y)
+            self.jumping = False
+            return ok
         else:
             return self.parent.move_ent(self.id,x, y)
 

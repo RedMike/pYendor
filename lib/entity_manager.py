@@ -43,6 +43,19 @@ class EntityManager(object):
         self.garbage_id = self.add_entity("ethereal")
         self.set_pos(self.garbage_id,(0, 0))
 
+    def garbage_collect(self):
+        ids = self.lookup.keys()
+        for ent in ids:
+            if ent != self.garbage_id:
+                if self.get_ancestor(ent) == self.garbage_id:
+                    del self.lookup[ent]
+                    del self.positions[ent]
+                    del self.parents[ent]
+                    if ent in self.schedules:
+                        if self.schedules[ent] is not None:
+                            self.scheduler.cancel_schedule(self.schedules[ent])
+                        del self.schedules[ent]
+
     def post_message(self, msg):
         """Convenience method for entities to call to post messages to the message window."""
         self.parent.add_messages((msg,))
@@ -122,8 +135,10 @@ class EntityManager(object):
     def get_ancestor(self,id):
         """Returns ID of top containing entity or None."""
         if self.get_ent(id) is None:
-            raise IDNotFound
+            return 0
         if self.parents[id] is None:
+            return id
+        if id == self.parents[id]:
             return id
         return self.get_ancestor(self.parents[id])
 
@@ -270,6 +285,7 @@ class EntityLookup:
         self.lookup['blade_trap'] = entities.traps.BladeTrap
         self.lookup['cloth_strips'] = entities.items.ClothStrips
         self.lookup['herb_packet'] = entities.items.HerbPacket
+        self.lookup['level_end'] = entities.ethereal.LevelEnd
 
 
     def get_class(self,str):

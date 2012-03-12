@@ -72,6 +72,9 @@ class Entity(object):
         """Callback for when the entity has finished trying to move I{into} another entity."""
         pass
 
+    def examine(self):
+        pass
+
     def get_id(self):
         """Return entity ID, or raise IDNotAssigned."""
         if self.id is not None:

@@ -494,7 +494,7 @@ class MessageWindow(Window):
 
     def get_msg_y(self,id):
         """Returns y coordinate of message."""
-        if id < len(self.messages):
+        if 0 < id < len(self.messages):
             return self.messages[id][1]
         else:
             self.highlight = 0

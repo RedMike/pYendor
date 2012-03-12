@@ -36,6 +36,8 @@ class Application(object):
         # One currently loaded map at any one time, referenced by the index it uses in self.maps.
         self.maps = []
         self.map = None
+        self.gen = None
+        self.layout = 'level_1'
         
         # All entities are scheduled in one global scheduler.
         self.scheduler = time.Scheduler()
@@ -214,7 +216,7 @@ class Application(object):
             bind = set[1]
             self.add_binding(key,bind)
 
-    def generate_map(self,layout,w,h,set):
+    def generate_map(self,w,h,set):
         """Generates new map using BasicGenerator, then generates basic entities.
 
         @type  w: number
@@ -224,10 +226,11 @@ class Application(object):
         @type  set: bool
         @param set: If true, sets map as active.
         """
-        gen = map.BlockGenerator(w,h)
-        gen.set_layout(layout)
-        m = gen.gen_map()
-        ents = gen.entities
+        if not self.gen:
+            self.gen = map.BlockGenerator(w,h)
+        self.gen.set_layout(self.layout)
+        m = self.gen.gen_map()
+        ents = self.gen.entities
         self.generate_ents(m,ents)
         self.add_map(map=m,
                     set=set)
@@ -482,29 +485,37 @@ class Application(object):
         map = self.get_map()
         if map is None:
             raise NoMapError
-        ents = self.entity_manager.get_ids()
-        x, y = 0, 0
-        for ent in ents:
-            if self.get_ent(ent).name=="player_spawn":
-                x, y = self.get_ent_pos(ent)
-                break
-#        tiles = map.get_rect(0,0,map.width,map.height)
-#        x, y = 0, 0
-#        for i in range(len(tiles)):
-#            for j in range(len(tiles[i])):
-#                if not tiles[i][j][0]:
-#                    x, y = i, j
-#                    break
-        pid = self.add_entity(x, y, 'player', delay)
-        cam = self.add_entity(x, y, 'camera', None)
-        sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
-        if self.fov_map is not None:
-            self.scheduler.add_schedule( (self.fov_map.compute, [self.get_player_pos], 1))
-        self.entity_manager.set_sched(cam, sch_id)
-        self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
-        self.player = pid
-        self.camera = cam
-        return pid
+        if self.get_player() is None:
+            ents = self.entity_manager.get_ids()
+            x, y = 0, 0
+            for ent in ents:
+                if self.get_ent(ent).name=="player_spawn":
+                    x, y = self.get_ent_pos(ent)
+                    break
+            pid = self.add_entity(x, y, 'player', delay)
+            cam = self.add_entity(x, y, 'camera', None)
+#            self.entity_manager.set_parent(cam, pid)
+            sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
+            if self.fov_map is not None:
+                self.scheduler.add_schedule( (self.fov_map.compute, [self.get_player_pos], 1))
+            #self.entity_manager.set_sched(cam, sch_id)
+            self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
+            self.player = pid
+            self.camera = cam
+            return pid
+        else:
+            pid = self.get_player()
+            x, y = 0, 0
+            for ent in self.entity_manager.get_ids():
+                if self.get_ent(ent).name=="player_spawn":
+                    x, y = self.get_ent_pos(ent)
+                    break
+            self.entity_manager.set_pos(pid,(x,y))
+            cam = self.add_entity(x, y, 'camera', None)
+            self.camera = cam
+            sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
+            return pid
+
 
     def get_player_pos(self):
         if not self.get_player():
@@ -574,11 +585,13 @@ class Application(object):
         self.entity_manager.set_parent(id, parent_id)
 
     def destroy_ents(self):
-        """Destroy all entities.
+        """Destroy all entities."""
+        for id in self.entity_manager.get_ids():
+            if not self.entity_manager.get_ancestor(id) == self.get_player():
+                self.entity_manager.set_parent(id,0)
+        self.entity_manager.garbage_collect()
+        self.camera = None
 
-        Not yet implemented.
-        """
-        pass
 
     def collision_check(self, id, x, y):
         """Checks collisions and restrictions in place, returns I{True} for able to move.

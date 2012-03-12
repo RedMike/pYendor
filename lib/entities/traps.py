@@ -99,14 +99,18 @@ class ArrowTrap(StepTrap):
     def fire(self,ent):
         self.ticker = 5
         self.can_fire = False
-        ent.deal_damage(5,random.choice(self.targets))
+        ent.deal_damage(2,random.choice(self.targets))
         self.char = "!"
         self.set_attribute('visible',True)
 
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION and self.can_fire:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
+            if isinstance(ent, mobs.Player):
+                if not ent.jumping:
+                    self.fire(ent)
+                    return True
+            elif isinstance(ent, entity.Mob):
                 self.fire(ent)
                 return True
         return False
@@ -123,11 +127,11 @@ class StoneTrap(StepTrap):
     def init(self):
         super(StoneTrap,self).init()
         self.can_fire = True
-        self.targets = ("head",)
+        self.targets = ("head","legs")
 
     def fire(self,ent):
         if self.can_fire:
-            ent.deal_damage(5, random.choice(self.targets))
+            ent.deal_damage(2, random.choice(self.targets))
             self.can_fire = False
             id = self.parent.add_entity("boulder")
             pos = self.parent.get_pos(self.id)
@@ -136,7 +140,11 @@ class StoneTrap(StepTrap):
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION and self.can_fire:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
+            if isinstance(ent, mobs.Player):
+                if not ent.jumping:
+                    self.fire(ent)
+                    return True
+            elif isinstance(ent, entity.Mob):
                 self.fire(ent)
                 return True
         return False
@@ -158,7 +166,10 @@ class TripTrap(StepTrap):
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
+            if isinstance(ent, mobs.Player):
+                if not ent.jumping:
+                    return self.fire(ent)
+            elif isinstance(ent, entity.Mob):
                 return self.fire(ent)
         return False
 
@@ -188,7 +199,11 @@ class MoveTrap(StepTrap):
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
+            if isinstance(ent, mobs.Player):
+                if not ent.jumping:
+                    self.fire(ent)
+                    return True
+            elif isinstance(ent, entity.Mob):
                 self.fire(ent)
                 return True
         return False
@@ -199,7 +214,7 @@ class GrateTrap(StepTrap):
     def init(self):
         super(GrateTrap,self).init()
         self.chance = 0.1
-        self.char = "#"
+        self.char = '#'
         self.set_attribute('visible',True)
 
     def fire(self,ent):
@@ -215,7 +230,10 @@ class GrateTrap(StepTrap):
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
+            if isinstance(ent, mobs.Player):
+                if not ent.jumping:
+                    return self.fire(ent)
+            elif isinstance(ent, entity.Mob):
                 return self.fire(ent)
         return False
 
@@ -283,44 +301,56 @@ class BladeTrap(entity.Trap):
         self.direction = 0
         self.updating = True
         self.char = "*"
+        self.started = False
 
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION:
             ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
+            if isinstance(ent, mobs.Player):
+                if not ent.jumping:
+                    ent.deal_damage(15)
+                    return True
+            elif isinstance(ent, entity.Mob):
                 ent.deal_damage(15)
 
     def finished_colliding(self, id, success_value, metadata=None):
         ent = self.parent.get_ent(id)
-        if isinstance(ent, entity.Mob):
+        if isinstance(ent, mobs.Player):
+            if not ent.jumping:
+                ent.deal_damage(20)
+                return True
+        elif isinstance(ent, entity.Mob):
             ent.deal_damage(20)
 
     def update(self):
-        self.direction = int(self.direction)
-        if not self.direction :
-            if self.move(1, 0):
-                self.char = "\\"
-        elif self.direction == 1:
-            if self.move(0, -1):
-                self.char = "-"
-        elif self.direction == 2:
-            if self.move(0, -1):
-                self.char = "/"
-        elif self.direction == 3:
-            if self.move(-1, 0):
-                self.char = "|"
-        elif self.direction == 4:
-            if self.move(-1, 0):
-                self.char = "\\"
-        elif self.direction == 5:
-            if self.move(0, 1):
-                self.char = "-"
-        elif self.direction == 6:
-            if self.move(0, 1):
-                self.char = "/"
-        elif self.direction == 7:
-            if self.move(1, 0):
-                self.char = "|"
-        self.direction += 1
-        if self.direction == 8:
-            self.direction = 0
+        if self.started:
+            self.direction = int(self.direction)
+            if not self.direction :
+                if self.move(1, 0):
+                    self.char = "\\"
+            elif self.direction == 1:
+                if self.move(0, -1):
+                    self.char = "-"
+            elif self.direction == 2:
+                if self.move(0, -1):
+                    self.char = "/"
+            elif self.direction == 3:
+                if self.move(-1, 0):
+                    self.char = "|"
+            elif self.direction == 4:
+                if self.move(-1, 0):
+                    self.char = "\\"
+            elif self.direction == 5:
+                if self.move(0, 1):
+                    self.char = "-"
+            elif self.direction == 6:
+                if self.move(0, 1):
+                    self.char = "/"
+            elif self.direction == 7:
+                if self.move(1, 0):
+                    self.char = "|"
+            self.direction += 1
+            if self.direction == 8:
+                self.direction = 0
+        else:
+            self.started = True

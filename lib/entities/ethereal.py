@@ -1,13 +1,28 @@
 import entity
 
 import random
-from lib.entities import items
+import items
+import mobs
 
 class PlayerSpawn(entity.Ethereal):
 
     def init(self):
         super(PlayerSpawn,self).init()
         self.name = "player_spawn"
+
+class LevelEnd(entity.Ethereal):
+
+    def init(self):
+        super(LevelEnd,self).init()
+        self.name = "level_end"
+        self.char = " "
+
+    def was_collided(self, id, type):
+        ent = self.parent.get_ent(id)
+        if isinstance(ent, mobs.Player):
+            self.parent.set_parent(self.id,0)
+            return True
+        return False
 
 class Wound(entity.Ethereal):
     """Class for simulating injuries."""
@@ -75,4 +90,5 @@ class Camera(entity.Ethereal):
 
     def sync_camera(self, pid):
         """Try to move to player's location."""
-        self.parent.move_ent_to_ent(self.id,pid)
+        if self.id in self.parent.lookup:
+            self.parent.move_ent_to_ent(self.id,pid)

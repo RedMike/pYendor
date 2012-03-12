@@ -29,7 +29,7 @@ import random
 import lib.base as base
 import lib.graphics as graphics
 
-WIDTH, HEIGHT = 80, 50
+WIDTH, HEIGHT = 60, 40
 MAP_WIDTH, MAP_HEIGHT = 150, 150
 COLBORD1 = (14, 83, 120)
 COLBORD2 = (61, 157, 208)
@@ -46,6 +46,8 @@ COLWALLS = [COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1, COLWALL1
 COLFLOORS = [COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1,
              COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1, COLFLOOR1,
              COLFLOOR2, COLFLOOR2]
+
+FOV_DISTANCE = 10
 
 class CustomApp(base.Application):
 
@@ -99,6 +101,10 @@ class CustomApp(base.Application):
         elif vk == self.keyboard.KEY_DOWN:
             if window.highlight < len(window.messages):
                 window.highlight += 1
+        elif char == 'f':
+            ent_id, usable = window.get_node_meta(window.highlight)
+            ent = self.get_ent(ent_id)
+            ent.examine()
         elif char == 'q' or vk == self.keyboard.KEY_LEFT:
             window.highlight = None
             self.time_passing = 1
@@ -163,8 +169,9 @@ class CustomApp(base.Application):
         self.node_bindings(self.inv_win, self._inventory_window_callback)
 
     def add_choice_menu(self, labels, choices, callback):
-        id = self.add_window(5, graphics.ChoiceWindow, self.win_man.width-30, self.win_man.height-20, 15, 10)
+        id = self.add_window(5, graphics.ChoiceWindow, self.win_man.width-10, self.win_man.height-10, 5, 5)
         win = self.win_man.get_window(id)
+        win.highlight = 0
         win.set_border([COLBORD1,' ',(0,0,0),1])
         win.bgcol = COLBORD2
         win.clear()
@@ -174,7 +181,7 @@ class CustomApp(base.Application):
         self.menu_stack.append([id,callback])
 
     def add_input_menu(self, label, callback):
-        id = self.add_window(6, graphics.InputWindow, 40, 5, 20, 20)
+        id = self.add_window(6, graphics.InputWindow, WIDTH-10, 5, 5, 20)
         win = self.win_man.get_window(id)
         win.set_border([COLBORD1,' ',(0,0,0),1])
         win.bgcol = COLBORD2
@@ -201,7 +208,7 @@ class CustomApp(base.Application):
         cam = self.get_camera()
         map = self.get_map()
         win = self.game_win
-        pos = self.get_ent_pos(cam)
+        pos = self.entity_manager.get_abs_pos(cam)
         x, y = pos
         cx, cy = win.width/2, win.height/2
         ox, oy = x - cx, y - cy
@@ -214,7 +221,7 @@ class CustomApp(base.Application):
                     wall = self.fov_map.get_wall(i + ox, j + oy)
                     explored = self.fov_map.get_explored(i + ox, j + oy)
                     if lit[0]:
-                        if lit[1] <5 or explored:
+                        if lit[1] < FOV_DISTANCE  or explored:
                             if wall:
                                 col = self.get_wall_color(i + ox, j + oy)
                                 tiles.append([i, j, col, ' ', (0,0,0), 1])
@@ -297,26 +304,26 @@ class CustomApp(base.Application):
         self.keyboard.tick()
 
 
-app = CustomApp("Working Name",WIDTH,HEIGHT)
-game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT,30,0)
+app = CustomApp("TrapRL",WIDTH,HEIGHT)
+game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-29,HEIGHT-10,29,0)
 game_win = app.win_man.get_window(game_win)
 game_win.set_border([COLBORD1,' ',(0,0,0),1])
 game_win.bgcol = COLBORD2
 game_win.clear()
 
-msg_win = app.add_window(0,graphics.MessageWindow,30,20,0,HEIGHT-20)
+msg_win = app.add_window(0,graphics.MessageWindow,WIDTH,11,0,HEIGHT-11)
 msg_win = app.win_man.get_window(msg_win)
 msg_win.set_border([COLBORD1,' ',(0,0,0),1])
 msg_win.bgcol = COLBORD2
 msg_win.clear()
 
-inv_win = app.add_window(0,graphics.NodeWindow,30,HEIGHT-20,0,0)
+inv_win = app.add_window(0,graphics.NodeWindow,30,HEIGHT-10,0,0)
 inv_win = app.win_man.get_window(inv_win)
 inv_win.set_border([COLBORD1,' ',(0,0,0),1])
 inv_win.bgcol = COLBORD2
 inv_win.clear()
 
-craft_win = app.add_window(5,graphics.NodeWindow,30,HEIGHT-20,30,0)
+craft_win = app.add_window(5,graphics.NodeWindow,30,HEIGHT-10,30,0)
 craft_win = app.win_man.get_window(craft_win)
 craft_win.set_border([COLBORD1,' ',(0,0,0),1])
 craft_win.bgcol = COLBORD2
@@ -327,14 +334,12 @@ app.set_game_window(game_win)
 app.set_message_window(msg_win)
 app.set_inventory_window(inv_win)
 app.set_craft_window(craft_win)
-#app.add_messages(("Hello world.",
-#                  "This is a test message which should be long enough to wrap, hopefully. "
-#                 +"However, that's not enough, so hey, there we go, another line, awesome."))
 
 def main_menu_callback(fct):
     choice = fct()
     if not choice:
-        app.generate_map("pre1",MAP_WIDTH,MAP_HEIGHT,set=True)
+        app.layout = "level_1"
+        app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         app.place_player(1)
         while app.menu_stack:
             app.remove_menu()
@@ -375,11 +380,9 @@ def difficulty_menu_callback(fct):
 
 
 
-app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit", "Debug.", "Arrow keys to move;",
-    "I, then arrow keys for inventory;", "R in inventory to drop;", "In inventory, right or E to use an item;",
-    "In the use item window, right or E to use it on the selected object, Q to go back to the game directly;",
-    "E to pick up an item, and F to try and jump, but there's a 15 tick cooldown.",
-    "Q to quit the game.", "Report bugs to mike@codingden.net."), main_menu_callback)
+app.add_choice_menu(("Arrow keys to move; I, then arrow keys for inventory; R in inventory to drop; In inventory, right arrow or E to use an item;", "",
+                     "In the use item window, right or E to use it on the selected object, Q to go back to the game directly; E to pick up an item, and F to try and jump, but there's a 15 tick cooldown.", "",
+                     "Q to quit the game.", "Report bugs to mike@codingden.net."), ("Start Game", "Quit", "Debug."), main_menu_callback)
 while not app.exit:
     app.update()
 
