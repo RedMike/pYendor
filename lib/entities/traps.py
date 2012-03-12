@@ -86,6 +86,51 @@ class StepTrap(entity.Trap):
     def update(self):
         pass
 
+class TutorialSign1(StepTrap):
+
+    def init(self):
+        super(TutorialSign1,self).init()
+        self.set_attribute("visible", 1)
+        self.char = "T"
+
+    def was_collided(self, id, type):
+        ent = self.parent.get_ent(id)
+        if isinstance(ent,mobs.Player):
+            self.parent.post_message("These next few rooms should prepare you for what's ahead.")
+            self.parent.post_message("Be careful.")
+        return True
+
+
+class TutorialSign2(StepTrap):
+
+    def init(self):
+        super(TutorialSign2,self).init()
+        self.set_attribute("visible", 1)
+        self.char = "T"
+
+    def was_collided(self, id, type):
+        ent = self.parent.get_ent(id)
+        if isinstance(ent,mobs.Player):
+            self.parent.post_message("Remember you can press F to jump, and I to interact with your inventory, in which F examines.")
+            self.parent.post_message("E to pick up, and E in your inventory to try and mix the two selected items.")
+        return True
+
+
+class TutorialSign3(StepTrap):
+
+    def init(self):
+        super(TutorialSign3,self).init()
+        self.set_attribute("visible", 1)
+        self.char = "T"
+
+    def was_collided(self, id, type):
+        ent = self.parent.get_ent(id)
+        if isinstance(ent,mobs.Player):
+            self.parent.post_message("Press . to pass time. Do this often, as often as you need.")
+            self.parent.post_message("Be patient.")
+        return True
+
+
 class ArrowTrap(StepTrap):
     """Arrow trap activated when an NPC steps onto it, then halts for 5 ticks."""
 

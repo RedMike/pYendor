@@ -2,6 +2,7 @@
 start=spawn_0
 end=10_level_end
 spawn=0
+00_tutorial_spawn=0
 10_level_end=0.5
 10_doorway=0.2
 10_t_intersection=0.15

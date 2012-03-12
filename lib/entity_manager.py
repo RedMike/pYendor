@@ -286,7 +286,9 @@ class EntityLookup:
         self.lookup['cloth_strips'] = entities.items.ClothStrips
         self.lookup['herb_packet'] = entities.items.HerbPacket
         self.lookup['level_end'] = entities.ethereal.LevelEnd
-
+        self.lookup['tutorial_1'] = entities.traps.TutorialSign1
+        self.lookup['tutorial_2'] = entities.traps.TutorialSign2
+        self.lookup['tutorial_3'] = entities.traps.TutorialSign3
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""

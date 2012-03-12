@@ -129,9 +129,7 @@ class BlockGenerator(Generator):
         return False
 
     def set_layout(self,name):
-        print 'layout'
         if os.path.exists('data/map/'+name+'.layout'):
-            print 'OK'
             self.parser = ConfigParser.RawConfigParser()
             self.block_walls = { }
             self.block_dirs = { }
@@ -202,7 +200,9 @@ class BlockGenerator(Generator):
                 x, y, id = block
                 chance = int(self.block_weights[id]*100)
                 choices += [block for i in range(chance)]
-            return random.choice(choices)
+            if choices:
+                return random.choice(choices)
+            return None
         return None
 
     def _recurse_gen(self, x, y, block_id):
@@ -249,12 +249,13 @@ class Map:
         """Initialised with light-blocking walls."""
         self.width = w
         self.height = h
+        self.pad = 3
         self.clear()
 
     def add_tile(self, x, y, tile):
         """Replaces tile with given tuple."""
         if 0 < x < self.width and 0 < y < self.height:
-            self.tiles[x][y] = tile
+            self.tiles[x+self.pad][y+self.pad] = tile
     
     def add_rect(self, x, y, w, h, tile):
         """Draws a rectangle of starting at (x,y), (w,h) size."""
@@ -271,15 +272,15 @@ class Map:
         ret = [[_WALL for i in range(h)] for j in range(w)]
         for i in range(w):
             for j in range(h):
-                ret[i][j] = self.get_tile(x+i, y+j)
+                ret[i][j] = self.get_tile(x+i+self.pad, y+j+self.pad)
         return ret
     
     def get_tile(self,x,y):
         """Returns wall if tile not in map."""
         if 0 < x < self.width and 0 < y < self.height:
-            return self.tiles[x][y]
+            return self.tiles[x+self.pad][y+self.pad]
         return _WALL
 
     def clear(self):
         """Defaults everything to light-blocking walls."""
-        self.tiles = [[_WALL for i in range(self.height)] for j in range(self.width)]
+        self.tiles = [[_WALL for i in range(self.height+self.pad*2)] for j in range(self.width+self.pad*2)]

@@ -37,7 +37,10 @@ class FovMap(object):
     def get_lit(self,x,y):
         #returns [lit or not, distance]
         d = (float(self.last_pos[0]-x)**2 + float(self.last_pos[1]-y)**2)**(1/2.0)
-        return self.specific_get_lit(x,y),d
+        if x in range(0, len(self.explored_map)) and y in range(0, len(self.explored_map[0])):
+            return self.specific_get_lit(x,y),d
+        else:
+            return False, 5
 
     def set_explored(self,x,y):
         if 0 <= x < len(self.explored_map) and 0 <= y < len(self.explored_map[0]):
