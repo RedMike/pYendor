@@ -342,7 +342,8 @@ def main_menu_callback(fct):
         app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         while app.menu_stack:
             app.remove_menu()
-        app.add_input_menu("What is your name?", name_menu_callback)
+        app.add_choice_menu(("Choose your difficulty: ",), ("Waa~ waaa~ I want my mommy~", "I AM a grownup, you big meanie!",
+                                                            "Not bad.", "Here we go."), difficulty_menu_callback)
     elif choice == 1:
         app.quit()
     elif choice == 2:
@@ -354,8 +355,8 @@ def name_menu_callback(input):
         app.get_ent(app.get_player()).name = input
     while app.menu_stack:
         app.remove_menu()
-    app.add_choice_menu(("Choose your difficulty: ",), ("Waa~ waaa~ I want my mommy~", "I AM a grownup, you big meanie!",
-        "Not bad.", "Here we go."), difficulty_menu_callback)
+
+
 
 def difficulty_menu_callback(fct):
     choice = fct()
@@ -380,6 +381,7 @@ def difficulty_menu_callback(fct):
         app.set_ent_parent(it,inv)
     while app.menu_stack:
         app.remove_menu()
+    app.add_input_menu("What is your name?", name_menu_callback)
 
 
 
