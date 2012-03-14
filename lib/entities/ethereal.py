@@ -20,6 +20,7 @@ class LevelEnd(entity.Ethereal):
     def was_collided(self, id, type):
         ent = self.parent.get_ent(id)
         if isinstance(ent, mobs.Player):
+            self.parent.post_message("You slip and start sliding down the tunnel.")
             self.parent.set_parent(self.id,0)
             return True
         return False

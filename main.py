@@ -30,7 +30,7 @@ import lib.base as base
 import lib.graphics as graphics
 
 WIDTH, HEIGHT = 60, 40
-MAP_WIDTH, MAP_HEIGHT = 80, 80
+MAP_WIDTH, MAP_HEIGHT = 90, 90
 COLBORD1 = (14, 83, 120)
 COLBORD2 = (61, 157, 208)
 
@@ -351,7 +351,7 @@ def main_menu_callback(fct):
     choice = fct()
     if not choice:
         app.destroy_ents()
-        app.layout = "level_3"
+        app.layout = "level_1"
         app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         while app.menu_stack:
             app.remove_menu()
@@ -373,15 +373,15 @@ def difficulty_menu_callback(fct):
     choice = fct()
     if not choice:
         items = 4
-        app.place_player(1)
+        app.place_player(3)
     elif choice == 1:
         items = 2
-        app.place_player(1)
+        app.place_player(5)
     elif choice == 2:
         items = 1
-        app.place_player(3)
+        app.place_player(6)
     else:
-        app.place_player(3)
+        app.place_player(7)
         while app.menu_stack:
             app.remove_menu()
         app.add_input_menu("What is your name?", name_menu_callback)

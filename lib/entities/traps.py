@@ -129,7 +129,7 @@ class TutorialSign3(StepTrap):
         ent = self.parent.get_ent(id)
         if isinstance(ent,mobs.Player):
             self.parent.post_message("Press . to pass time. Do this often, as often as you need.")
-            self.parent.post_message("Be patient.")
+            self.parent.post_message("PRESS F1 OR ? FOR A HELP SCREEN. Good luck!")
         return True
 
 

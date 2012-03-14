@@ -60,7 +60,7 @@ class EntityManager(object):
         """Convenience method for entities to call to post messages to the message window."""
         self.parent.add_messages((msg,))
 
-    def add_entity(self, type, delay=1):
+    def add_entity(self, type, delay=5):
         """Adds a new entity of type to entity_list, and returns its ID."""
         id = self.cur_id
         self.adjust_cur_id()

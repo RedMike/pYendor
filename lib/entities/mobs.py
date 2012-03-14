@@ -182,7 +182,6 @@ class Player(Humanoid):
         ent = self.parent.get_ent(id)
         if isinstance(ent,ethereal.LevelEnd):
             if success_value:
-                self.parent.post_message("You slip and start sliding down the tunnel.")
                 self.parent.parent.layout = "level_"+str(int(self.parent.parent.layout.split('_',1)[1])+1)
                 self.parent.parent.destroy_ents()
                 for id in self.parent.get_in(self.id):

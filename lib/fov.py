@@ -26,7 +26,9 @@ class FovMap(object):
         return not libtcod.map_is_transparent(self.map,x+self.pad,y+self.pad)
 
     def get_wall(self,x,y):
-        return self.specific_get_wall(x,y)
+        if x in range(0, len(self.explored_map)-self.pad) and y in range(0, len(self.explored_map[0])-self.pad):
+            return self.specific_get_wall(x,y)
+        return False
 
     def compute(self,pos_fct):
         pos = pos_fct()

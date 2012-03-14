@@ -93,7 +93,10 @@ class Application(object):
                      ['q',[self.quit,()]],
                      [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
                      ['.',[self.pass_time, ()]],
-                     ['t',[self.add_input_menu,(">>> ",self._debug_window_callback)]]]
+                     ['t',[self.add_input_menu,(">>> ",self._debug_window_callback)]],
+                     [self.keyboard.KEY_F1, [self.help_popup, ()]],
+                     ['?',[self.help_popup, ()]]
+            ]
             for set in temp:
                 key = set[0]
                 bind = set[1]
@@ -102,6 +105,28 @@ class Application(object):
 
     def pass_time(self):
         self.time_passing = 1
+
+    def _help_callback(self,choice):
+        self.remove_menu()
+
+    def help_popup(self):
+        msgs = []
+        msgs.append("Welcome to TrapRL. Here's a basic overview of the keyboard bindings:")
+        msgs.append("")
+        msgs.append("   * Arrow keys to move.")
+        msgs.append("   * I to open your inventory.")
+        msgs.append("      - E or right arrow to use an object.")
+        msgs.append("      - Use it on itself to try to activate it.")
+        msgs.append("      - Q or left arrow to exit the inventory/use item windows.")
+        msgs.append("   * E to pick up something.")
+        msgs.append("   * F to prepare to jump. (Moves you two tiles in a direction, leaves you tired for 15 ticks.")
+        msgs.append("   * . to wait. Do this a lot.")
+        msgs.append("   * Q to quit.")
+        msgs.append("")
+        msgs.append("")
+        msgs.append("There are 7 levels to the game, each progressively harder, involving more complex traps.")
+        msgs.append("Good luck, and remember: Be patient!")
+        self.add_choice_menu(tuple(msgs), ("Continue.",), self._help_callback)
 
     def node_bindings(self, window, callback):
         """Bind default node window keys.
@@ -460,7 +485,7 @@ class Application(object):
         """
         self.keyboard.clear_bindings()
 
-    def add_entity(self, x, y, type="entity", delay=1):
+    def add_entity(self, x, y, type="entity", delay=5):
         """Create a new entity at a position and return the ID.
 
         Set delay to I{None} for no calls to the draw_tiles method.
