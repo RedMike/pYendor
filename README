@@ -1,5 +1,13 @@
-#Overview
+TrapRL is a roguelike created for the 7DRL challenge of 2012.
+It features gameplay based around traps, and a different health system.
+The homepage is at: http://codingden.net
+Keys:
 
-pYendor is a simple roguelike engine in Python, built in a tool-driven fashion. As a good comparison, this library aims to be to roguelike development as Gamemaker or Construct are to game development. 
+  Arrow keys: Movement and navigation in inventory.
+  I: open inventory.
+  Q: Quit game, or close inventory
+  E: Use item if in inventory, or pick up objects.
+  F: Prepare to jump, next move propels you two tiles, and over/underneath some traps.
+  .: Wait.
 
-Currently hosted officially at http://codingden.net
+To change the font, edit traprl.cfg and change font1.png to font2.png, font3.png or font4.png.

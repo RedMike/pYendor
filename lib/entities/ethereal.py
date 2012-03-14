@@ -44,9 +44,9 @@ class Wound(entity.Ethereal):
     def init(self):
         self.set_attributes('00000')
         self.damage = None
-        self.threshold = 25
-        self.worsen_chance = 0.005
-        self.heal_chance = 0.01
+        self.threshold = 21
+        self.worsen_chance = 0.01
+        self.heal_chance = 0.005
         self.name = "Wound"
         self.treated = None
         self.updating = True

@@ -146,7 +146,7 @@ class ArrowTrap(StepTrap):
     def fire(self,ent):
         self.ticker = 5
         self.can_fire = False
-        ent.deal_damage(2,random.choice(self.targets))
+        ent.deal_damage(random.randint(2,10),random.choice(self.targets))
         self.char = "!"
         self.set_attribute('visible',True)
 
@@ -180,7 +180,7 @@ class StoneTrap(StepTrap):
 
     def fire(self,ent):
         if self.can_fire:
-            ent.deal_damage(2, random.choice(self.targets))
+            ent.deal_damage(random.randint(5,15), random.choice(self.targets))
             self.can_fire = False
             id = self.parent.add_entity("boulder")
             pos = self.parent.get_pos(self.id)
@@ -208,7 +208,7 @@ class TripTrap(StepTrap):
 
     def fire(self,ent):
         if not self.triggered:
-            ent.deal_damage(5, random.choice(self.targets))
+            ent.deal_damage(10, random.choice(self.targets))
             return True
         return False
 
@@ -308,7 +308,7 @@ class PillarTrap(entity.Trap):
     def finished_colliding(self, id, success_value, metadata=None):
         ent = self.parent.get_ent(id)
         if isinstance(ent, entity.Mob):
-            ent.deal_damage(14)
+            ent.deal_damage(random.randint(15,30))
             if not self.direction :
                 while ent.move(0, -1):
                     pass
@@ -360,16 +360,16 @@ class BladeTrap(entity.Trap):
             ent = self.parent.get_ent(id)
             if isinstance(ent, mobs.Player):
                 if not ent.jumping:
-                    ent.deal_damage(15)
+                    ent.deal_damage(random.randint(15,25))
                     return True
             elif isinstance(ent, entity.Mob):
-                ent.deal_damage(15)
+                ent.deal_damage(random.randint(15,25))
 
     def finished_colliding(self, id, success_value, metadata=None):
         ent = self.parent.get_ent(id)
         if isinstance(ent, mobs.Player):
             if not ent.jumping:
-                ent.deal_damage(20)
+                ent.deal_damage(random.randint(15,25))
                 return True
         elif isinstance(ent, entity.Mob):
             ent.deal_damage(20)

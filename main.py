@@ -30,7 +30,7 @@ import lib.base as base
 import lib.graphics as graphics
 
 WIDTH, HEIGHT = 60, 40
-MAP_WIDTH, MAP_HEIGHT = 100, 100
+MAP_WIDTH, MAP_HEIGHT = 80, 80
 COLBORD1 = (14, 83, 120)
 COLBORD2 = (61, 157, 208)
 
@@ -298,7 +298,7 @@ class CustomApp(base.Application):
         self.time_passing = 0
         self.player = None
         self.add_messages(("You die..",))
-        app.add_choice_menu(("Please report bugs to mike@codingden.net."), ("Start Game", "Quit"), main_menu_callback)
+        app.add_choice_menu(("Please report bugs to mike@codingden.net.",), ("Start Game", "Quit"), main_menu_callback)
 
     def update(self):
         if self.time_passing:
@@ -351,7 +351,7 @@ def main_menu_callback(fct):
     choice = fct()
     if not choice:
         app.destroy_ents()
-        app.layout = "level_1"
+        app.layout = "level_3"
         app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         while app.menu_stack:
             app.remove_menu()

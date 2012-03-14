@@ -272,12 +272,12 @@ class Map:
         ret = [[_WALL for i in range(h)] for j in range(w)]
         for i in range(w):
             for j in range(h):
-                ret[i][j] = self.get_tile(x+i+self.pad, y+j+self.pad)
+                ret[i][j] = self.get_tile(x+i, y+j)
         return ret
     
     def get_tile(self,x,y):
         """Returns wall if tile not in map."""
-        if 0 < x < self.width and 0 < y < self.height:
+        if 0 < x + self.pad < self.width and 0 < y + self.pad < self.height:
             return self.tiles[x+self.pad][y+self.pad]
         return _WALL
 
