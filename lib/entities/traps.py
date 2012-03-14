@@ -60,6 +60,8 @@ class AutoDoor(Door):
             self.ticker = self.timer
 
     def update(self):
+        if self.parent.parent.distance_from_player(self.id) > 5:
+            return
         if self.ticker>0:
             self.ticker -= 1
         if not self.ticker:
@@ -161,6 +163,8 @@ class ArrowTrap(StepTrap):
         return False
 
     def update(self):
+        if self.parent.parent.distance_from_player(self.id) > 5:
+            return
         if self.ticker:
             self.ticker -= 1
         if not self.ticker and not self.can_fire:
@@ -239,13 +243,14 @@ class MoveTrap(StepTrap):
             dx, dy = -1, 0
             self.char = chr(27)
         self.set_attribute('visible',True)
+        ent.forced_moves += 1
         self.parent.move_ent(ent.id,dx,dy)
 
     def was_collided(self, id, type):
         if type == self.parent.DIRECT_INTERACTION:
             ent = self.parent.get_ent(id)
             if isinstance(ent, mobs.Player):
-                if not ent.jumping:
+                if not ent.jumping and ent.forced_moves<=2:
                     self.fire(ent)
                     return True
             elif isinstance(ent, entity.Mob):
@@ -323,6 +328,8 @@ class PillarTrap(entity.Trap):
                 self.direction -= 1
 
     def update(self):
+        if self.parent.parent.distance_from_player(self.id) > 10:
+            return
         self.direction = int(self.direction)
         if not self.direction :
             if not self.move(0, -1):
@@ -368,6 +375,8 @@ class BladeTrap(entity.Trap):
             ent.deal_damage(20)
 
     def update(self):
+#        if self.parent.parent.distance_from_player(self.id) > 10:
+#            return
         if self.started:
             self.direction = int(self.direction)
             if not self.direction :

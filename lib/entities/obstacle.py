@@ -10,5 +10,5 @@ class Boulder(entity.Obstacle):
                 pos = self.parent.get_pos(self.id)
                 dx, dy = pos[0] - ent_pos[0], pos[1] - ent_pos[1]
                 self.parent.move_ent(self.id,dx,dy)
-                return False
+                return True
         return False

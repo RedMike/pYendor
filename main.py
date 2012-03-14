@@ -30,7 +30,7 @@ import lib.base as base
 import lib.graphics as graphics
 
 WIDTH, HEIGHT = 60, 40
-MAP_WIDTH, MAP_HEIGHT = 150, 150
+MAP_WIDTH, MAP_HEIGHT = 100, 100
 COLBORD1 = (14, 83, 120)
 COLBORD2 = (61, 157, 208)
 
@@ -128,12 +128,13 @@ class CustomApp(base.Application):
         if self.inv_win is None:
             return  #TODO: Error handling.
         player = self.get_player()
-        name = self.entity_manager.get_name(player) + ' (' + str(self.get_ent(self.player).get_injuries()) + ')'
-        names = {0:name}
-        parents = {0:None}
-        meta = {0:(player,False)}
-        parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
-        self.inv_win.set_nodes(parents,names,meta)
+        if player is not None:
+            name = self.entity_manager.get_name(player) + ' (' + str(self.get_ent(self.player).get_injuries()) + ')'
+            names = {0:name}
+            parents = {0:None}
+            meta = {0:(player,False)}
+            parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
+            self.inv_win.set_nodes(parents,names,meta)
 
     def update_craft_window(self):
         """Default implementation of inventory window updating.
@@ -143,11 +144,12 @@ class CustomApp(base.Application):
         if self.craft_win is None:
             return  #TODO: Error handling.
         player = self.get_player()
-        names = {0:self.entity_manager.get_name(player)}
-        parents = {0:None}
-        meta = {0:(player,False)}
-        parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
-        self.craft_win.set_nodes(parents,names,meta)
+        if player is not None:
+            names = {0:self.entity_manager.get_name(player)}
+            parents = {0:None}
+            meta = {0:(player,False)}
+            parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
+            self.craft_win.set_nodes(parents,names,meta)
 
     def show_window(self,window):
         id = self.win_man.get_id(window)
@@ -284,12 +286,19 @@ class CustomApp(base.Application):
         win.update_layer(4,tiles)
 
         tiles = [ ]
-        pl_pos = self.get_ent_pos(self.get_player())
-        if pl_pos:
-            tx, ty = pl_pos
-            ent = self.get_ent(self.get_player())
-            tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
-        win.update_layer(5,tiles)
+        if self.get_player() is not None:
+            pl_pos = self.get_ent_pos(self.get_player())
+            if pl_pos:
+                tx, ty = pl_pos
+                ent = self.get_ent(self.get_player())
+                tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+            win.update_layer(5,tiles)
+
+    def death(self):
+        self.time_passing = 0
+        self.player = None
+        self.add_messages(("You die..",))
+        app.add_choice_menu(("Please report bugs to mike@codingden.net."), ("Start Game", "Quit"), main_menu_callback)
 
     def update(self):
         if self.time_passing:
@@ -338,6 +347,7 @@ app.set_craft_window(craft_win)
 def main_menu_callback(fct):
     choice = fct()
     if not choice:
+        app.destroy_ents()
         app.layout = "level_1"
         app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         while app.menu_stack:
@@ -346,8 +356,6 @@ def main_menu_callback(fct):
                                                             "Not bad.", "Here we go."), difficulty_menu_callback)
     elif choice == 1:
         app.quit()
-    elif choice == 2:
-        pass
 
 def name_menu_callback(input):
     input = input.strip()
@@ -355,37 +363,43 @@ def name_menu_callback(input):
         app.get_ent(app.get_player()).name = input
     while app.menu_stack:
         app.remove_menu()
-
+    app.time_passing = True
 
 
 def difficulty_menu_callback(fct):
     choice = fct()
     if not choice:
-        items = 5
+        items = 4
         app.place_player(1)
     elif choice == 1:
-        items = 3
+        items = 2
         app.place_player(1)
     elif choice == 2:
         items = 1
         app.place_player(3)
     else:
-        app.place_player(6)
+        app.place_player(3)
         while app.menu_stack:
             app.remove_menu()
+        app.add_input_menu("What is your name?", name_menu_callback)
         return
     pl = app.get_ent(app.get_player())
     inv = pl.inventory
     for i in range(items):
         it = app.add_entity(0,0,"salve")
+        app.get_ent(it).potency=20
+        app.get_ent(it).update()
         app.set_ent_parent(it,inv)
     while app.menu_stack:
         app.remove_menu()
     app.add_input_menu("What is your name?", name_menu_callback)
 
 
-
-app.add_choice_menu(("Please report bugs to mike@codingden.net.",), ("Start Game", "Quit", "Debug."), main_menu_callback)
+x = ("You are just a traveller, an explorer, walking the world to satisfy your curiosity.", "",
+    "Your road takes you across a desert, but halfway through, the sand beneath your feet stirs.", "",
+    "Your feet touch stone and you begin to slide down a long, thin path, unable to stop yourself.", "",
+    "", "", "Please report bugs to mike@codingden.net.")
+app.add_choice_menu(x, ("Start Game", "Quit"), main_menu_callback)
 while not app.exit:
     app.update()
 

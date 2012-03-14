@@ -79,7 +79,6 @@ class Application(object):
             - B{Application}: Q
         Where E and R are pick up and drop, respectively, and Q sets L{exit} to I{true}.
         """
-        self.time_passing = 1  # TODO: fix this.
         self.clear_bindings()
         player = self.get_ent(self.get_player())
         if player is not None:
@@ -93,12 +92,16 @@ class Application(object):
                      ['f',[self.player_jump,()]],
                      ['q',[self.quit,()]],
                      [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
+                     ['.',[self.pass_time, ()]],
                      ['t',[self.add_input_menu,(">>> ",self._debug_window_callback)]]]
             for set in temp:
                 key = set[0]
                 bind = set[1]
                 self.add_binding(key,bind)
+        self.keyboard.set_default_binding(self._default_window_callback)
 
+    def pass_time(self):
+        self.time_passing = 1
 
     def node_bindings(self, window, callback):
         """Bind default node window keys.
@@ -140,7 +143,6 @@ class Application(object):
                 window.highlight += 1
         elif char == 'q':
             window.highlight = None
-            self.time_passing = 1
             self.default_bindings()
         elif char == 'r':
             ent_id, usable = window.get_node_meta(window.highlight)
@@ -169,6 +171,9 @@ class Application(object):
         self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
         self.keyboard.set_default_binding(self._input_window_callback, (window,callback))
+
+    def _default_window_callback(self, mods, char, vk):
+        self.time_passing = False
 
     def _input_window_callback(self, mods, char, vk, window, callback):
         """Default input window callback.
@@ -205,7 +210,6 @@ class Application(object):
         @type  callback: Function.
         @param callback: Function that gets called on accept.
         """
-        self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
         temp = [ [self.keyboard.KEY_UP, [window.move_up,()]],
                [self.keyboard.KEY_DOWN, [window.move_down,()]],
@@ -250,8 +254,6 @@ class Application(object):
                     att, val = set
                     setattr(ent_obj, att, float(val))
                 ent_obj.update()
-                #if self.entity_manager.get_attribute(ent,'fixed') and self.entity_manager.get_attribute(ent,'blocking'):
-                #    map.add_tile(x, y, (0,1))
 
 
     def add_map(self,file=0,map=0,set=0):
@@ -592,6 +594,19 @@ class Application(object):
         self.entity_manager.garbage_collect()
         self.camera = None
 
+    def distance_from_player(self, id):
+        if self.get_player() is None:
+            return 1
+        else:
+            pl = self.get_player()
+            pos = self.get_ent_pos(id)
+            pl_pos = self.get_ent_pos(pl)
+            if pos is not None and pl_pos is not None:
+                dist = (float(pl_pos[0]-pos[0])**2 + float(pl_pos[1]-pos[1])**2)**(1/2.0)
+                return dist
+            else:
+                return 1
+
 
     def collision_check(self, id, x, y):
         """Checks collisions and restrictions in place, returns I{True} for able to move.
@@ -747,6 +762,8 @@ class Application(object):
                 tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
         win.update_layer(5,tiles)
 
+    def death(self):
+        pass
 
 
     def update(self):
@@ -763,6 +780,7 @@ class Application(object):
         self.win_man.draw_all()
 
         #input
+        self.time_passing = False
         self.keyboard.tick()
 
     def quit(self):

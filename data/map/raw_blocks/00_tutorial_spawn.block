@@ -1,6 +1,6 @@
 ############################
 #######..hh..###########.###
-##....#......###########.###
+##....#.....j###########.###
 ##t####......#########.....#
 ##.##.....v.v#####...#.....#
 ##p#######.v.#.a.#.#q#.....#
@@ -21,8 +21,9 @@ d,door,1.0,(timer=20)
 b,blade_trap,1.0,(direction=6)
 q,blade_trap,1.0,(direction=2)
 o,pillar_trap,1.0,(direction=0)
-c,cloth_strips,1.0,(amount=10)
-h,herb_packet,1.0,(amount=5,potency=30)
+c,cloth_strips,1.0,(amount=4)
+h,herb_packet,1.0,(amount=4,potency=30)
 x,tutorial_1,1.0
 y,tutorial_2,1.0
 z,tutorial_3,1.0
+j,portal,1.0

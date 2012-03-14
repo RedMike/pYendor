@@ -6,7 +6,6 @@ class EquippableItem(entity.Item):
     def __init__(self,parent,id):
         super(EquippableItem,self).__init__(parent,id)
 
-
     def init(self):
         super(EquippableItem,self).init()
         self.name = "generic equippable item"
@@ -15,6 +14,48 @@ class EquippableItem(entity.Item):
         if self.acceptable_nodes:
             return node in self.acceptable_nodes
         return True
+
+class PortalGun(EquippableItem):
+
+    def init(self):
+        super(EquippableItem,self).init()
+        self.name = "ancient rune"
+        self.acceptable_nodes = ('hands',)
+        self.fired = False
+        self.fired_pos = None
+        self.char = '%'
+        self.set_attribute('visible',True)
+
+    def examine(self):
+        if not self.fired:
+            s = "The glyphs seem to say you can affix a position to this rune."
+            self.parent.post_message(s)
+        else:
+            s = "The glyphs seem to imply a recall to an affixed position."
+            self.parent.post_message(s)
+
+    def fire(self):
+        if not self.fired:
+            self.fired_pos = self.parent.get_abs_pos(self.id)
+            self.fired = True
+            self.parent.post_message("You affix the current position to the glyph.")
+        else:
+            pl = self.parent.parent.get_player()
+            self.parent.set_pos(pl,self.fired_pos)
+            self.fired = False
+            self.fired_pos = None
+            self.parent.post_message("You feel yourself transported.")
+            self.parent.parent.time_passing = True
+            self.parent.parent.update_game_window()
+
+    def was_equipped(self, id, type):
+        super(PortalGun,self).was_equipped(id, type)
+        ent = self.parent.get_ent(id)
+        if isinstance(ent, PortalGun):
+            self.fire()
+        elif isinstance(ent, ethereal.Bodypart):
+            if ent.name in self.acceptable_nodes:
+                self.parent.set_parent(self.id, ent.id)
 
 class Armor(EquippableItem):
 
@@ -71,6 +112,13 @@ class NonEquippableItem(entity.Item):
     def init(self):
         super(NonEquippableItem,self).init()
         self.name = "generic unequippable item"
+
+class Item(NonEquippableItem):
+    def init(self):
+        super(NonEquippableItem,self).init()
+        self.name = "corpse"
+        self.char = "%"
+
 
 class Backpack(NonEquippableItem):
 
@@ -231,7 +279,7 @@ class HealingSalve(NonEquippableItem):
         success = False
         ent = self.parent.get_ent(id)
         if isinstance(ent, ethereal.Wound):
-            if ent.damage <= 25 or self.potency - 25 >= ent.damage or self.potency > 75:
+            if ent.damage <= 25 or self.potency >= ent.damage - 25 or self.potency > 75:
                 if not ent.treated:
                     success = True
                     self.parent.set_parent(self.id, 0)

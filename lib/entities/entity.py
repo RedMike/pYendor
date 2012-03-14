@@ -117,7 +117,8 @@ class Entity(object):
         return self.parent.move_ent(self.id,x,y)
 
     def update(self):
-        pass
+        if self.parent.parent.distance_from_player(self.id) > 5:
+            return
 
 
 class Mob(Entity):
@@ -160,6 +161,8 @@ class Mob(Entity):
             self.parent.set_parent(self.id,0)
 
     def update(self):
+        if self.parent.parent.distance_from_player(self.id) > 5:
+            return
         if not self.check_damage():
             dx, dy = random.randint(-1,1), random.randint(-1,1)
             self.move(dx, dy)

@@ -234,6 +234,7 @@ class EntityManager(object):
                 if id is not victim_id:
                     self.get_ent(id).collided(victim_id, interaction)
                     success = self.get_ent(victim_id).was_collided(id, interaction)
+                    has_moved = has_moved or success
                     self.get_ent(id).finished_colliding(victim_id, success)
         return has_moved
 
@@ -289,6 +290,8 @@ class EntityLookup:
         self.lookup['tutorial_1'] = entities.traps.TutorialSign1
         self.lookup['tutorial_2'] = entities.traps.TutorialSign2
         self.lookup['tutorial_3'] = entities.traps.TutorialSign3
+        self.lookup['portal'] = entities.items.PortalGun
+        self.lookup['game_end'] = entities.ethereal.GameEnd
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""

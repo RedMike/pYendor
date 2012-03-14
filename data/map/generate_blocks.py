@@ -134,40 +134,40 @@ def main():
         #write its basic data
         write_block(name.replace('.block','')+'_0.block',block_width,block_height,map_data,dirs,meta_data)
 
+        if not name.startswith('20'):
+            #start rotating
+            #once
+            new_map_data = []
+            new_dirs = spin_dirs(dirs,block_height,block_width)
 
-        #start rotating
-        #once
-        new_map_data = []
-        new_dirs = spin_dirs(dirs,block_height,block_width)
+            for j in range(block_width):
+                s = ""
+                for i in range(block_height):
+                    s += map_data[i][block_width-j-1]
+                new_map_data.append(s)
+            write_block(name.replace('.block','')+'_1.block',block_height,block_width,new_map_data,new_dirs,meta_data)
 
-        for j in range(block_width):
-            s = ""
-            for i in range(block_height):
-                s += map_data[i][block_width-j-1]
-            new_map_data.append(s)
-        write_block(name.replace('.block','')+'_1.block',block_height,block_width,new_map_data,new_dirs,meta_data)
+            #twice
+            new_map_data2 = []
+            new_dirs2 = spin_dirs(new_dirs,block_width,block_height)
 
-        #twice
-        new_map_data2 = []
-        new_dirs2 = spin_dirs(new_dirs,block_width,block_height)
+            for j in range(block_height):
+                s = ""
+                for i in range(block_width):
+                    s += new_map_data[i][block_height-j-1]
+                new_map_data2.append(s)
+            write_block(name.replace('.block','')+'_2.block',block_width,block_height,new_map_data2,new_dirs2,meta_data)
 
-        for j in range(block_height):
-            s = ""
-            for i in range(block_width):
-                s += new_map_data[i][block_height-j-1]
-            new_map_data2.append(s)
-        write_block(name.replace('.block','')+'_2.block',block_width,block_height,new_map_data2,new_dirs2,meta_data)
+            #thrice
+            new_map_data3 = []
+            new_dirs3 = spin_dirs(new_dirs2,block_height,block_width)
 
-        #thrice
-        new_map_data3 = []
-        new_dirs3 = spin_dirs(new_dirs2,block_height,block_width)
-
-        for j in range(block_width):
-            s = ""
-            for i in range(block_height):
-                s += new_map_data2[i][block_width-j-1]
-            new_map_data3.append(s)
-        write_block(name.replace('.block','')+'_3.block',block_height,block_width,new_map_data3,new_dirs3,meta_data)
+            for j in range(block_width):
+                s = ""
+                for i in range(block_height):
+                    s += new_map_data2[i][block_width-j-1]
+                new_map_data3.append(s)
+            write_block(name.replace('.block','')+'_3.block',block_height,block_width,new_map_data3,new_dirs3,meta_data)
 
 
 

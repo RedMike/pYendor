@@ -1,6 +1,7 @@
 import entity
 import traps
 import ethereal
+import items
 
 import random
 
@@ -28,10 +29,13 @@ class Humanoid(entity.Mob):
         node = self.get_node(node)
         ents = self.parent.get_in(node)
         if ents:
+            rets = [ ]
             for id in self.parent.get_in(node):
                 ent = self.parent.get_ent(id)
                 if isinstance(ent, ethereal.Wound):
-                    return ent
+                    rets.append(ent)
+            if rets != [ ]:
+                return random.choice(rets)
         return None
 
     def get_injury_amount(self,node):
@@ -74,8 +78,14 @@ class Humanoid(entity.Mob):
             self.parent.get_ent(wound).set_damage(amount)
             self.parent.set_parent(wound,self.get_node(target))
         else:
-            wound = self.get_injury(target)
-            wound.set_damage(wound.damage + amount)
+            chance = random.randint(0,100)
+            if chance < 50:
+                wound = self.get_injury(target)
+                wound.set_damage(wound.damage + amount)
+            else:
+                wound = self.parent.add_entity('wound')
+                self.parent.get_ent(wound).set_damage(amount)
+                self.parent.set_parent(wound,self.get_node(target))
         return self.check_damage()
 
     def check_damage(self):
@@ -104,6 +114,7 @@ class Player(Humanoid):
         self.parent.set_parent(self.inventory, self.nodes["back"])
         self.jumping = False
         self.jumping_ticker = 15
+        self.forced_moves = 0
 
     def jump(self):
         if not self.jumping:
@@ -158,6 +169,14 @@ class Player(Humanoid):
             if isinstance(ent, traps.PillarTrap):
                 self.parent.post_message("The pillar barrels into you, throwing you backwards.")
 
+    def end_game(self, fct):
+        choice = fct()
+        if not choice:
+            self.parent.parent.death()
+        else:
+            self.parent.parent.quit()
+
+
     def finished_colliding(self, id, success_value, metadata=None):
         super(Player,self).finished_colliding(id, success_value, metadata)
         ent = self.parent.get_ent(id)
@@ -166,8 +185,18 @@ class Player(Humanoid):
                 self.parent.post_message("You slip and start sliding down the tunnel.")
                 self.parent.parent.layout = "level_"+str(int(self.parent.parent.layout.split('_',1)[1])+1)
                 self.parent.parent.destroy_ents()
+                for id in self.parent.get_in(self.id):
+                    ent = self.parent.get_ent(id)
+                    if isinstance(ent,items.PortalGun):
+                        ent.fired = False
+                        ent.fired_pos = None
                 self.parent.parent.generate_map(self.parent.parent.get_map().width, self.parent.parent.get_map().height, set=True)
                 self.parent.parent.place_player(1)
+        elif isinstance(ent,ethereal.GameEnd):
+            if success_value:
+                self.parent.parent.add_choice_menu(("You slip and start sliding down the tunnel.",
+                    "You come out an opening in a mountain, miles away from where you started.",
+                    "You escaped."), ("Go to the desert again.", "Go home."),self.end_game)
         elif isinstance(ent,traps.Door):
             if success_value:
                 self.parent.post_message("You open the "+self.parent.get_name(id)+'.')
@@ -201,17 +230,29 @@ class Player(Humanoid):
             ok = self.parent.move_ent(self.id,x,y)
             ok = ok and self.parent.move_ent(self.id,x,y)
             self.jumping = False
+            if ok:
+                self.parent.parent.time_passing = True
             return ok
         else:
-            return self.parent.move_ent(self.id,x, y)
+            ok = self.parent.move_ent(self.id,x, y)
+            if ok:
+                self.parent.parent.time_passing = True
+            else:
+                self.parent.parent.time_passing = False
+            return ok
 
     def die(self):
         if not self.dead:
             self.dead = 1
+            id = self.parent.add_entity("corpse")
+            self.parent.set_pos(id,self.parent.get_pos(self.id))
             self.parent.set_parent(self.id,0)
+            self.parent.parent.death()
+
 
     def update(self):
         super(Player,self).update()
+        self.forced_moves = 0
         self.handle_pickups()
         if not self.jumping and self.jumping_ticker:
             self.jumping_ticker -= 1

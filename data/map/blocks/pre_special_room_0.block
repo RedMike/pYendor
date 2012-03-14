@@ -38,3 +38,4 @@ q=random_move_trap
 q_chance=1.0
 i=salve
 i_chance=1.0
+i_potency=55
