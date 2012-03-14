@@ -21,7 +21,7 @@ class Application(object):
 
     """
 
-    def __init__(self, name, w, h):
+    def __init__(self, name, w, h, font):
         """Initialise the application with basic default values.
 
         @type  name: string
@@ -51,7 +51,7 @@ class Application(object):
         self.camera = None
         
         # Initialise default windows with None.
-        self.win_man = graphics.WindowManager(w,h,name)
+        self.win_man = graphics.WindowManager(w,h,name,font)
         self.game_win = None
         self.msg_win = None
         self.inv_win = None

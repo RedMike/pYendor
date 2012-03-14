@@ -24,7 +24,7 @@
 #The views and conclusions contained in the software and documentation are those
 #of the authors and should not be interpreted as representing official policies,
 #either expressed or implied, of the FreeBSD Project.
-import random
+import ConfigParser
 
 import lib.base as base
 import lib.graphics as graphics
@@ -51,8 +51,8 @@ FOV_DISTANCE = 10
 
 class CustomApp(base.Application):
 
-    def __init__(self, name, w, h):
-        super(CustomApp,self).__init__(name, w, h)
+    def __init__(self, name, w, h, font):
+        super(CustomApp,self).__init__(name, w, h, font)
 #        self.fov_map = None
         self.craft_win = None
 
@@ -312,8 +312,11 @@ class CustomApp(base.Application):
         #input
         self.keyboard.tick()
 
+parser = ConfigParser.ConfigParser()
+parser.read('traprl.cfg')
+font = parser.get('main','font')
 
-app = CustomApp("TrapRL",WIDTH,HEIGHT)
+app = CustomApp("TrapRL",WIDTH,HEIGHT,'data/'+font)
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-29,HEIGHT-10,29,0)
 game_win = app.win_man.get_window(game_win)
 game_win.set_border([COLBORD1,' ',(0,0,0),1])

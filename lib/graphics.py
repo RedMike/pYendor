@@ -64,8 +64,7 @@ class WindowManager(object):
 
         Subclass and replace to change graphical backend.
         """
-        libtcod.console_set_custom_font(self.font,
-                libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
+        libtcod.console_set_custom_font(self.font,libtcod.FONT_LAYOUT_ASCII_INROW)
         libtcod.console_init_root(self.width, self.height, self.name)
 
     def add_window(self, layer, type, w, h, x, y, alpha=1.0):

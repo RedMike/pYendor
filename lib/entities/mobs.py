@@ -256,6 +256,8 @@ class Player(Humanoid):
         self.handle_pickups()
         if not self.jumping and self.jumping_ticker:
             self.jumping_ticker -= 1
+            if not self.jumping_ticker:
+                self.parent.post_message("You regain your breath.")
 
 class IDNotAssignedError(Exception):
     """Raised when an entity was asked to give its ID, but it has none assigned."""
