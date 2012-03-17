@@ -77,20 +77,30 @@ class BlockGenerator(Generator):
         self.block_dirs = { }
         self.block_widths = { }
         self.block_heights = { }
+        self.block_bias = { }
         self.parser = None
         self.accepted_sizes = set()
         self.rects = [ ]
         self.entities = [ ]
+        self.finish_block = None
+        self.finished = False
 
     def add_rect(self,x,y,w,h):
         self.rects.append((x,y,w,h))
 
-    def add_ent(self,x,y,block_id,char):
+    def add_ent(self,x,ox,y,oy,block_id,char):
         if self.parser.has_option(block_id,char) and self.parser.has_option(block_id,char+"_chance"):
             #it's an actual entity spawner definition
             lookup_name = self.parser.get(block_id,char)
-            chance = self.parser.getfloat(block_id,char+"_chance")
-            self.entities.append((x,y,lookup_name,chance))
+            ret = [x+ox, y+oy, char+str(x)+str(y), lookup_name, self.parser.getfloat(block_id,char+'_chance')]
+            ret2 = []
+            for items in self.parser.items(block_id):
+                name, val = items
+                if name.startswith(char+'_') and name != char+"_chance":
+                    att = name.replace(char+'_','')
+                    ret2.append((att,val))
+            ret.append(ret2)
+            self.entities.append(tuple(ret))
 
     def place_block(self,x,y,id):
         for i in range(len(self.block_walls[id])):
@@ -98,7 +108,7 @@ class BlockGenerator(Generator):
                 char = self.block_walls[id][i][j]
                 if char != '#':
                     self.map.add_tile(x+j,y+i,_FLOOR)
-                    self.add_ent(x+j,y+i,id,char)
+                    self.add_ent(x,j,y,i,id,char)
 
 
     def check_rect(self,x,y,w,h):
@@ -118,26 +128,40 @@ class BlockGenerator(Generator):
         return False
 
     def set_layout(self,name):
-        self.parser = ConfigParser.RawConfigParser()
-        # read in the layout
-        self.parser.read('data/map/'+name+'.layout')
-        self.accepted_sizes = set()
-        for id in os.listdir('data/map/blocks/'):
-            id = id.replace('.block','')
-            # read in the blocks and add their data to the dicts
-            self.parser.read('data/map/blocks/'+id+'.block')
-            self.block_widths[id] = self.parser.getint(id,'width')
-            self.block_heights[id] = self.parser.getint(id,'height')
-            self.block_dirs[id] = { }
-            for dir in ('top', 'bottom', 'left', 'right'):
-                s = self.parser.get(id,dir)
-                # s is a offset, length
-                self.block_dirs[id][dir] = tuple(map(int,s.split(',')))
-            self.block_walls[id] = [ ]
-            for i in range(self.block_heights[id]):
-                line = self.parser.get(id, 'line' + str(i))
-                self.block_walls[id].append(line)
-            self.accepted_sizes.add((self.block_widths[id],self.block_heights[id]))
+        if os.path.exists('data/map/'+name+'.layout'):
+            self.parser = ConfigParser.RawConfigParser()
+            self.block_walls = { }
+            self.block_dirs = { }
+            self.block_widths = { }
+            self.block_heights = { }
+            self.block_bias = { }
+            self.rects = [ ]
+            self.entities = [ ]
+            # read in the layout
+            self.parser.read('data/map/'+name+'.layout')
+            self.accepted_sizes = set()
+            for id in os.listdir('data/map/blocks/'):
+                id = id.replace('.block','')
+                # read in the blocks and add their data to the dicts
+                self.parser.read('data/map/blocks/'+id+'.block')
+                self.block_widths[id] = self.parser.getint(id,'width')
+                self.block_heights[id] = self.parser.getint(id,'height')
+                self.block_dirs[id] = { }
+                if self.parser.has_option('layout', id):
+                    self.block_bias[id] = self.parser.getfloat('layout', id)
+                elif self.parser.has_option('layout', id[-2]):
+                    self.block_bias[id] = self.parser.getfloat('layout', id)
+                else:
+                    self.block_bias[id] = 0.5
+                for dir in ('top', 'bottom', 'left', 'right'):
+                    s = self.parser.get(id,dir)
+                    # s is a offset, length
+                    self.block_dirs[id][dir] = tuple(map(int,s.split(',')))
+                self.block_walls[id] = [ ]
+                for i in range(self.block_heights[id]):
+                    line = self.parser.get(id, 'line' + str(i))
+                    self.block_walls[id].append(line)
+                self.accepted_sizes.add((self.block_widths[id],self.block_heights[id]))
 
     def choose_block(self, old_x, old_y, old_id, old_dir):
         new_dir = "bottom"
@@ -151,7 +175,6 @@ class BlockGenerator(Generator):
         valid_blocks = [ ]
         for block in self.block_dirs.keys():
             dir = self.block_dirs[block][new_dir]
-            #if 0 < dir[1] <= width: # TODO: Add handling differing sizes again
             if dir[1] == width:
                 #the exit fits, let's see if it has room from the other blocks
                 x = old_x
@@ -170,7 +193,14 @@ class BlockGenerator(Generator):
                 if not self.check_col((x,y,w,h)):
                     valid_blocks.append((x,y,block))
         if valid_blocks:
-            return random.choice(valid_blocks)  # TODO: Add customisable bias!
+            choices = []
+            for block in valid_blocks:
+                x, y, id = block
+                chance = int(self.block_bias[id]*100)
+                choices += [block for i in range(chance)]
+            if choices:
+                return random.choice(choices)
+            return None
         return None
 
     def _recurse_gen(self, x, y, block_id):
@@ -184,15 +214,24 @@ class BlockGenerator(Generator):
                 if choice:
                     #we've got a block!
                     #recurse over it too
+                    if choice[2].startswith(self.finish_block):
+                        self.finished = True
                     self._recurse_gen(*choice)
 
     def gen_map(self):
-        self.map.clear()
-        self.entities = [ ]
-        self.rects = [ ]
-        x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
-        block = self.parser.get('layout','start')
-        self._recurse_gen(x, y, block)
+        it = 0
+        while not self.finished or len(self.rects) < 20:
+            self.map.clear()
+            self.entities = [ ]
+            self.rects = [ ]
+            x, y = random.randint(20, self.width-20), random.randint(20, self.height-20)
+            block = self.parser.get('layout','start')
+            self.finish_block = self.parser.get('layout','end')
+            self.finished = False
+            self._recurse_gen(x, y, block)
+            it += 1
+            if it > 1000:
+                raise Exception
         return self.map
 
 

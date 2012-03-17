@@ -230,11 +230,18 @@ class Application(object):
     def generate_ents(self,map,list):
         """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),
             where chance is a float in [0,1]."""
+        chances = { }
         for set in list:
-            x, y, ent_string, chance = set
-            r = random.random()
-            if r < chance:
+            x, y, char, ent_string, chance, meta = set
+            if char not in chances:
+                chances[char] = random.random()
+            if chances[char] < chance:
                 ent = self.add_entity(x, y, ent_string)
+                ent_obj = self.get_ent(ent)
+                for set in meta:
+                    att, val = set
+                    ent_obj.set_meta_attribute(att,val)
+                ent_obj.update()
 
     def add_map(self,file=0,map=0,set=0):
         """Add map to stack from file or object.

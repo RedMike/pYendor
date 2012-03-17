@@ -31,6 +31,10 @@ class Entity(object):
         self.acceptable_nodes = None
         self.listed = False
 
+    def set_meta_attribute(self,meta,val):
+        setattr(self,meta,val)
+
+
     def was_equipped(self, id, type):
         """Callback for when entity is being equipped to another entity."""
         success = False
