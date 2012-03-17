@@ -53,9 +53,11 @@ class Application(object):
         self.game_win = None
         self.msg_win = None
         self.inv_win = None
-        self.fov_win = None
         self.bgcol = (0,0,0)
         self.fgcol = (255,255,255)
+        self.floor_col = None
+        self.fog_floor_col = None
+        self.wall_col = None
 
         self.fov_map = fov.FovMap()
         
@@ -223,8 +225,7 @@ class Application(object):
         m = gen.gen_map()
         ents = gen.entities
         self.generate_ents(m,ents)
-        self.add_map(map=m,
-                    set=set)
+        self.add_map(map=m,set=set)
 
     def generate_ents(self,map,list):
         """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),
@@ -234,7 +235,6 @@ class Application(object):
             r = random.random()
             if r < chance:
                 ent = self.add_entity(x, y, ent_string)
-
 
     def add_map(self,file=0,map=0,set=0):
         """Add map to stack from file or object.
@@ -257,7 +257,8 @@ class Application(object):
         """Set map as I{id}."""
         if id < len(self.maps):
             self.map = id
-            self.fov_map.process_map(self.maps[id])
+            if self.fov_map is not None:
+                self.fov_map.process_map(self.maps[id])
     
     def get_map(self):
         """Returns current map, or I{None}."""
@@ -313,13 +314,6 @@ class Application(object):
         I{None} and roll your own updating algorithm following L{add_messages}.
         """
         self.msg_win = w
-
-    def set_fov_window(self,w):
-        """Set fov window to use by default.
-
-        In order to roll your own fov implementation, you might have to overwrite this.
-        """
-        self.fov_win = w
 
     def add_messages(self,msgs):
         """Post messages to current message window, takes a list of strings.
@@ -381,13 +375,13 @@ class Application(object):
         self.input_bindings(win)
         self.menu_stack.append([id])
 
-    def add_choice_menu(self, labels, choices, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
+    def add_choice_menu(self, label, choices, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
         """Adds a single choice menu to the stack and sets it as active.
 
         ID of choice in choices is the ID that gets used in callback, starting from 0.
 
-        @type  labels: tuple
-        @param labels: List of strings that are displayed before choices.
+        @type  label: str
+        @param label: String that contains entire labels for the menu, use \n for separating lines.
         @type  choices: tuple
         @param choices: List of valid choices in the menu.
         @type  callback: method
@@ -410,7 +404,7 @@ class Application(object):
         win = self.win_man.get_window(id)
         win.bgcol = bgcol
         win.fgcol = fgcol
-        win.set_label(labels)
+        win.set_label(label)
         win.set_choices(choices)
         self.menu_bindings(win,callback)
         self.menu_stack.append([id,callback])
@@ -488,9 +482,8 @@ class Application(object):
                     break
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
-        sch_id = self.scheduler.add_schedule( (self.get_ent(cam).sync_camera, [pid], 1) )
-        self.scheduler.add_schedule( (self.fov_map.compute, [self.get_player_pos], 1))
-        self.entity_manager.set_sched(cam, sch_id)
+        self.entity_manager.set_parent(cam, pid)
+        self.scheduler.add_schedule([self.fov_map.compute,(self.get_player_pos,),1])
         self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
         self.player = pid
         self.camera = cam
@@ -576,11 +569,11 @@ class Application(object):
         Raises NoMapError when map is not initialised yet.
         """
         can_move = True
-        pos = self.get_ent_pos(id)
-        if not pos:
-            return False
-        ex, ey = pos
         if self.get_map() is not None:
+            pos = self.get_ent_pos(id)
+            if not pos:
+                return False
+            ex, ey = pos
             # check for wall
             if self.get_map().get_tile(x + ex, y + ey)[0]:
                 can_move = False
@@ -632,12 +625,14 @@ class Application(object):
         ents = self.get_ent_in(id)
         if ents is not None:
             for child in ents:
-                orig_id = cur_id
-                names[cur_id] = self.entity_manager.get_name(child)
-                parents[cur_id] = parent_id
-                meta[cur_id] = (child,self.entity_manager.get_ent(child).get_attribute('usable'))
-                cur_id += 1
-                parents, names, meta, cur_id = self._inv_window_recurse(child,parents,names,meta,cur_id,orig_id)
+                child_ent = self.entity_manager.get_ent(child)
+                if child_ent.listed:
+                    orig_id = cur_id
+                    names[cur_id] = child_ent.name
+                    parents[cur_id] = parent_id
+                    meta[cur_id] = (child,child_ent.get_attribute('usable'))
+                    cur_id += 1
+                    parents, names, meta, cur_id = self._inv_window_recurse(child,parents,names,meta,cur_id,orig_id)
         return parents, names, meta, cur_id
 
     def update_inv_window(self):
@@ -665,7 +660,7 @@ class Application(object):
             cam = self.get_camera()
             map = self.get_map()
             win = self.game_win
-            pos = self.get_ent_pos(cam)
+            pos = self.entity_manager.get_abs_pos(cam)
             x, y = pos
             cx, cy = win.width/2, win.height/2
             ox, oy = x - cx, y - cy
@@ -680,15 +675,24 @@ class Application(object):
                         explored = self.fov_map.get_explored(x,y)
                         if lit:
                             if not wall:
-                                tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
+                                col = self.floor_col
+                                if not col:
+                                    col = (0,0,0)
+                                tiles.append([i, j, col, ' ', (0,0,0), 1])
                                 self.fov_map.set_explored(x,y)
                         else:
                             if explored and not wall:
-                                tiles.append([i, j, (5, 50, 125), ' ', (0,0,0), 1])
+                                col = self.fog_floor_col
+                                if not col:
+                                    col = (255,255,255)
+                                tiles.append([i, j, col, ' ', (0,0,0), 1])
                     else:
                         wall = map[i][j][1]
                         if not wall:
-                            tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
+                            col = self.floor_col
+                            if not col:
+                                col = (0,0,0)
+                            tiles.append([i, j, col, ' ', (0,0,0), 1])
 
 
             win.update_layer(0,tiles)

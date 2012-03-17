@@ -47,6 +47,9 @@ COLGBD = convert("E8DDB3")
 app = base.Application("pYendor Test",WIDTH,HEIGHT)
 app.bgcol = COLBG
 app.fgcol = convert("FFFFFF")
+app.wall_col = None
+app.floor_col = convert("5F768A")
+app.fog_floor_col = convert("7C8F9F")
 
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT-20,0,0)
 game_win = app.win_man.get_window(game_win)
@@ -80,7 +83,7 @@ def menu_callback(fct):
     elif choice == 1:
         app.quit()
 
-app.add_choice_menu(("Main menu: ",), ("Start Game", "Quit"), menu_callback, w=30, h=8)
+app.add_choice_menu("Please report any bugs to mike@codingden.net.\n\nMain menu: ", ("Start Game", "Quit"), menu_callback, w=30, h=14)
 while not app.exit:
     app.update()
 

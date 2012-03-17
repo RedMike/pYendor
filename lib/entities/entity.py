@@ -29,6 +29,7 @@ class Entity(object):
         self.char = '?'
         self.fgcol = (255,255,255)
         self.acceptable_nodes = None
+        self.listed = False
 
     def was_equipped(self, id, type):
         """Callback for when entity is being equipped to a humanoid node."""
@@ -118,13 +119,9 @@ class Entity(object):
 
 class Mob(Entity):
 
-    def __init__(self,parent,id):
-        """Base blocking, unliftable, unusable entity for subclass."""
-        super(Mob,self).__init__(parent,id)
-        self.set_attributes('01100')
-
     def init(self):
         super(Mob,self).init()
+        self.set_attributes('01100')
         self.char = '@'
         self.name = 'mob'
         self.fgcol = (0,255,255)
@@ -167,40 +164,35 @@ class Mob(Entity):
 class Item(Entity):
     """Base non-blocking, visible, liftable and usable entity for subclassing."""
 
-    def __init__(self,parent,id):
-        super(Item,self).__init__(parent,id)
-        self.set_attributes('00111')
-
     def init(self):
         super(Item,self).init()
+        self.set_attributes('00111')
         self.char = '('
+        self.listed = True
 
 
 class Obstacle(Entity):
     """Base blocking, visible, non-liftable, non-usable entity for subclassing."""
 
-    def __init__(self,parent,id):
-        super(Obstacle,self).__init__(parent,id)
-        self.set_attributes('01100')
-
     def init(self):
         super(Obstacle,self).init()
+        self.set_attributes('01100')
         self.char = 'O'
 
 
 class Trap(Entity):
     """Base class for fixed, blocking, unliftable, unusable ents for subclass."""
 
-    def __init__(self,parent,id):
-        super(Trap,self).__init__(parent,id)
+    def init(self):
+        super(Trap,self).init()
         self.set_attributes('11100')
 
 
 class Ethereal(Entity):
     """Class for entities like cameras, with which you don't interact ingame."""
 
-    def __init__(self, parent,id):
-        super(Ethereal,self).__init__(parent,id)
+    def init(self):
+        super(Ethereal,self).init()
         self.set_attributes('00000')
 
 

@@ -6,10 +6,11 @@ class FovMap(object):
         self.map = None
         self.explored_map = None
         self.last_pos = (0, 0)
+        self.padding = 3
 
     def specific_init(self,w,h):
-        self.map = libtcod.map_new(w,h)
-        self.explored_map = [[False for i in range(h)] for j in range(w)]
+        self.map = libtcod.map_new(w+2*self.padding,h+2*self.padding)
+        self.explored_map = [[False for i in range(h+2*self.padding)] for j in range(w+2*self.padding)]
         libtcod.map_clear(self.map)
 
     def specific_set_properties(self,x,y,blocks_light,blocks):
@@ -25,27 +26,29 @@ class FovMap(object):
         return not libtcod.map_is_transparent(self.map,x,y)
 
     def get_wall(self,x,y):
-        return self.specific_get_wall(x,y)
+        return self.specific_get_wall(x+self.padding,y+self.padding)
 
     def compute(self,pos_fct):
         pos = pos_fct()
         if not pos:
             return
-        self.specific_compute(pos[0],pos[1])
+        self.specific_compute(pos[0]+self.padding,pos[1]+self.padding)
         self.last_pos = pos
 
     def get_lit(self,x,y):
         #returns [lit or not, distance]
-        d = ((self.last_pos[0]-x)**2 - (self.last_pos[1]-y)**2)**(1/2)
-        return self.specific_get_lit(x,y),d
+        if 0 <= x < len(self.explored_map) and 0 <= y < len(self.explored_map[0]):
+            d = ((self.last_pos[0]-x)**2 - (self.last_pos[1]-y)**2)**(1/2)
+            return self.specific_get_lit(x+self.padding,y+self.padding),d
+        return False,100
 
     def set_explored(self,x,y):
-        if 0 <= x < len(self.explored_map) and 0 <= y < len(self.explored_map[0]):
-            self.explored_map[x][y] = True
+        if 0 <= x+self.padding < len(self.explored_map) and 0 <= y+self.padding < len(self.explored_map[0]):
+            self.explored_map[x+self.padding][y+self.padding] = True
 
     def get_explored(self,x,y):
-        if 0 <= x < len(self.explored_map) and 0 <= y < len(self.explored_map[0]):
-            return self.explored_map[x][y]
+        if 0 <= x+self.padding < len(self.explored_map) and 0 <= y+self.padding < len(self.explored_map[0]):
+            return self.explored_map[x+self.padding][y+self.padding]
         return False
 
     def process_map(self,map):
@@ -54,7 +57,7 @@ class FovMap(object):
         for x in range(w):
             for y in range(h):
                 blocks, blocks_light = map.get_tile(x,y)
-                self.specific_set_properties(x,y,not blocks_light, not blocks)
+                self.specific_set_properties(x+self.padding,y+self.padding,not blocks_light, not blocks)
 
 
 

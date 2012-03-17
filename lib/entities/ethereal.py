@@ -5,13 +5,14 @@ import random
 class Wound(entity.Ethereal):
     """Class for simulating injuries."""
 
-    def __init__(self,parent,id):
-        super(Wound,self).__init__(parent,id)
+    def init(self):
+        super(Wound,self).init()
         self.set_attributes('00000')
         self.damage = None
         self.worsen_chance = 20
         self.heal_chance = 20
         self.name = "Wound"
+        self.listed = True
 
     def set_damage(self,amount):
         self.damage = amount
@@ -32,9 +33,10 @@ class Wound(entity.Ethereal):
 class Bodypart(entity.Ethereal):
     """Class for simulating bodyparts."""
 
-    def __init__(self, parent,id):
-        super(Bodypart,self).__init__(parent,id)
+    def init(self):
+        super(Bodypart,self).init()
         self.name = "bodypart"
+        self.listed = True
 
 
 class Camera(entity.Ethereal):
@@ -43,7 +45,3 @@ class Camera(entity.Ethereal):
     def __init__(self, parent,id):
         super(Camera,self).__init__(parent,id)
         self.name = "camera"
-
-    def sync_camera(self, pid):
-        """Try to move to player's location."""
-        self.parent.move_ent_to_ent(self.id,pid)

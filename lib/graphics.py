@@ -542,9 +542,11 @@ class ChoiceWindow(MessageWindow):
         self.choices = [ ]
         self.highlight = None
     
-    def set_label(self,labels):
+    def set_label(self,label):
         """Set choice displayed label."""
-        self.labels = labels
+        self.labels = [ ]
+        for line in label.split("\n"):
+            self.labels.append(line)
     
     def set_choices(self,choices):
         """Set available choices."""
