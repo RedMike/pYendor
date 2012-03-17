@@ -795,3 +795,60 @@ class InventoryWindow(NodeWindow):
             msg += "<" + self.node_list[self.activated_node] + ">"
         self.draw_messages([(3, self.height-2, msg)])
 
+class SwitchWindow(MessageWindow):
+
+    def __init__(self,w,h):
+        super(SwitchWindow,self).__init__(w,h)
+        self.switches = [ ]
+        self.choices = [ ]
+        self.highlight = 0
+
+    def set_switches(self, switches, choices):
+        self.choices = list(choices)
+        self.switches = list(switches)
+
+    def move_up(self):
+        if self.highlight:
+            self.highlight -= 1
+            if not self.highlight:
+                self.highlight += 1
+
+    def move_down(self):
+        if self.highlight:
+            self.highlight += 1
+            if self.highlight > len(self.switches) + 1:
+                self.highlight -= 1
+
+    def enter(self):
+        if self.highlight != len(self.switches) + 1:
+            self.choices[self.highlight-1] = not self.choices[self.highlight-1]
+            return None
+        else:
+            ret = (self.switches, self.choices)
+            self.highlight = 0
+            return ret
+
+    def update(self):
+        self.clear()
+        msgs = [ ]
+        for id in range(len(self.switches)):
+            msg = ''
+            msg += self.switches[id]
+            msg += ' ' * (self.width - 16 - len(self.switches[id]))
+            msg += 'OFF ['
+            if self.choices[id]:
+                msg += ' |*] ON'
+            else:
+                msg += '*| ] ON'
+            msgs.append(msg)
+            msgs.append(" ")
+        while len(msgs) < self.height - 5:
+            msgs.append(" ")
+        msgs.append("< Close >")
+        self.messages = [ ]
+        self.add_messages(msgs)
+        if self.highlight <= len(self.switches):
+            self.reverse_line(self.highlight*2)
+        else:
+            self.reverse_line(self.height-3)
+        self.restore_border()

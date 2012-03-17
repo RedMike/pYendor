@@ -234,6 +234,26 @@ class Application(object):
             bind = set[1]
             self.add_binding(key,bind)
 
+    def switch_bindings(self, window, callback):
+        """Bind default switch window keys.
+
+        Any custom bindings are cleared, and keys are bound for the window and callback you pass.
+
+        @type  window: L{graphics.Window}
+        @param window: Window to bind to as menu.
+        @type  callback: Function.
+        @param callback: Function that gets called on accept.
+        """
+        self.clear_bindings()
+        temp = [ [self.keyboard.KEY_UP, [window.move_up,()]],
+                 [self.keyboard.KEY_DOWN, [window.move_down,()]],
+                 [self.keyboard.KEY_ENTER, [callback,(window.enter,)]]
+        ]
+        for set in temp:
+            key = set[0]
+            bind = set[1]
+            self.add_binding(key,bind)
+
     def generate_map(self,w,h,set):
         """Generates new map using BasicGenerator, then generates basic entities.
 
@@ -438,6 +458,38 @@ class Application(object):
         win.set_label(label)
         win.set_choices(choices)
         self.menu_bindings(win,callback)
+        self.menu_stack.append([id,callback])
+
+    def add_switch_menu(self, switches, choices, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
+        """Adds a single switches menu to the stack and sets it as active.
+
+        @type  switches: tuple
+        @param switches: Tuple of choices to list.
+        @type  choices: tuple
+        @param choices: Tuple of starting choice states.
+        @type  callback: method
+        @param callback: Function that gets called with a function as a parameter, that returns the ID
+                        of the choice selected, when called.
+        """
+        if not bgcol:
+            bgcol = self.bgcol
+        if not fgcol:
+            fgcol = self.fgcol
+        if not w:
+            w = 50
+        if not h:
+            h = 50
+        if not x:
+            x = self.win_man.width/2 - w/2
+        if not y:
+            y = self.win_man.height/2 - h/2
+        id = self.add_window(2, graphics.SwitchWindow, w, h, x, y)
+        win = self.win_man.get_window(id)
+        win.highlight = 1
+        win.bgcol = bgcol
+        win.fgcol = fgcol
+        win.set_switches(switches,choices)
+        self.switch_bindings(win,callback)
         self.menu_stack.append([id,callback])
 
     def remove_menu(self):

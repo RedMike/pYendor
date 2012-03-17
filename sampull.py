@@ -29,8 +29,23 @@ import struct
 import lib.base as base
 import lib.graphics as graphics
 
+def debug(fct):
+    switches, choices = fct() or (None, None)
+    if switches:
+        print zip(switches, choices)
+        app.remove_menu()
+    else:
+        print 'tick'
 
+class CustomApp(base.Application):
 
+    def default_bindings(self):
+        super(CustomApp,self).default_bindings()
+        player = self.get_ent(self.get_player())
+        if player is not None:
+            self.add_binding('o', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
+            self.add_binding('p', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
+            self.add_binding('l', [self.add_switch_menu,(('Option 1', 'Longer Option 2', 'S O 3'),(False, True, False),debug),])
 
 WIDTH, HEIGHT = 80, 50
 MAP_WIDTH, MAP_HEIGHT = 100, 100
@@ -47,9 +62,9 @@ COLGBD = convert("E8DDB3")
 
 COLGFLOOR = convert("957C74")
 COLGFOGFLOOR = convert("ACA7A6")
-#COLGWALL = convert("333230")
 COLGWALL = convert("E6E2DA")
-app = base.Application("Sam Pull RL",WIDTH,HEIGHT)
+COLGWALL2 = convert("333230")
+app = CustomApp("Sam Pull RL",WIDTH,HEIGHT)
 
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT-20,0,0)
 msg_win = app.add_window(0,graphics.MessageWindow,WIDTH,20,0,HEIGHT-20)
