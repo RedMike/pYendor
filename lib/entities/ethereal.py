@@ -1,4 +1,5 @@
 import entity
+import mobs
 
 import random
 
@@ -27,8 +28,7 @@ class Wound(entity.Ethereal):
                 if random.randint(0,100) < self.heal_chance:
                     self.set_damage(self.damage-1)
         if not self.damage:
-            self.parent.set_parent(self.id, 0)
-
+            self.parent.set_parent(self.id, self.parent.garbage_id)
 
 class Bodypart(entity.Ethereal):
     """Class for simulating bodyparts."""
@@ -37,7 +37,15 @@ class Bodypart(entity.Ethereal):
         super(Bodypart,self).init()
         self.name = "bodypart"
         self.listed = True
+        self.acceptable_nodes = None
 
+    def was_equipped(self, id, type):
+        """Callback for when entity is being equipped to another entity."""
+        success = False
+        if isinstance(self.parent.get_ent(id), mobs.Player):
+            self.parent.set_parent(self.id, id)
+            success = True
+        return success
 
 class Camera(entity.Ethereal):
     """Simple camera class."""

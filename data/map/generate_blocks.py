@@ -27,8 +27,9 @@ def write_block(name, width, height, map, dirs, meta):
         for set in meta:
             s = set[0]+"="+set[1]+'\n'
             f.writelines(s)
-            s = set[0]+"_chance="+set[2]+'\n'
-            f.writelines(s)
+            for i in range(2, len(set)):
+                s = set[0]+'_'+set[i][0]+'='+set[i][1]+'\n'
+                f.writelines(s)
 
 def spin_dirs(dirs, w, h):
     ret = { }
@@ -73,7 +74,15 @@ def main():
                 else:
                     if line.count(',') == 2:
                         char,ent,chance = line.split(',',2)
-                        meta_data.append([char,ent,chance])
+                        meta_data.append([char,ent,("chance", chance)])
+                    elif line.count(',') > 2:
+                        char, ent, chance, meta = line.split(',',3)
+                        meta = meta.replace('(','').replace(')','')
+                        ret = [char, ent, ("chance", chance)]
+                        for set in meta.split(','):
+                            att, val = set.split('=',1)
+                            ret += [(att, val)]
+                        meta_data.append(ret)
         #top exit:
         exit = 0
         width = 0
@@ -123,15 +132,13 @@ def main():
         write_block(name.replace('.block','')+'_0.block',block_width,block_height,map_data,dirs,meta_data)
 
 
-        #start rotating
-        #once
         new_map_data = []
         new_dirs = spin_dirs(dirs,block_height,block_width)
 
-        for j in range(block_height):
+        for j in range(block_width):
             s = ""
-            for i in range(block_width):
-                s += map_data[i][block_height-j-1]
+            for i in range(block_height):
+                s += map_data[i][block_width-j-1]
             new_map_data.append(s)
         write_block(name.replace('.block','')+'_1.block',block_height,block_width,new_map_data,new_dirs,meta_data)
 
@@ -139,10 +146,10 @@ def main():
         new_map_data2 = []
         new_dirs2 = spin_dirs(new_dirs,block_width,block_height)
 
-        for j in range(block_width):
+        for j in range(block_height):
             s = ""
-            for i in range(block_height):
-                s += new_map_data[i][block_width-j-1]
+            for i in range(block_width):
+                s += new_map_data[i][block_height-j-1]
             new_map_data2.append(s)
         write_block(name.replace('.block','')+'_2.block',block_width,block_height,new_map_data2,new_dirs2,meta_data)
 
@@ -150,10 +157,10 @@ def main():
         new_map_data3 = []
         new_dirs3 = spin_dirs(new_dirs2,block_height,block_width)
 
-        for j in range(block_height):
+        for j in range(block_width):
             s = ""
-            for i in range(block_width):
-                s += new_map_data2[i][block_height-j-1]
+            for i in range(block_height):
+                s += new_map_data2[i][block_width-j-1]
             new_map_data3.append(s)
         write_block(name.replace('.block','')+'_3.block',block_height,block_width,new_map_data3,new_dirs3,meta_data)
 

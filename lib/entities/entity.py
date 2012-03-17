@@ -32,11 +32,12 @@ class Entity(object):
         self.listed = False
 
     def was_equipped(self, id, type):
-        """Callback for when entity is being equipped to a humanoid node."""
-        success = True
+        """Callback for when entity is being equipped to another entity."""
+        success = False
         if self.acceptable_nodes:
-            if self.parent.get_name(id) not in self.acceptable_nodes:
-                success = False
+            if self.parent.get_name(id) in self.acceptable_nodes:
+                self.parent.set_parent(self.id, id)
+                success = True
         return success
 
     def equipped(self, id, type):
@@ -45,8 +46,7 @@ class Entity(object):
 
     def finished_equipping(self, id, success_value, metadata=None):
         """Callback for when the entity has finished trying to attach an entity to itself."""
-        if success_value:
-            self.parent.set_parent(id, self.id)
+        pass
 
     def was_lifted(self, id, type):
         """Callback for when entity was picked up by another entity."""
