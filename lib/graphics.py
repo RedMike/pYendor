@@ -57,7 +57,6 @@ class WindowManager(object):
         self.positions = { }
         self.layers = { }
         self.visibilities = { }
-        self.alphas = { }
 
     def specific_init(self):
         """Library-specific initialisation.
@@ -68,7 +67,7 @@ class WindowManager(object):
                 libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
         libtcod.console_init_root(self.width, self.height, self.name)
 
-    def add_window(self, layer, type, w, h, x, y, alpha=1.0):
+    def add_window(self, layer, type, w, h, x, y):
         """Adds a new window.
 
         Higher layers are drawn last, thus show up on top.
@@ -94,7 +93,6 @@ class WindowManager(object):
         self.positions[id] = (x,y)
         self.layers[id] = layer
         self.visibilities[id] = 1
-        self.alphas[id] = alpha
         self.current_id += 1
         return id
 
@@ -156,7 +154,6 @@ class WindowManager(object):
             del self.positions[id]
             del self.layers[id]
             del self.visibilities[id]
-            del self.alphas[id]
 
     def specific_flush(self):
         """Libtcod-specific flushing of console."""
@@ -170,8 +167,7 @@ class WindowManager(object):
         """
         x, y = self.positions[id]
         win = self.window_list[id]
-        alpha = self.alphas[id]
-        libtcod.console_blit(win.con, 0, 0, win.width, win.height, 0, x, y, alpha, alpha)
+        libtcod.console_blit(win.con, 0, 0, win.width, win.height, 0, x, y)
 
     def draw_all(self):
         """Draw all the layers, in order.
@@ -338,6 +334,14 @@ class Window(object):
         libtcod.console_set_foreground_color(self.con,fgcol)
         libtcod.console_clear(self.con)
 
+    def specific_frame(self, x, y, w, h):
+        """Library-specific drawing of a frame onto the console."""
+        bgcol = convert(self.bgcol)
+        fgcol = convert(self.fgcol)
+        libtcod.console_set_background_color(self.con, bgcol)
+        libtcod.console_set_foreground_color(self.con, fgcol)
+        libtcod.console_print_frame(self.con, x, y, w, h, False, libtcod.BKGND_NONE, 0)
+
     def set_color_key(self,col):
         col = convert(col)
         self.specific_set_key(col)
@@ -388,6 +392,8 @@ class Window(object):
                 tiles += [[0,i]+self.border_tile]
                 tiles += [[self.width-1,i]+self.border_tile]
             self.draw_tiles(tiles)
+        else:
+            self.specific_frame(0, 0, self.width, self.height)
 
     def draw_tiles(self,tiles):
         """Draw tiles onto the window.

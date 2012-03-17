@@ -54,6 +54,8 @@ class Application(object):
         self.msg_win = None
         self.inv_win = None
         self.fov_win = None
+        self.bgcol = (0,0,0)
+        self.fgcol = (255,255,255)
 
         self.fov_map = fov.FovMap()
         
@@ -77,7 +79,6 @@ class Application(object):
             - B{Application}: Q
         Where E and R are pick up and drop, respectively, and Q sets L{exit} to I{true}.
         """
-        self.time_passing = 1  # TODO: fix this.
         self.clear_bindings()
         player = self.get_ent(self.get_player())
         if player is not None:
@@ -104,7 +105,6 @@ class Application(object):
         @type  window: L{graphics.Window}
         @param window: Window to bind to as menu.
         """
-        self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
         if window.highlight is None:
             window.highlight = 0
@@ -154,7 +154,6 @@ class Application(object):
         @type  window: L{graphics.Window}
         @param window: Window to bind to as menu.
         """
-        self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
         self.keyboard.set_default_binding(self._input_window_callback, (window,))
 
@@ -199,7 +198,6 @@ class Application(object):
         @type  callback: Function.
         @param callback: Function that gets called on accept.
         """
-        self.time_passing = 0  # TODO: Fix this.
         self.clear_bindings()
         temp = [ [self.keyboard.KEY_UP, [window.move_up,()]],
                [self.keyboard.KEY_DOWN, [window.move_down,()]],
@@ -236,8 +234,6 @@ class Application(object):
             r = random.random()
             if r < chance:
                 ent = self.add_entity(x, y, ent_string)
-                if self.entity_manager.get_attribute(ent,'fixed') and self.entity_manager.get_attribute(ent,'blocking'):
-                    map.add_tile(x, y, (0,1))
 
 
     def add_map(self,file=0,map=0,set=0):
@@ -269,7 +265,7 @@ class Application(object):
             return self.maps[self.map]
         return None
 
-    def add_window(self,layer,type,w,h,x,y,alpha=1.0):
+    def add_window(self,layer,type,w,h,x,y):
         """Create a new window and return its ID.
 
         @type  layer: number
@@ -287,7 +283,7 @@ class Application(object):
         @rtype: number
         @return: Window ID of created window; Use L{graphics.WindowManager.get_window} to get the object.
         """
-        win = self.win_man.add_window(layer,type,w,h,x,y,alpha)
+        win = self.win_man.add_window(layer,type,w,h,x,y)
         return win
 
     def clear_layer(self,layer):
@@ -385,7 +381,7 @@ class Application(object):
         self.input_bindings(win)
         self.menu_stack.append([id])
 
-    def add_choice_menu(self, labels, choices, callback):
+    def add_choice_menu(self, labels, choices, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
         """Adds a single choice menu to the stack and sets it as active.
 
         ID of choice in choices is the ID that gets used in callback, starting from 0.
@@ -398,8 +394,22 @@ class Application(object):
         @param callback: Function that gets called with a function as a parameter, that returns the ID
                         of the choice selected, when called.
         """
-        id = self.add_window(5, graphics.ChoiceWindow, self.win_man.width, self.win_man.height, 0, 0)
+        if not bgcol:
+            bgcol = self.bgcol
+        if not fgcol:
+            fgcol = self.fgcol
+        if not w:
+            w = 10
+        if not h:
+            h = 10
+        if not x:
+            x = self.win_man.width/2 - w/2
+        if not y:
+            y = self.win_man.height/2 - h/2
+        id = self.add_window(2, graphics.ChoiceWindow, w, h, x, y)
         win = self.win_man.get_window(id)
+        win.bgcol = bgcol
+        win.fgcol = fgcol
         win.set_label(labels)
         win.set_choices(choices)
         self.menu_bindings(win,callback)
@@ -443,7 +453,7 @@ class Application(object):
         """
         self.keyboard.clear_bindings()
 
-    def add_entity(self, x, y, type="entity", delay=1):
+    def add_entity(self, x, y, type="entity", delay=10):
         """Create a new entity at a position and return the ID.
 
         Set delay to I{None} for no calls to the draw_tiles method.
@@ -459,7 +469,6 @@ class Application(object):
         """
         id = self.entity_manager.add_entity(type,delay)
         self.entity_manager.set_pos(id, (x, y))
-        #self.entity_manager.get_ent(id).name += '#'+str(id)  # TODO: remove debug ids
         return id
 
     def place_player(self,delay):
@@ -589,6 +598,7 @@ class Application(object):
 
     def player_drop(self, id=None):
         """Attempt to have the player drop whatever is in his hand."""
+        #TODO: Fix dropping
         pl = self.get_player()
         pl_ent = self.get_ent(pl)
         pos = self.get_ent_pos(pl)
@@ -614,7 +624,6 @@ class Application(object):
             if id is not pl:
                 self.entity_manager.ent_lift(pl,id)
 
-
     def _inv_window_recurse(self,id,parents=None,names=None,meta=None,cur_id=1,parent_id=0):
         """Internal recursion method for inventory listing with default node window."""
         if not names: names = {}
@@ -637,8 +646,10 @@ class Application(object):
         Subclass and replace to use a different format or a different window type.
         """
         if self.inv_win is None:
-            return  #TODO: Error handling.
+            return
         player = self.get_player()
+        if self.player is None:
+            return
         names = {0:self.entity_manager.get_name(player)}
         parents = {0:None}
         meta = {0:(player,False)}
@@ -650,64 +661,65 @@ class Application(object):
 
         Subclass and replace to use a different format.
         """
-        cam = self.get_camera()
-        map = self.get_map()
-        win = self.game_win
-        pos = self.get_ent_pos(cam)
-        x, y = pos
-        cx, cy = win.width/2, win.height/2
-        ox, oy = x - cx, y - cy
-        map = map.get_rect(ox, oy, win.width, win.height)
-        tiles = [ ]
-        for i in range(win.width):
-            for j in range(win.height):
-                x, y = i+ox, j+oy
-                if self.fov_map:
-                    lit = self.fov_map.get_lit(x,y)[0]
-                    wall = self.fov_map.get_wall(x,y)
-                    explored = self.fov_map.get_explored(x,y)
-                    if lit:
+        if self.get_camera() is not None and self.get_player() is not None :
+            cam = self.get_camera()
+            map = self.get_map()
+            win = self.game_win
+            pos = self.get_ent_pos(cam)
+            x, y = pos
+            cx, cy = win.width/2, win.height/2
+            ox, oy = x - cx, y - cy
+            map = map.get_rect(ox, oy, win.width, win.height)
+            tiles = [ ]
+            for i in range(win.width):
+                for j in range(win.height):
+                    x, y = i+ox, j+oy
+                    if self.fov_map:
+                        lit = self.fov_map.get_lit(x,y)[0]
+                        wall = self.fov_map.get_wall(x,y)
+                        explored = self.fov_map.get_explored(x,y)
+                        if lit:
+                            if not wall:
+                                tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
+                                self.fov_map.set_explored(x,y)
+                        else:
+                            if explored and not wall:
+                                tiles.append([i, j, (5, 50, 125), ' ', (0,0,0), 1])
+                    else:
+                        wall = map[i][j][1]
                         if not wall:
                             tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
-                            self.fov_map.set_explored(x,y)
-                    else:
-                        if explored and not wall:
-                            tiles.append([i, j, (5, 50, 125), ' ', (0,0,0), 1])
-                else:
-                    wall = map[i][j][1]
-                    if not wall:
-                        tiles.append([i, j, (0,0,0), ' ', (0,0,0), 1])
 
 
-        win.update_layer(0,tiles)
+            win.update_layer(0,tiles)
 
-        tiles = [ ]
-        for id in self.entity_manager.get_ids():
-            if self.entity_manager.get_attribute(id,'visible'):
-                ret = self.get_ent_pos(id)
-                if ret:
-                    tx, ty = ret
-                    drawn = True
-                    if self.fov_map:
-                        if not self.fov_map.get_lit(tx,ty)[0]:
-                            drawn = False
-                    if drawn:
-                        ent = self.get_ent(id)
-                        tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
-        win.update_layer(4,tiles)
+            tiles = [ ]
+            for id in self.entity_manager.get_ids():
+                if self.entity_manager.get_attribute(id,'visible'):
+                    ret = self.get_ent_pos(id)
+                    if ret:
+                        tx, ty = ret
+                        drawn = True
+                        if self.fov_map:
+                            if not self.fov_map.get_lit(tx,ty)[0]:
+                                drawn = False
+                        if drawn:
+                            ent = self.get_ent(id)
+                            tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+            win.update_layer(4,tiles)
 
-        tiles = [ ]
-        pl_pos = self.get_ent_pos(self.get_player())
-        if pl_pos:
-            tx, ty = pl_pos
-            drawn = True
-            if self.fov_map:
-                if not self.fov_map.get_lit(tx,ty)[0]:
-                    drawn = False
-            if drawn:
-                ent = self.get_ent(self.get_player())
-                tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
-        win.update_layer(5,tiles)
+            tiles = [ ]
+            pl_pos = self.get_ent_pos(self.get_player())
+            if pl_pos:
+                tx, ty = pl_pos
+                drawn = True
+                if self.fov_map:
+                    if not self.fov_map.get_lit(tx,ty)[0]:
+                        drawn = False
+                if drawn:
+                    ent = self.get_ent(self.get_player())
+                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+            win.update_layer(5,tiles)
 
 
 
@@ -716,12 +728,11 @@ class Application(object):
 
         Subclass and replace to add code to run every working update, or drawing calls.
         """
+        self.time_passing = True
         if self.time_passing:
             self.scheduler.tick()
-            if self.game_win is not None and self.get_camera() is not None and self.get_map() is not None:
-                self.update_game_window()
-                if self.player is not None:
-                    self.update_inv_window()
+        self.update_game_window()
+        self.update_inv_window()
         self.win_man.draw_all()
 
         #input
