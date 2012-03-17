@@ -98,8 +98,9 @@ class Player(Humanoid):
         self.fgcol = (255,255,255)
         self.name = "Player"
         self.pickup_queue = [ ]
-        self.inventory = self.parent.add_entity("backpack")
-        self.parent.set_parent(self.inventory, self.nodes["back"])
+        self.inventory = self.nodes['right hand']
+        back_id = self.parent.add_entity("backpack")
+        self.parent.set_parent(back_id, self.nodes["back"])
 
     def add_pickup(self, obj):
         self.pickup_queue.append(obj)
@@ -118,6 +119,12 @@ class Player(Humanoid):
         #    return True
         #return False
         return True
+
+    def finished_dropping(self, id, success_value):
+        if success_value:
+            if self.inventory == id:
+                self.inventory = self.nodes['right hand']
+            self.parent.post_message("You drop the "+self.parent.get_name(id)+".")
 
     def finished_lifting(self, id, success_value, metadata=None):
         super(Player,self).finished_lifting(id, type)

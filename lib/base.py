@@ -108,7 +108,6 @@ class Application(object):
                      [self.keyboard.KEY_RIGHT,[player.move,(1,0)]],
                      ['i',[self.node_bindings,(self.inv_win, self._inventory_window_callback)]],
                      ['e',[self.player_pickup,()]],
-                     ['r',[self.player_drop,()]],
                      ['q',[self.quit,()]],
                      [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
                      ['t',[self.add_input_menu,(">>> ",)]]]
@@ -149,6 +148,12 @@ class Application(object):
         elif char == 'q':
             window.highlight = None
             self.default_bindings()
+        elif char == 'd':
+            node = window.highlight
+            ent_id, usable = window.get_node_meta(node)
+            self.entity_manager.ent_drop(ent_id)
+            if window.activated_node == node:
+                window.activated_node = None
         elif char == 'r':
             if window.activated_node:
                 window.activated_node = None
@@ -162,6 +167,9 @@ class Application(object):
                 self.entity_manager.ent_use(node, active)
                 self.update_inv_window()
                 window.highlight_node_by_meta(active)
+        elif char == 'f':
+            ent_id, usable = window.get_node_meta(window.highlight)
+            self.entity_manager.ent_activate(ent_id)
         self.update_inv_window()
 
     def input_bindings(self, window):
@@ -608,23 +616,7 @@ class Application(object):
                             can_move = False
             return can_move
         else:
-            raise NoMapError
-
-    def player_drop(self, id=None):
-        """Attempt to have the player drop whatever is in his hand."""
-        #TODO: Fix dropping
-        pl = self.get_player()
-        pl_ent = self.get_ent(pl)
-        pos = self.get_ent_pos(pl)
-        if id is None:
-            if self.get_ent_in(pl_ent.nodes['r_hand']):
-                for id in self.get_ent_in(pl_ent.nodes['r_hand']):
-                    self.set_ent_pos(id,pos)
-            if self.get_ent_in(pl_ent.nodes['l_hand']):
-                for id in self.get_ent_in(pl_ent.nodes['l_hand']):
-                    self.set_ent_pos(id,pos)
-        else:
-            self.set_ent_pos(id,pos)
+            return False
 
     def player_pickup(self):
         """Attempt to have the player pick up everything on the tile he's on.

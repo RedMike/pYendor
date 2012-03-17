@@ -24,6 +24,13 @@ class Glove(Armor):
         self.name = "glove"
         self.acceptable_nodes = ("right hand", "left hand")
 
+class Helmet(Armor):
+
+    def init(self):
+        super(Helmet,self).init()
+        self.name = "helmet"
+        self.acceptable_nodes = ("head",)
+
 class Breastplate(Armor):
 
     def init(self):
@@ -37,7 +44,6 @@ class Weapon(EquippableItem):
         super(Weapon,self).init()
         self.name = "generic weapon"
         self.acceptable_nodes = ("right hand", "left hand")
-
 
 class Sword(Weapon):
 
@@ -64,3 +70,8 @@ class Backpack(Container):
         super(Backpack,self).init()
         self.name = "backpack"
         self.acceptable_nodes = ('back',)
+
+    def activated(self, interaction):
+        self.parent.post_message("You dump the contents of the backpack onto the floor.")
+        for id in self.parent.get_in(self.id):
+            self.parent.ent_drop(id)

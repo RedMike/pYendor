@@ -122,7 +122,7 @@ class EntityManager(object):
             raise IDNotFound
         if self.parents[id] is None:
             return id
-        return self.get_ancestor(id)
+        return self.get_ancestor(self.parents[id])
 
     def set_attribute(self, id, att, val):
         """Sets the entity's attribute to the given value."""
@@ -174,9 +174,17 @@ class EntityManager(object):
         """Used ent attempts to use target ent."""
         used_ent = self.get_ent(used)
         target_ent = self.get_ent(target)
-        ok = self.ent_equip(used, target)
-        if not ok:
-            self.ent_lift(used, target)
+        if used_ent != target_ent:
+            ok = self.ent_equip(used, target)
+            if not ok:
+                self.ent_lift(used, target)
+        else:
+            self.ent_activate(used)
+
+    def ent_activate(self, id):
+        ent = self.get_ent(id)
+        interaction = self.DIRECT_INTERACTION
+        return ent.activated(interaction)
 
     def ent_equip(self, equip, equipment):
         """Equipper attempts to equip equipment to equip_node."""
@@ -199,6 +207,12 @@ class EntityManager(object):
         success = victim.was_lifted(lifter,interaction)
         ent.finished_lifting(liftee,success)
         return success
+
+    def ent_drop(self, ent_id):
+        ent = self.get_ent(ent_id)
+        ancestor = self.get_ancestor(ent_id)
+        success = ent.was_dropped(ancestor)
+        self.get_ent(ancestor).finished_dropping(ent_id, success)
 
     def move_ent_to_ent(self,id,id2):
         """Passes call to try to move an entity to another into relative coords."""
@@ -258,6 +272,7 @@ class EntityLookup:
         self.lookup['item'] = entities.entity.Item
         self.lookup['mob'] = entities.entity.Mob
         self.lookup['humanoid'] = entities.mobs.Humanoid
+        self.lookup['kobold'] = entities.entity.Mob
         self.lookup['player'] = entities.mobs.Player
         self.lookup['ethereal'] = entities.entity.Ethereal
         self.lookup['camera'] = entities.ethereal.Camera

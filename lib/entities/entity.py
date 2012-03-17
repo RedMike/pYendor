@@ -29,6 +29,20 @@ class Entity(object):
     def set_meta_attribute(self,meta,val):
         setattr(self,meta,val)
 
+    def finished_dropping(self, id, success_value):
+        pass
+
+    def was_dropped(self, ancestor):
+        success = False
+        if self.get_attribute('liftable'):
+            self.parent.set_pos(self.id,self.parent.get_abs_pos(ancestor))
+            success = True
+        return success
+
+    def activated(self, id):
+        """Callback for when entity is activated."""
+        return self.get_attribute('usable')
+
     def was_equipped(self, id, type):
         """Callback for when entity is being equipped to another entity."""
         success = False
