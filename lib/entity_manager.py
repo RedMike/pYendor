@@ -170,14 +170,23 @@ class EntityManager(object):
         if delay is not None:
             self.schedules[id] = sched.add_schedule((ent.update, (), delay))
 
-    def ent_equip(self, equip_node, equipment):
+    def ent_use(self, used, target):
+        """Used ent attempts to use target ent."""
+        used_ent = self.get_ent(used)
+        target_ent = self.get_ent(target)
+        ok = self.ent_equip(used, target)
+        if not ok:
+            self.ent_lift(used, target)
+
+    def ent_equip(self, equip, equipment):
         """Equipper attempts to equip equipment to equip_node."""
-        node = self.get_ent(equip_node)
+        node = self.get_ent(equip)
         victim = self.get_ent(equipment)
         interaction = self.DIRECT_INTERACTION
         node.equipped(victim, interaction)
-        success = victim.was_equipped(equip_node, interaction)
+        success = victim.was_equipped(equip, interaction)
         node.finished_equipping(equipment, success)
+        return success
 
     def ent_lift(self, lifter, liftee):
         """Lifter attempts to lift liftee."""
@@ -189,6 +198,7 @@ class EntityManager(object):
         ent.lifted(liftee, interaction)
         success = victim.was_lifted(lifter,interaction)
         ent.finished_lifting(liftee,success)
+        return success
 
     def move_ent_to_ent(self,id,id2):
         """Passes call to try to move an entity to another into relative coords."""
@@ -253,6 +263,7 @@ class EntityLookup:
         self.lookup['camera'] = entities.ethereal.Camera
         self.lookup['bodypart'] = entities.ethereal.Bodypart
         self.lookup['wound'] = entities.ethereal.Wound
+        self.lookup['container'] = entities.items.Container
         self.lookup['door'] = entities.traps.AutoDoor
         self.lookup['arrow_trap'] = entities.traps.ArrowTrap
         self.lookup['stone_trap'] = entities.traps.StoneTrap

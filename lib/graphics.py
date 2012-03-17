@@ -11,6 +11,9 @@ import data.libtcodpy as libtcod
 #       +-InputWindow
 #       |
 #       +-NodeWindow
+#          +
+#          |
+#          +-InventoryWindow
 
 
 def convert(color):
@@ -333,6 +336,22 @@ class Window(object):
         libtcod.console_set_background_color(self.con,bgcol)
         libtcod.console_set_foreground_color(self.con,fgcol)
         libtcod.console_clear(self.con)
+
+    def specific_h_line(self, x, y, w):
+        """Library-specific drawing of a horizontal line onto the console."""
+        bgcol = convert(self.bgcol)
+        fgcol = convert(self.fgcol)
+        libtcod.console_set_background_color(self.con, bgcol)
+        libtcod.console_set_foreground_color(self.con, fgcol)
+        libtcod.console_hline(self.con, x, y, w)
+
+    def specific_v_line(self, x, y, h):
+        """Library-specific drawing of a vertical line onto the console."""
+        bgcol = convert(self.bgcol)
+        fgcol = convert(self.fgcol)
+        libtcod.console_set_background_color(self.con, bgcol)
+        libtcod.console_set_foreground_color(self.con, fgcol)
+        libtcod.console_vline(self.con, x, y, h)
 
     def specific_frame(self, x, y, w, h):
         """Library-specific drawing of a frame onto the console."""
@@ -715,8 +734,16 @@ class NodeWindow(MessageWindow):
 
     def get_node_meta(self, id):
         if id not in self.node_list:
-            return  #TODO: error handling
+            return
         return self.node_meta[id]
+
+    def highlight_node_by_meta(self, meta):
+        for id in range(len(self.node_meta)):
+            node = self.node_meta[id]
+            if node[0] == meta:
+                self.activated_node = id
+                break
+
 
     def get_node_text(self, id):
         if id not in self.node_list:
@@ -725,7 +752,7 @@ class NodeWindow(MessageWindow):
 
     def rename_node(self, id, text):
         if id not in self.node_list:
-            return  #TODO: error handling.
+            return
         self.node_list[id] = text
 
     def get_children(self, id):
@@ -753,4 +780,18 @@ class NodeWindow(MessageWindow):
         self.restore_border()
         if self.highlight is not None:
             self.reverse_line(self.get_msg_y(self.highlight))
+
+class InventoryWindow(NodeWindow):
+
+    def __init__(self,w,h):
+        super(InventoryWindow,self).__init__(w,h)
+        self.activated_node = None
+
+    def update(self):
+        super(InventoryWindow,self).update()
+        self.specific_h_line(1, self.height-3, self.width-2)
+        msg = "Active: "
+        if self.activated_node:
+            msg += "<" + self.node_list[self.activated_node] + ">"
+        self.draw_messages([(3, self.height-2, msg)])
 

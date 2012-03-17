@@ -52,6 +52,7 @@ class Entity(object):
             if self.parent.is_instance(id, 'container'):
                 self.parent.set_parent(self.id, id)
                 return True
+        return False
 
     def lifted(self, id, type):
         """Callback for when entity picks up another entity."""

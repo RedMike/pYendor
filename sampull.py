@@ -53,7 +53,7 @@ app = base.Application("Sam Pull RL",WIDTH,HEIGHT)
 
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT-20,0,0)
 msg_win = app.add_window(0,graphics.MessageWindow,WIDTH,20,0,HEIGHT-20)
-inv_win = app.add_window(0,graphics.NodeWindow,30,HEIGHT-20,WIDTH-30,0)
+inv_win = app.add_window(0,graphics.InventoryWindow,30,HEIGHT-20,WIDTH-30,0)
 
 app.set_game_window(game_win)
 app.set_message_window(msg_win)

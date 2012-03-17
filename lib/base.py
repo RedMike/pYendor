@@ -148,24 +148,20 @@ class Application(object):
                 window.highlight += 1
         elif char == 'q':
             window.highlight = None
-            self.time_passing = 1
             self.default_bindings()
         elif char == 'r':
-            ent_id, usable = window.get_node_meta(window.highlight)
-            if usable:
-                self.player_drop(ent_id)
+            if window.activated_node:
+                window.activated_node = None
         elif char == 'e':
-            pl = self.get_player()
-            pl_ent = self.get_ent(pl)
-            ent_id, usable = window.get_node_meta(window.highlight)
-            if usable and pl_ent.can_lift():
-                self.entity_manager.ent_lift(pl_ent.nodes['r_hand'], ent_id)
-            elif not usable and self.get_ent_in(pl_ent.nodes['r_hand']):
-                for ent in self.get_ent_in(pl_ent.nodes['r_hand']):
-                    if self.get_ent(ent).get_attribute('usable'):
-                        self.entity_manager.ent_equip(ent_id, ent)
-                    else:
-                        self.entity_manager.ent_lift(ent_id, ent)
+            if not window.activated_node:
+                node = window.highlight
+                window.activated_node = node
+            else:
+                active, active_usable = window.get_node_meta(window.activated_node)
+                node, node_usable = window.get_node_meta(window.highlight)
+                self.entity_manager.ent_use(node, active)
+                self.update_inv_window()
+                window.highlight_node_by_meta(active)
         self.update_inv_window()
 
     def input_bindings(self, window):

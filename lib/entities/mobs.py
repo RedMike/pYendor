@@ -13,10 +13,9 @@ class Humanoid(entity.Mob):
         super(Humanoid,self).init()
         self.name = "humanoid"
         self.nodes = { }
-        self.bodyparts = ['head', 'neck', 'chest', 'back', 'l_hand', 'r_hand', 'l_leg', 'r_leg']
-        self.bodypart_names = ['head', 'neck', 'chest', 'back', 'left hand', 'right hand', 'left leg', 'right leg']
+        self.bodyparts = ['head', 'neck', 'chest', 'back', 'left hand', 'right hand', 'left leg', 'right leg']
         for id in range(len(self.bodyparts)):
-            self.add_node(self.bodyparts[id], self.bodypart_names[id])
+            self.add_node(self.bodyparts[id])
 
     def was_collided(self, id, type):
         if type == self.parent.ATTEMPTED_INTERACTION:
@@ -59,11 +58,11 @@ class Humanoid(entity.Mob):
     def get_nodes(self):
         return self.nodes
 
-    def add_node(self,id,name):
+    def add_node(self,name):
         ent_id = self.parent.add_entity('bodypart')
         self.parent.ent_equip(self.id, ent_id)
         self.parent.get_ent(ent_id).name = name
-        self.nodes[id] = ent_id
+        self.nodes[name] = ent_id
 
     def deal_damage(self, amount, target=None):
         if not target:
