@@ -69,6 +69,24 @@ class Application(object):
 
         self.time_passing = None
 
+    def change_color_scheme(self, bgcol, fgcol, game_wall_col, game_floor_col, game_fog_floor_col):
+        self.bgcol = bgcol
+        self.fgcol = fgcol
+        self.floor_col = game_floor_col
+        self.fog_floor_col = game_fog_floor_col
+        self.wall_col = game_wall_col
+        if self.game_win:
+            self.game_win.bgcol = self.wall_col
+            self.game_win.fgcol = self.fgcol
+            self.game_win.clear()
+        if self.inv_win:
+            self.inv_win.bgcol = self.bgcol
+            self.inv_win.fgcol = self.fgcol
+            self.inv_win.clear()
+        if self.msg_win:
+            self.msg_win.bgcol = self.bgcol
+            self.msg_win.fgcol = self.fgcol
+            self.msg_win.clear()
 
     def default_bindings(self):
         """Bind default game keys.
@@ -141,11 +159,13 @@ class Application(object):
             pl_ent = self.get_ent(pl)
             ent_id, usable = window.get_node_meta(window.highlight)
             if usable and pl_ent.can_lift():
-                self.set_ent_parent(ent_id, pl_ent.nodes['r_hand'])
+                self.entity_manager.ent_lift(pl_ent.nodes['r_hand'], ent_id)
             elif not usable and self.get_ent_in(pl_ent.nodes['r_hand']):
                 for ent in self.get_ent_in(pl_ent.nodes['r_hand']):
                     if self.get_ent(ent).get_attribute('usable'):
                         self.entity_manager.ent_equip(ent_id, ent)
+                    else:
+                        self.entity_manager.ent_lift(ent_id, ent)
         self.update_inv_window()
 
     def input_bindings(self, window):
@@ -304,7 +324,7 @@ class Application(object):
         In order to draw_tiles several windows or use a different updating algorithm, leave this as
         I{None} and roll your own updating algorithm following L{update_game_window}.
         """
-        self.game_win = w
+        self.game_win = self.win_man.get_window(w)
 
     def set_inventory_window(self,w):
         """Set inventory window to use by default.
@@ -312,7 +332,7 @@ class Application(object):
         In order to draw_tiles several windows or use a different updating algorithm, leave this as
         I{None} and roll your own updating algorithm following L{update_inv_window}.
         """
-        self.inv_win = w
+        self.inv_win = self.win_man.get_window(w)
 
     def set_message_window(self,w):
         """Set message window to use by default.
@@ -320,7 +340,7 @@ class Application(object):
         In order to draw_tiles several windows or use a different updating algorithm, leave this as
         I{None} and roll your own updating algorithm following L{add_messages}.
         """
-        self.msg_win = w
+        self.msg_win = self.win_man.get_window(w)
 
     def add_messages(self,msgs):
         """Post messages to current message window, takes a list of strings.
@@ -482,11 +502,9 @@ class Application(object):
             raise NoMapError
         tiles = map.get_rect(0,0,map.width,map.height)
         x, y = 0, 0
-        for i in range(len(tiles)):
-            for j in range(len(tiles[i])):
-                if not tiles[i][j][0]:
-                    x, y = i, j
-                    break
+        for id in self.entity_manager.get_ids():
+            if self.entity_manager.get_name(id) == "player_spawn":
+                x, y = self.entity_manager.get_abs_pos(id)
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         self.entity_manager.set_parent(cam, pid)

@@ -1,10 +1,13 @@
 #######
 ##k...#
-##....#
-.d....#
-##....#
+##...w#
+.d...p#
+##...a#
 ##k...#
 #######
 [META]
 d,door,0.1
 k,kobold,0.05
+w,sword,1.0
+a,breastplate,1.0
+p,player_spawn,1.0

@@ -12,6 +12,8 @@ class Wound(entity.Ethereal):
         self.damage = None
         self.worsen_chance = 20
         self.heal_chance = 20
+        self.low_threshold = 25
+        self.high_threshold = 50
         self.name = "Wound"
         self.listed = True
 
@@ -21,13 +23,13 @@ class Wound(entity.Ethereal):
 
     def update(self):
         if self.damage:
-            if 100 > self.damage > 50:    # TODO: Turn into global constant for ease of use.
+            if 100 > self.damage > self.high_threshold:
                 if random.randint(0,100) < self.worsen_chance:
                     self.set_damage(self.damage+1)
-            elif self.damage < 20:        # TODO: Turn into global constant for ease of use.
+            elif self.damage < self.low_threshold:
                 if random.randint(0,100) < self.heal_chance:
                     self.set_damage(self.damage-1)
-        if not self.damage:
+        if self.damage <= 0:
             self.parent.set_parent(self.id, self.parent.garbage_id)
 
 class Bodypart(entity.Ethereal):
@@ -50,6 +52,12 @@ class Bodypart(entity.Ethereal):
 class Camera(entity.Ethereal):
     """Simple camera class."""
 
-    def __init__(self, parent,id):
-        super(Camera,self).__init__(parent,id)
+    def init(self):
+        super(Camera,self).init()
         self.name = "camera"
+
+class PlayerSpawn(entity.Ethereal):
+
+    def init(self):
+        super(PlayerSpawn,self).init()
+        self.name = "player_spawn"

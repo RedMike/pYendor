@@ -39,15 +39,19 @@ class EntityManager(object):
         self.schedules = { }
         self.parent = parent
         self.scheduler = parent.scheduler
+
         self.cur_id = 0
         self.garbage_id = self.add_entity("ethereal")
         self.set_pos(self.garbage_id,(0, 0))
+
+    def is_instance(self, id, lookup):
+        return isinstance(self.get_ent(id), self.class_lookup.get_class(lookup))
 
     def post_message(self, msg):
         """Convenience method for entities to call to post messages to the message window."""
         self.parent.add_messages((msg,))
 
-    def add_entity(self, type, delay=1):
+    def add_entity(self, type, delay=10):
         """Adds a new entity of type to entity_list, and returns its ID."""
         id = self.cur_id
         self.adjust_cur_id()
@@ -180,7 +184,7 @@ class EntityManager(object):
         ent = self.get_ent(lifter)
         victim = self.get_ent(liftee)
         interaction = self.INDIRECT_INTERACTION
-        if self.get_pos(lifter) == self.get_pos(liftee):
+        if self.get_abs_pos(lifter) == self.get_abs_pos(liftee):
             interaction = self.DIRECT_INTERACTION
         ent.lifted(liftee, interaction)
         success = victim.was_lifted(lifter,interaction)
@@ -240,6 +244,7 @@ class EntityLookup:
 
     def __init__(self):
         self.lookup = dict()
+        self.lookup['player_spawn'] = entities.ethereal.PlayerSpawn
         self.lookup['item'] = entities.entity.Item
         self.lookup['mob'] = entities.entity.Mob
         self.lookup['humanoid'] = entities.mobs.Humanoid
@@ -255,6 +260,7 @@ class EntityLookup:
         self.lookup['boulder'] = entities.obstacle.Boulder
         self.lookup['glove'] = entities.items.Glove
         self.lookup['breastplate'] = entities.items.Breastplate
+        self.lookup['sword'] = entities.items.Sword
         self.lookup['backpack'] = entities.items.Backpack
 
 

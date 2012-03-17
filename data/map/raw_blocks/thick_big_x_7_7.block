@@ -1,10 +1,11 @@
 ##...##
 #k...k#
 ..k.k..
-..k.k..
+..kwk..
 ..k.k..
 #k...k#
 ##...##
 [META]
 d,door,0.1
 k,kobold,0.05
+w,sword,0.04

@@ -1,8 +1,3 @@
-#  Entity has:
-#    - attributes = anything from speed to stats to visibilities
-#
-# Entity DOES NOT care about its position.
-
 import random
 
 
@@ -34,7 +29,6 @@ class Entity(object):
     def set_meta_attribute(self,meta,val):
         setattr(self,meta,val)
 
-
     def was_equipped(self, id, type):
         """Callback for when entity is being equipped to another entity."""
         success = False
@@ -54,7 +48,10 @@ class Entity(object):
 
     def was_lifted(self, id, type):
         """Callback for when entity was picked up by another entity."""
-        return self.get_attribute('liftable')
+        if self.get_attribute('liftable'):
+            if self.parent.is_instance(id, 'container'):
+                self.parent.set_parent(self.id, id)
+                return True
 
     def lifted(self, id, type):
         """Callback for when entity picks up another entity."""
