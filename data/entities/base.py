@@ -1,6 +1,3 @@
-import random
-
-
 class Entity(object):
     """Base entity class.
 
@@ -10,12 +7,12 @@ class Entity(object):
     def __init__(self, parent, id):
         """Replace attributes, name and callbacks with ones needed after creation."""
         self.attributes = {
-                'fixed' : 0,
-                'blocking' : 0,
-                'visible' : 1,
-                'liftable' : 1,
-                'usable' : 1
-            }
+            'fixed' : 0,
+            'blocking' : 0,
+            'visible' : 1,
+            'liftable' : 1,
+            'usable' : 1
+        }
         self.id = id
         self.parent = parent
 
@@ -100,7 +97,7 @@ class Entity(object):
             return self.attributes[att]
         else:
             return None
-    
+
     def set_attribute(self,att,val):
         """Set an attribute to given value."""
         self.attributes[att] = val
@@ -131,91 +128,3 @@ class Entity(object):
 
     def update(self):
         pass
-
-
-class Mob(Entity):
-
-    def init(self):
-        super(Mob,self).init()
-        self.set_attributes('01100')
-        self.char = '@'
-        self.name = 'mob'
-        self.fgcol = (0,255,255)
-        self.dead = 0
-
-    def collided(self, id, type):
-        if type == self.parent.ATTEMPTED_INTERACTION:
-            ent = self.parent.get_ent(id)
-            if isinstance(ent, Mob):
-                hit = ent.deal_damage(10)
-
-    def was_collided(self, id, type):
-        return True
-
-    def deal_damage(self, amount):
-        # TODO: Add more return information than a boolean.
-        self.die()
-        return self.check_damage()
-
-    def check_damage(self):
-        if not self.dead:
-            return False
-        return True
-
-    def die(self):
-        """Verify if not already dead, and change into corpse of being."""
-        if not self.dead:
-            self.dead = 1
-            id = self.parent.add_entity("item")
-            self.parent.set_pos(id,self.parent.get_pos(self.id))
-            self.parent.get_ent(id).name = self.name + " corpse"
-            self.parent.set_parent(self.id,0)
-
-    def update(self):
-        if not self.check_damage():
-            dx, dy = random.randint(-1,1), random.randint(-1,1)
-            self.move(dx, dy)
-
-
-class Item(Entity):
-    """Base non-blocking, visible, liftable and usable entity for subclassing."""
-
-    def init(self):
-        super(Item,self).init()
-        self.set_attributes('00111')
-        self.char = '('
-        self.listed = True
-
-
-class Obstacle(Entity):
-    """Base blocking, visible, non-liftable, non-usable entity for subclassing."""
-
-    def init(self):
-        super(Obstacle,self).init()
-        self.set_attributes('01100')
-        self.char = 'O'
-
-
-class Trap(Entity):
-    """Base class for fixed, blocking, unliftable, unusable ents for subclass."""
-
-    def init(self):
-        super(Trap,self).init()
-        self.set_attributes('11100')
-
-
-class Ethereal(Entity):
-    """Class for entities like cameras, with which you don't interact ingame."""
-
-    def init(self):
-        super(Ethereal,self).init()
-        self.set_attributes('00000')
-
-
-class EntityError(Exception):
-    """Base class for entity errors."""
-    pass
-
-class IDNotAssignedError(EntityError):
-    """Raised when an entity was asked to give its ID, but it has none assigned."""
-    pass

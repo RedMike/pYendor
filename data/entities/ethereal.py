@@ -1,9 +1,14 @@
-import entity
-import mobs
-
 import random
+from data.entities import Entity
 
-class Wound(entity.Ethereal):
+class Ethereal(Entity):
+    """Class for entities like cameras, with which you don't interact ingame."""
+
+    def init(self):
+        super(Ethereal,self).init()
+        self.set_attributes('00000')
+
+class Wound(Ethereal):
     """Class for simulating injuries."""
 
     def init(self):
@@ -32,7 +37,7 @@ class Wound(entity.Ethereal):
         if self.damage <= 0:
             self.parent.set_parent(self.id, self.parent.garbage_id)
 
-class Bodypart(entity.Ethereal):
+class Bodypart(Ethereal):
     """Class for simulating bodyparts."""
 
     def init(self):
@@ -44,19 +49,19 @@ class Bodypart(entity.Ethereal):
     def was_equipped(self, id, type):
         """Callback for when entity is being equipped to another entity."""
         success = False
-        if isinstance(self.parent.get_ent(id), mobs.Player):
+        if self.parent.is_instance(id, "player"):
             self.parent.set_parent(self.id, id)
             success = True
         return success
 
-class Camera(entity.Ethereal):
+class Camera(Ethereal):
     """Simple camera class."""
 
     def init(self):
         super(Camera,self).init()
         self.name = "camera"
 
-class PlayerSpawn(entity.Ethereal):
+class PlayerSpawn(Ethereal):
 
     def init(self):
         super(PlayerSpawn,self).init()

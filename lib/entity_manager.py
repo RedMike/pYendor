@@ -1,19 +1,4 @@
-import entities.entity
-import entities.traps
-import entities.mobs
-import entities.ethereal
-import entities.obstacle
-import entities.items
-
-# Entities are kept in a dictionary as an id.
-# This allows for fast checking for entities in tiles, and raises
-# only a slight problem in keeping them in sync. Picking a class for
-# add_entity is done via the entity manager transparently. Send a string
-# like 'item'. ID lookup is in entity_list. Scheduling IDs are in entity_schedules.
-# If the value in entity_pos is a single int, it is an ID and the entity is CONTAINED
-# by that other entity. If you call get_ent_pos, it will return the position of the
-# container, recursing up to the top-level entity. Call get_ent_contain returns the ID
-# of the containing entity, or None if not contained.
+from data.entities import Lookup
 
 class EntityManager(object):
     """Manager class for Entities.
@@ -32,7 +17,7 @@ class EntityManager(object):
     INDIRECT_INTERACTION = 2
 
     def __init__(self,parent):
-        self.class_lookup = EntityLookup()
+        self.class_lookup = Lookup()
         self.lookup = { }
         self.positions = { }
         self.parents = { }
@@ -259,40 +244,7 @@ class EntityManager(object):
     def adjust_cur_id(self):
         self.cur_id += 1  # TODO: Make it so it fills back gaps in IDs by destroyed ents.
 
-class EntityLookup:
-    """Simple entity lookup class.
 
-    Subclass and replace initialisation with own classes as needed.
-    Actual entity management is done in EntityManager.
-    """
-
-    def __init__(self):
-        self.lookup = dict()
-        self.lookup['player_spawn'] = entities.ethereal.PlayerSpawn
-        self.lookup['item'] = entities.entity.Item
-        self.lookup['mob'] = entities.entity.Mob
-        self.lookup['humanoid'] = entities.mobs.Humanoid
-        self.lookup['kobold'] = entities.entity.Mob
-        self.lookup['player'] = entities.mobs.Player
-        self.lookup['ethereal'] = entities.entity.Ethereal
-        self.lookup['camera'] = entities.ethereal.Camera
-        self.lookup['bodypart'] = entities.ethereal.Bodypart
-        self.lookup['wound'] = entities.ethereal.Wound
-        self.lookup['container'] = entities.items.Container
-        self.lookup['door'] = entities.traps.AutoDoor
-        self.lookup['arrow_trap'] = entities.traps.ArrowTrap
-        self.lookup['stone_trap'] = entities.traps.StoneTrap
-        self.lookup['obstacle'] = entities.entity.Obstacle
-        self.lookup['boulder'] = entities.obstacle.Boulder
-        self.lookup['glove'] = entities.items.Glove
-        self.lookup['breastplate'] = entities.items.Breastplate
-        self.lookup['sword'] = entities.items.Sword
-        self.lookup['backpack'] = entities.items.Backpack
-
-
-    def get_class(self,str):
-        """Returns a class as associated by lookup."""
-        return self.lookup.get(str.lower(), entities.entity.Entity)
 
 
 class IDNotFound(Exception):

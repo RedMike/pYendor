@@ -1,6 +1,16 @@
-import entity
+from data.entities import Entity
 
-class EquippableItem(entity.Item):
+class Item(Entity):
+    """Base non-blocking, visible, liftable and usable entity for subclassing."""
+
+    def init(self):
+        super(Item,self).init()
+        self.set_attributes('00111')
+        self.char = '('
+        self.listed = True
+
+
+class EquippableItem(Item):
 
     def init(self):
         super(EquippableItem,self).init()
@@ -52,7 +62,7 @@ class Sword(Weapon):
         self.name = "sword"
         self.char = "/"
 
-class NonEquippableItem(entity.Item):
+class NonEquippableItem(Item):
 
     def init(self):
         super(NonEquippableItem,self).init()
