@@ -26,70 +26,73 @@ class Entity(object):
     def set_meta_attribute(self,meta,val):
         setattr(self,meta,val)
 
-    def finished_dropping(self, id, success_value):
+
+    def drop(self, id):
         pass
 
-    def was_dropped(self, ancestor):
+    def was_dropped(self, id):
         success = False
         if self.get_attribute('liftable'):
-            self.parent.set_pos(self.id,self.parent.get_abs_pos(ancestor))
             success = True
         return success
+
+    def finished_dropping(self, id, success_value):
+        if success_value:
+            self.parent.set_pos(id,self.id)
+
 
     def activated(self, id):
         """Callback for when entity is activated."""
         return self.get_attribute('usable')
 
-    def was_equipped(self, id, type):
+
+    def equip(self, id):
+        """Callback for when entity is attaching another entity to itself."""
+        pass
+
+    def was_equipped(self, id):
         """Callback for when entity is being equipped to another entity."""
         success = False
         if self.acceptable_nodes:
             if self.parent.get_name(id) in self.acceptable_nodes:
-                self.parent.set_parent(self.id, id)
                 success = True
         return success
 
-    def equipped(self, id, type):
-        """Callback for when entity is attaching another entity to itself."""
-        pass
-
-    def finished_equipping(self, id, success_value, metadata=None):
+    def finished_equipping(self, id, success_value):
         """Callback for when the entity has finished trying to attach an entity to itself."""
-        pass
+        if success_value:
+            self.parent.set_parent(id, self.id)
 
-    def was_lifted(self, id, type):
-        """Callback for when entity was picked up by another entity."""
-        if self.get_attribute('liftable'):
-            if self.parent.is_instance(id, 'container'):
-                self.parent.set_parent(self.id, id)
-                return True
-        return False
 
-    def lifted(self, id, type):
+    def lift(self, id):
         """Callback for when entity picks up another entity."""
         pass
 
-    def finished_lifting(self, id, success_value, metadata=None):
-        """Callback for when the entity has finished trying to pick up another entity."""
-        pass
+    def was_lifted(self, id):
+        """Callback for when entity was picked up by another entity."""
+        success = False
+        if self.get_attribute('liftable'):
+            if self.parent.is_instance(id, 'container'):
+                success = True
+        return success
 
-    def collided(self, id, type):
+    def finished_lifting(self, id, success_value):
+        """Callback for when the entity has finished trying to pick up another entity."""
+        if success_value:
+            self.parent.set_parent(id, self.id)
+
+
+    def collide(self, id):
         """Callback for when entity moves I{into} another entity."""
         pass
 
-    def was_collided(self, id, type):
+    def was_collided(self, id):
         """Callback for when another entity moves into this entity, returns True for success."""
-        return False
+        return True
 
-    def finished_colliding(self, id, success_value, metadata=None):
+    def finished_colliding(self, id, success_value):
         """Callback for when the entity has finished trying to move I{into} another entity."""
         pass
-
-    def get_id(self):
-        """Return entity ID, or raise IDNotAssigned."""
-        if self.id is not None:
-            return self.id
-        raise IDNotAssignedError
 
     def get_attribute(self, att):
         """Return wanted attribute, or None."""

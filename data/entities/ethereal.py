@@ -46,11 +46,10 @@ class Bodypart(Ethereal):
         self.listed = True
         self.acceptable_nodes = None
 
-    def was_equipped(self, id, type):
+    def was_equipped(self, id):
         """Callback for when entity is being equipped to another entity."""
-        success = False
+        success = super(Bodypart,self).was_equipped(id)
         if self.parent.is_instance(id, "player"):
-            self.parent.set_parent(self.id, id)
             success = True
         return success
 
@@ -60,6 +59,7 @@ class Camera(Ethereal):
     def init(self):
         super(Camera,self).init()
         self.name = "camera"
+
 
 class PlayerSpawn(Ethereal):
 

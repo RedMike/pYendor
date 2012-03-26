@@ -3,7 +3,7 @@ from data.entities import Lookup
 class EntityManager(object):
     """Manager class for Entities.
 
-    Contains class_lookup for string<->class associations.
+    Contains class_lookup for string <-> class associations/instance type checking.
     lookup contains the ID <-> object referencing.
     positions contains the position of the entity, or None.
     parents contains the ID of the containing entity, or None.
@@ -11,10 +11,6 @@ class EntityManager(object):
     cur_id is the current free ID to be assigned.
     Entity ID #0 is 'garbage collection' of entities. Parent to this to remove next tick.
     """
-
-    DIRECT_INTERACTION = 0
-    ATTEMPTED_INTERACTION = 1
-    INDIRECT_INTERACTION = 2
 
     def __init__(self,parent):
         self.class_lookup = Lookup()
@@ -155,77 +151,75 @@ class EntityManager(object):
         if delay is not None:
             self.schedules[id] = sched.add_schedule((ent.update, (), delay))
 
-    def ent_use(self, used, target):
-        """Used ent attempts to use target ent."""
-        used_ent = self.get_ent(used)
-        target_ent = self.get_ent(target)
-        if used_ent != target_ent:
-            ok = self.ent_equip(used, target)
-            if not ok:
-                self.ent_lift(used, target)
-        else:
-            self.ent_activate(used)
+
+    def ent_lift(self, ent1, ent2):
+        """Lifter ent1 attempts to lift liftee ent2."""
+        ent = self.get_ent(ent1)
+        victim = self.get_ent(ent2)
+        ent.lift(ent2)
+        success = victim.was_lifted(ent1)
+        ent.finished_lifting(ent2,success)
+        return success
+
+    def ent_equip(self, ent1, ent2):
+        """Equipper ent1 attempts to equip equipment to ent2."""
+        ent = self.get_ent(ent1)
+        victim = self.get_ent(ent2)
+        ent.equip(ent2)
+        success = victim.was_equipped(ent1)
+        ent.finished_equipping(ent2, success)
+        return success
+
+    def ent_collide(self, ent1, ent2):
+        """Collider ent1 attempts to move onto tile of ent2."""
+        ent = self.get_ent(ent1)
+        victim = self.get_ent(ent2)
+        ent.collide(ent2)
+        success = victim.was_collided(ent1)
+        ent.finished_colliding(ent2, success)
+        return success
 
     def ent_activate(self, id):
         ent = self.get_ent(id)
-        interaction = self.DIRECT_INTERACTION
-        return ent.activated(interaction)
-
-    def ent_equip(self, equip, equipment):
-        """Equipper attempts to equip equipment to equip_node."""
-        node = self.get_ent(equip)
-        victim = self.get_ent(equipment)
-        interaction = self.DIRECT_INTERACTION
-        node.equipped(victim, interaction)
-        success = victim.was_equipped(equip, interaction)
-        node.finished_equipping(equipment, success)
-        return success
-
-    def ent_lift(self, lifter, liftee):
-        """Lifter attempts to lift liftee."""
-        ent = self.get_ent(lifter)
-        victim = self.get_ent(liftee)
-        interaction = self.INDIRECT_INTERACTION
-        if self.get_abs_pos(lifter) == self.get_abs_pos(liftee):
-            interaction = self.DIRECT_INTERACTION
-        ent.lifted(liftee, interaction)
-        success = victim.was_lifted(lifter,interaction)
-        ent.finished_lifting(liftee,success)
-        return success
+        return ent.activated()
 
     def ent_drop(self, ent_id):
         ent = self.get_ent(ent_id)
         ancestor = self.get_ancestor(ent_id)
+        ancestor.drop(ent_id)
         success = ent.was_dropped(ancestor)
         self.get_ent(ancestor).finished_dropping(ent_id, success)
+
+    def ent_use(self, ent1, ent2):
+        """Used ent1 attempts to use target ent2."""
+        ent = self.get_ent(ent1)
+        victim = self.get_ent(ent2)
+        if ent != victim:
+            ok = self.ent_equip(ent1, ent2)
+            if not ok:
+                self.ent_lift(ent1, ent2)
+        else:
+            self.ent_activate(ent1)
+
+    def move_ent(self,id,x,y):
+        """Tries to move an entity in a relative direction, with collision checking and interaction."""
+        pos = self.get_pos(id) or (0,0)
+        pos = (pos[0] + x, pos[1] + y)
+        can_move = True
+        #check for interactions to raise
+        if self.get_at(pos[0],pos[1]):
+            for victim_id in self.get_at(pos[0],pos[1]):
+                if id is not victim_id:
+                    can_move = self.ent_collide(id, victim_id)
+        #check for collisions
+        if self.parent.collision_check(id,x,y) and can_move:
+            self.set_pos(id,pos)
 
     def move_ent_to_ent(self,id,id2):
         """Passes call to try to move an entity to another into relative coords."""
         x, y = self.get_pos(id2) or (0,0)
         ex, ey = self.get_pos(id) or (0,0)
         self.move_ent(id, x-ex, y-ey)
-
-    def move_ent(self,id,x,y):
-        """Tries to move an entity in a relative direction, with collision checking and interaction."""
-        pos = self.get_pos(id) or (0,0)
-        pos = (pos[0] + x, pos[1] + y)
-        has_moved = False
-        #check for collisions
-        if self.parent.collision_check(id,x,y):
-            has_moved = True
-            self.set_pos(id,pos)
-
-        #check for interactions to raise
-        if has_moved:
-            interaction = self.DIRECT_INTERACTION
-        else:
-            interaction = self.ATTEMPTED_INTERACTION
-        if self.get_at(pos[0],pos[1]):
-            for victim_id in self.get_at(pos[0],pos[1]):
-                if id is not victim_id:
-                    self.get_ent(id).collided(victim_id, interaction)
-                    success = self.get_ent(victim_id).was_collided(id, interaction)
-                    self.get_ent(id).finished_colliding(victim_id, success)
 
     def set_pos(self, id, pos):
         """Sets the entity's position to the given tuple, unsetting parent."""

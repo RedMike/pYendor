@@ -12,16 +12,15 @@ class Mob(Entity):
         self.fgcol = (0,255,255)
         self.dead = 0
 
-    def collided(self, id, type):
-        if type == self.parent.ATTEMPTED_INTERACTION:
-            ent = self.parent.get_ent(id)
-            if isinstance(ent, Mob):
-                hit = ent.deal_damage(10)
+    def collide(self, id):
+        ent = self.parent.get_ent(id)
+        if self.parent.is_instance(id, "mob"):
+            hit = ent.deal_damage(10)
 
-    def was_collided(self, id, type):
-        return True
+    def was_collided(self, id):
+        return False
 
-    def deal_damage(self, amount):
+    def deal_damage(self, amount, target=None):
         # TODO: Add more return information than a boolean.
         self.die()
         return self.check_damage()
@@ -47,9 +46,6 @@ class Mob(Entity):
 
 class Humanoid(Mob):
 
-    def __init__(self,parent,id):
-        super(Humanoid,self).__init__(parent,id)
-
     def init(self):
         super(Humanoid,self).init()
         self.name = "humanoid"
@@ -58,19 +54,20 @@ class Humanoid(Mob):
         for id in range(len(self.bodyparts)):
             self.add_node(self.bodyparts[id])
 
-    def was_collided(self, id, type):
-        if type == self.parent.ATTEMPTED_INTERACTION:
-            ent = self.parent.get_ent(id)
-            if isinstance(ent, entity.Mob):
-                return self.check_damage()
+    def was_collided(self, id):
+        success = super(Humanoid,self).was_collided(id)
+        ent = self.parent.get_ent(id)
+        if self.parent.is_instance(id, "mob"):
+            success = self.check_damage()
+        return success
 
     def get_injury(self,node):
         node = self.get_node(node)
         ents = self.parent.get_in(node)
         if ents:
             for id in self.parent.get_in(node):
-                ent = self.parent.get_ent(id)
-                if isinstance(ent, ethereal.Wound):
+                if self.parent.is_instance(id, "wound"):
+                    ent = self.parent.get_ent(id)
                     return ent
         return None
 
@@ -80,8 +77,8 @@ class Humanoid(Mob):
         ents = self.parent.get_in(node)
         if ents:
             for id in self.parent.get_in(node):
-                ent = self.parent.get_ent(id)
                 if self.parent.is_instance(id, "wound"):
+                    ent = self.parent.get_ent(id)
                     total += ent.damage
         return total
 
@@ -130,9 +127,6 @@ class Humanoid(Mob):
 class Player(Humanoid):
     """Simple player class."""
 
-    def __init__(self,parent,id):
-        super(Player,self).__init__(parent,id)
-
     def init(self):
         super(Player,self).init()
         self.char = '@'
@@ -162,28 +156,40 @@ class Player(Humanoid):
         return True
 
     def finished_dropping(self, id, success_value):
+        super(Player,self).finished_dropping(id, success_value)
         if success_value:
             if self.inventory == id:
                 self.inventory = self.nodes['right hand']
             self.parent.post_message("You drop the "+self.parent.get_name(id)+".")
 
-    def finished_lifting(self, id, success_value, metadata=None):
-        super(Player,self).finished_lifting(id, type)
-        ent = self.parent.get_ent(id)
+    def finished_lifting(self, id, success_value):
+        super(Player,self).finished_lifting(id, success_value)
         if self.parent.is_instance(id, "item"):
+            #ent = self.parent.get_ent(id)
             if self.can_lift():
                 self.add_pickup(id)
 
-    def collided(self, id, type):
-        super(Player,self).collided(id, type)
-        ent = self.parent.get_ent(id)
-        if type == self.parent.ATTEMPTED_INTERACTION:
-            if isinstance(ent, entity.Mob):
-                self.parent.post_message("You slice at the "+self.parent.get_name(id)+'.')
+    def collide(self, id):
+        super(Player,self).collide(id)
+        if self.parent.is_instance(id, "mob"):
+            ent = self.parent.get_ent(id)
+            self.parent.post_message("You slice at the "+self.parent.get_name(id)+'.')
 
-    def finished_colliding(self, id, success_value, metadata=None):
-        super(Player,self).finished_colliding(id, success_value, metadata)
-        ent = self.parent.get_ent(id)
+    def finished_colliding(self, id, success_value):
+        super(Player,self).finished_colliding(id, success_value)
+        if success_value:
+            if self.parent.is_instance(id, "level_end"):
+                pass
+                #to add level end code here
+            elif self.parent.is_instance(id, "game_end"):
+                pass
+                #to add game end code here
+            elif self.parent.is_instance(id, "mob"):
+                self.parent.post_message("You kill the "+self.parent.get_name(id)+".")
+                #to add enemy kill code here (xp?)
+        else:
+            if self.parent.is_instance(id, "door"):
+                self.parent.post_message("You open the "+self.parent.get_name(id)+".")
 
     def die(self):
         if not self.dead:

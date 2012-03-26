@@ -1,5 +1,5 @@
 from base import Entity
-import ethereal, entity, mobs, items, traps, obstacle
+import ethereal, mobs, items, traps, obstacle
 
 
 class Lookup:
@@ -13,17 +13,17 @@ class Lookup:
         self.lookup = dict()
         self.lookup['player_spawn'] = ethereal.PlayerSpawn
         self.lookup['camera'] = ethereal.Camera
-        self.lookup['item'] = entity.Item
-        self.lookup['mob'] = entity.Mob
+        self.lookup['item'] = items.Item
+        self.lookup['mob'] = mobs.Mob
         self.lookup['humanoid'] = mobs.Humanoid
-        self.lookup['kobold'] = entity.Mob
+        self.lookup['kobold'] = mobs.Mob
         self.lookup['player'] = mobs.Player
-        self.lookup['ethereal'] = entity.Ethereal
+        self.lookup['ethereal'] = ethereal.Ethereal
         self.lookup['bodypart'] = ethereal.Bodypart
         self.lookup['wound'] = ethereal.Wound
         self.lookup['container'] = items.Container
         self.lookup['door'] = traps.Door
-        self.lookup['obstacle'] = entity.Obstacle
+        self.lookup['obstacle'] = obstacle.Obstacle
         self.lookup['boulder'] = obstacle.Boulder
         self.lookup['glove'] = items.Glove
         self.lookup['breastplate'] = items.Breastplate
@@ -33,4 +33,4 @@ class Lookup:
 
     def get_class(self,str):
         """Returns a class as associated by lookup."""
-        return self.lookup.get(str.lower(), entity.Entity)
+        return self.lookup.get(str.lower(), Entity)

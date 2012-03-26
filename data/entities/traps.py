@@ -20,13 +20,12 @@ class Door(Trap):
         self.name = "door"
         self.fgcol = (255, 150, 0)
 
-    def was_collided(self,id,type):
-        if type == self.parent.ATTEMPTED_INTERACTION:
-            ent = self.parent.get_ent(id)
-            if self.parent.is_instance(id,"mob") and not self.opened:
-                self.open()
-                return True
-        return False
+    def was_collided(self,id):
+        success = True
+        if self.parent.is_instance(id,"mob") and not self.opened:
+            self.open()
+            success = False
+        return success
 
     def open(self):
         if not self.opened:

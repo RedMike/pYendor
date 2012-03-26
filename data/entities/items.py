@@ -85,3 +85,4 @@ class Backpack(Container):
         self.parent.post_message("You dump the contents of the backpack onto the floor.")
         for id in self.parent.get_in(self.id):
             self.parent.ent_drop(id)
+        return True
