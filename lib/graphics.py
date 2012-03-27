@@ -1,3 +1,4 @@
+import struct
 import data.libtcodpy as libtcod
 
 #    Window
@@ -27,6 +28,8 @@ def convert(color):
     @return: Converted library-specific color.
     """
     if not isinstance(color,libtcod.Color):
+        if isinstance(color, str):
+            color = tuple(struct.unpack('BBB', color.decode('hex')))
         color = libtcod.Color(*color)
     return color
 

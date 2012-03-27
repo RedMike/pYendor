@@ -34,8 +34,6 @@ def debug(fct):
     if switches:
         print zip(switches, choices)
         app.remove_menu()
-    else:
-        print 'tick'
 
 class CustomApp(base.Application):
 
@@ -50,20 +48,18 @@ class CustomApp(base.Application):
 WIDTH, HEIGHT = 80, 50
 MAP_WIDTH, MAP_HEIGHT = 100, 100
 
-def convert(html):
-    ret = struct.unpack('BBB', html.decode('hex'))
-    return ret
+COLBG = "2C515D"
+COLFG = "F2EFEC"
 
-COLBG = convert("2C515D")
-COLFG = convert("F2EFEC")
+COLGBG = "C88E7C"
+COLGBD = "E8DDB3"
 
-COLGBG = convert("C88E7C")
-COLGBD = convert("E8DDB3")
+COLGFLOOR = "957C74"
+COLGFOGFLOOR = "ACA7A6"
+COLGWALL = "E6E2DA"
+COLGWALL2 = "333230"
 
-COLGFLOOR = convert("957C74")
-COLGFOGFLOOR = convert("ACA7A6")
-COLGWALL = convert("E6E2DA")
-COLGWALL2 = convert("333230")
+
 app = CustomApp("Sam Pull RL",WIDTH,HEIGHT)
 
 game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT-20,0,0)
