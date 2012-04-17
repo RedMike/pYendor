@@ -16,6 +16,21 @@ class Entity(object):
         self.id = id
         self.parent = parent
 
+    def __len__(self):
+        ents = self.parent.get_in(self.id)
+        return len(ents)
+
+    def __iter__(self):
+        ents = self.parent.get_in(self.id)
+        if ents:
+            return ents.__iter__()
+        else:
+            return ().__iter__()
+
+    def __contains__(self, item):
+        ents = self.parent.get_in(self.id)
+        return item in ents
+
     def init(self):
         self.name = "generic"
         self.char = '?'
