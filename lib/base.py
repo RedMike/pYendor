@@ -646,11 +646,9 @@ class Application(object):
             # check if we're blocking or not
             if self.entity_manager.get_attribute(id,'blocking'):
                 # we are, let's check for entities on that spot, if they're blocking
-                ents = self.get_ent_at(x + ex, y + ey)
-                if ents is not None:
-                    for ent in ents:
-                        if self.entity_manager.get_attribute(ent,'blocking'):
-                            can_move = False
+                for ent in self.entity_manager[(x+ex, y+ey)]:
+                    if self.entity_manager.get_attribute(ent,'blocking'):
+                        can_move = False
             return can_move
         else:
             return False
@@ -662,8 +660,7 @@ class Application(object):
         """
         pl = self.player
         x, y = self.get_ent_pos(pl)
-        ents = self.get_ent_at(x, y)
-        for id in ents: # TODO: pickup menu
+        for id in self.entity_manager[(x,y)]: # TODO: pickup menu
             if id is not pl:
                 self.entity_manager.ent_lift(pl,id)
 
@@ -672,17 +669,15 @@ class Application(object):
         if not names: names = {}
         if not parents: parents = {}
         if not meta: meta = {}
-        ents = self.get_ent_in(id)
-        if ents is not None:
-            for child in ents:
-                child_ent = self.entity_manager[child]
-                if child_ent.listed:
-                    orig_id = cur_id
-                    names[cur_id] = child_ent.name
-                    parents[cur_id] = parent_id
-                    meta[cur_id] = (child,child_ent.get_attribute('usable'))
-                    cur_id += 1
-                    parents, names, meta, cur_id = self._inv_window_recurse(child,parents,names,meta,cur_id,orig_id)
+        for child in self.entity_manager[id]:
+            child_ent = self.entity_manager[child]
+            if child_ent.listed:
+                orig_id = cur_id
+                names[cur_id] = child_ent.name
+                parents[cur_id] = parent_id
+                meta[cur_id] = (child,child_ent.get_attribute('usable'))
+                cur_id += 1
+                parents, names, meta, cur_id = self._inv_window_recurse(child,parents,names,meta,cur_id,orig_id)
         return parents, names, meta, cur_id
 
     def update_inv_window(self):

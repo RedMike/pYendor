@@ -29,7 +29,12 @@ class EntityManager(object):
         return len(self.lookup)
 
     def __getitem__(self, item):
-        return self.lookup[item]
+        if isinstance(item, int):
+            return self.lookup[item]
+        elif isinstance(item, tuple) and len(item) == 2:
+            return self.get_at(*item)
+        else:
+            raise NotImplemented
 
     def __iter__(self):
         return self.lookup.iterkeys()
@@ -57,36 +62,34 @@ class EntityManager(object):
         return id
 
     def get_at(self,x,y):
-        """Returns list of ids of entities at a position or None."""
+        """Returns list of ids of entities at a position or an empty tuple."""
         if (x,y) in self.positions.itervalues():
             ret = [ ]
             for id in self.positions:
                 if self.positions[id] == (x,y):
                     ret.append(id)
             return ret
-        return None
+        return ()
 
     def get_in(self,ent):
-        """Returns list of ids of entities contained directly by ent or None."""
+        """Returns list of ids of entities contained directly by ent or an empty tuple."""
         if ent in self.parents.itervalues():
             ret = [ ]
             for id in self.parents:
                 if self.parents[id] == ent:
                     ret.append(id)
             return ret
-        return None
+        return ()
 
     def get_pos(self,id):
         """Returns (x,y) of entity if not contained, or None."""
-        ent = self[id]
-        if ent is None:
+        if id not in self:
             raise IDNotFound
         return self.positions[id]
 
     def get_abs_pos(self,id):
         """Returns (x,y) of entity; Recurses up container entities to return real position."""
-        ent = self[id]
-        if ent is None:
+        if id not in self:
             raise IDNotFound
         cur_id = id
         pos = None
@@ -206,10 +209,9 @@ class EntityManager(object):
         pos = (pos[0] + x, pos[1] + y)
         can_move = True
         #check for interactions to raise
-        if self.get_at(pos[0],pos[1]):
-            for victim_id in self.get_at(pos[0],pos[1]):
-                if id is not victim_id:
-                    can_move = self.ent_collide(id, victim_id)
+        for victim_id in self[(pos[0],pos[1])]:
+            if id is not victim_id:
+                can_move = self.ent_collide(id, victim_id)
         #check for collisions
         if self.parent.collision_check(id,x,y) and can_move:
             self.set_pos(id,pos)
