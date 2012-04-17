@@ -25,8 +25,20 @@ class EntityManager(object):
         self.garbage_id = self.add_entity("ethereal")
         self.set_pos(self.garbage_id,(0, 0))
 
+    def __len__(self):
+        return len(self.lookup)
+
+    def __getitem__(self, item):
+        return self.lookup[item]
+
+    def __iter__(self):
+        return self.lookup.iterkeys()
+
+    def __contains__(self, item):
+        return item in self.lookup
+
     def is_instance(self, id, lookup):
-        return isinstance(self.get_ent(id), self.class_lookup.get_class(lookup))
+        return isinstance(self[id], self.class_lookup.get_class(lookup))
 
     def post_message(self, msg):
         """Convenience method for entities to call to post messages to the message window."""
@@ -43,14 +55,6 @@ class EntityManager(object):
         if delay is not None:
             self.schedule(self.scheduler, id)
         return id
-
-    def get_ids(self):
-        """Returns an iterator over the ids of entities."""
-        return self.lookup.iterkeys()
-
-    def get_ent(self,id):
-        """Returns entity of id or None."""
-        return self.lookup.get(id,None)
 
     def get_at(self,x,y):
         """Returns list of ids of entities at a position or None."""
@@ -74,14 +78,14 @@ class EntityManager(object):
 
     def get_pos(self,id):
         """Returns (x,y) of entity if not contained, or None."""
-        ent = self.get_ent(id)
+        ent = self[id]
         if ent is None:
             raise IDNotFound
         return self.positions[id]
 
     def get_abs_pos(self,id):
         """Returns (x,y) of entity; Recurses up container entities to return real position."""
-        ent = self.get_ent(id)
+        ent = self[id]
         if ent is None:
             raise IDNotFound
         cur_id = id
@@ -93,13 +97,13 @@ class EntityManager(object):
 
     def get_parent(self,id):
         """Returns ID of directly containing entity or None."""
-        if self.get_ent(id) is None:
+        if id not in self:
             raise IDNotFound
         return self.parents[id]
 
     def get_ancestor(self,id):
         """Returns ID of top containing entity or None."""
-        if self.get_ent(id) is None:
+        if id not in self:
             raise IDNotFound
         if self.parents[id] is None:
             return id
@@ -107,24 +111,21 @@ class EntityManager(object):
 
     def set_attribute(self, id, att, val):
         """Sets the entity's attribute to the given value."""
-        ent = self.get_ent(id)
-        if ent is None:
+        if id not in self:
             raise IDNotFound
-        ent.set_attribute(att, val)
+        self[id].set_attribute(att, val)
 
     def get_attribute(self, id, att):
         """Returns the entity's attribute or None."""
-        ent = self.get_ent(id)
-        if ent is None:
+        if id not in self:
             raise IDNotFound
-        return ent.get_attribute(att)
+        return self[id].get_attribute(att)
 
     def get_name(self, id):
         """Returns the entity's name."""
-        ent = self.get_ent(id)
-        if ent is None:
+        if id not in self:
             raise IDNotFound
-        return ent.get_name()
+        return self[id].get_name()
 
     def set_sched(self, ent, sched):
         """Cancels the current schedule for an entity and sets a new id as its main."""
@@ -144,18 +145,17 @@ class EntityManager(object):
         if id in self.schedules:
             if self.schedules[id] is not None:
                 sched.cancel_schedule(self.schedules[id])
-        ent = self.get_ent(id)
-        if ent is None:
+        if id not in self:
             raise IDNotFound
-        delay = ent.get_attribute('delay')
+        delay = self[id].get_attribute('delay')
         if delay is not None:
-            self.schedules[id] = sched.add_schedule((ent.update, (), delay))
+            self.schedules[id] = sched.add_schedule((self[id].update, (), delay))
 
 
     def ent_lift(self, ent1, ent2):
         """Lifter ent1 attempts to lift liftee ent2."""
-        ent = self.get_ent(ent1)
-        victim = self.get_ent(ent2)
+        ent = self[ent1]
+        victim = self[ent2]
         ent.lift(ent2)
         success = victim.was_lifted(ent1)
         ent.finished_lifting(ent2,success)
@@ -163,8 +163,8 @@ class EntityManager(object):
 
     def ent_equip(self, ent1, ent2):
         """Equipper ent1 attempts to equip equipment to ent2."""
-        ent = self.get_ent(ent1)
-        victim = self.get_ent(ent2)
+        ent = self[ent1]
+        victim = self[ent2]
         ent.equip(ent2)
         success = victim.was_equipped(ent1)
         ent.finished_equipping(ent2, success)
@@ -172,28 +172,27 @@ class EntityManager(object):
 
     def ent_collide(self, ent1, ent2):
         """Collider ent1 attempts to move onto tile of ent2."""
-        ent = self.get_ent(ent1)
-        victim = self.get_ent(ent2)
+        ent = self[ent1]
+        victim = self[ent2]
         ent.collide(ent2)
         success = victim.was_collided(ent1)
         ent.finished_colliding(ent2, success)
         return success
 
     def ent_activate(self, id):
-        ent = self.get_ent(id)
-        return ent.activated()
+        return self[id].activated()
 
     def ent_drop(self, ent_id):
-        ent = self.get_ent(ent_id)
+        ent = self[ent_id]
         ancestor = self.get_ancestor(ent_id)
         ancestor.drop(ent_id)
         success = ent.was_dropped(ancestor)
-        self.get_ent(ancestor).finished_dropping(ent_id, success)
+        self[ancestor].finished_dropping(ent_id, success)
 
     def ent_use(self, ent1, ent2):
         """Used ent1 attempts to use target ent2."""
-        ent = self.get_ent(ent1)
-        victim = self.get_ent(ent2)
+        ent = self[ent1]
+        victim = self[ent2]
         if ent != victim:
             ok = self.ent_equip(ent1, ent2)
             if not ok:
@@ -223,14 +222,14 @@ class EntityManager(object):
 
     def set_pos(self, id, pos):
         """Sets the entity's position to the given tuple, unsetting parent."""
-        if self.get_ent(id) is None:
+        if id not in self:
             raise IDNotFound
         self.positions[id] = pos
         self.parents[id] = None
 
     def set_parent(self, id, parent_id):
         """Sets the entity's containing entity to the given ID, unsetting its position."""
-        if self.get_ent(id) is None or self.get_ent(parent_id) is None:
+        if id not in self and parent_id not in self:
             raise IDNotFound
         self.positions[id] = None
         self.parents[id] = parent_id

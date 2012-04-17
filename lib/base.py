@@ -100,7 +100,7 @@ class Application(object):
         Where E and R are pick up and drop, respectively, and Q sets L{exit} to I{true}.
         """
         self.clear_bindings()
-        player = self.get_ent(self.get_player())
+        player = self.entity_manager[self.player]
         if player is not None:
             temp = [ [self.keyboard.KEY_UP,[player.move,(0,-1)]],
                      [self.keyboard.KEY_DOWN,[player.move,(0,1)]],
@@ -281,7 +281,7 @@ class Application(object):
                 chances[char] = random.random()
             if chances[char] < chance:
                 ent = self.add_entity(x, y, ent_string)
-                ent_obj = self.get_ent(ent)
+                ent_obj = self.entity_manager[ent]
                 for set in meta:
                     att, val = set
                     ent_obj.set_meta_attribute(att,val)
@@ -558,7 +558,7 @@ class Application(object):
             raise NoMapError
         tiles = map.get_rect(0,0,map.width,map.height)
         x, y = 0, 0
-        for id in self.entity_manager.get_ids():
+        for id in self.entity_manager:
             if self.entity_manager.get_name(id) == "player_spawn":
                 x, y = self.entity_manager.get_abs_pos(id)
         pid = self.add_entity(x, y, 'player', delay)
@@ -571,17 +571,10 @@ class Application(object):
         return pid
 
     def get_player_pos(self):
-        if not self.get_player():
+        if not self.player:
             return 0,0
         else:
-            return self.get_ent_pos(self.get_player())
-
-    def get_ent(self, id):
-        """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
-
-        Raises IDNotFound if entity doesn't exist and NullID if passed None.
-        """
-        return self.entity_manager.get_ent(id)
+            return self.get_ent_pos(self.player)
 
     def get_ent_at(self, x, y):
         """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
@@ -596,14 +589,6 @@ class Application(object):
         Returns list of entities contained by obj or None.
         """
         return self.entity_manager.get_in(obj)
-
-    def get_player(self):
-        """Returns current player ID or None."""
-        return self.player
-
-    def get_camera(self):
-        """Returns current camera ID or None."""
-        return self.camera
 
     def get_ent_pos(self, id):
         """Convenience method, passes call to {entity manager<entity_manager.EntityManager>}.
@@ -675,7 +660,7 @@ class Application(object):
 
         Places items into r_hand by default.
         """
-        pl = self.get_player()
+        pl = self.player
         x, y = self.get_ent_pos(pl)
         ents = self.get_ent_at(x, y)
         for id in ents: # TODO: pickup menu
@@ -690,7 +675,7 @@ class Application(object):
         ents = self.get_ent_in(id)
         if ents is not None:
             for child in ents:
-                child_ent = self.entity_manager.get_ent(child)
+                child_ent = self.entity_manager[child]
                 if child_ent.listed:
                     orig_id = cur_id
                     names[cur_id] = child_ent.name
@@ -707,8 +692,8 @@ class Application(object):
         """
         if self.inv_win is None:
             return
-        player = self.get_player()
-        if self.player is None:
+        player = self.player
+        if player is None:
             return
         names = {0:self.entity_manager.get_name(player)}
         parents = {0:None}
@@ -721,8 +706,8 @@ class Application(object):
 
         Subclass and replace to use a different format.
         """
-        if self.get_camera() is not None and self.get_player() is not None :
-            cam = self.get_camera()
+        if self.camera is not None and self.player is not None :
+            cam = self.camera
             map = self.get_map()
             win = self.game_win
             pos = self.entity_manager.get_abs_pos(cam)
@@ -763,7 +748,7 @@ class Application(object):
             win.update_layer(0,tiles)
 
             tiles = [ ]
-            for id in self.entity_manager.get_ids():
+            for id in self.entity_manager:
                 if self.entity_manager.get_attribute(id,'visible'):
                     ret = self.get_ent_pos(id)
                     if ret:
@@ -773,12 +758,12 @@ class Application(object):
                             if not self.fov_map.get_lit(tx,ty)[0]:
                                 drawn = False
                         if drawn:
-                            ent = self.get_ent(id)
+                            ent = self.entity_manager[id]
                             tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
             win.update_layer(4,tiles)
 
             tiles = [ ]
-            pl_pos = self.get_ent_pos(self.get_player())
+            pl_pos = self.get_ent_pos(self.player)
             if pl_pos:
                 tx, ty = pl_pos
                 drawn = True
@@ -786,7 +771,7 @@ class Application(object):
                     if not self.fov_map.get_lit(tx,ty)[0]:
                         drawn = False
                 if drawn:
-                    ent = self.get_ent(self.get_player())
+                    ent = self.entity_manager[self.player]
                     tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
             win.update_layer(5,tiles)
 

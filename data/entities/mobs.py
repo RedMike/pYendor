@@ -13,7 +13,7 @@ class Mob(Entity):
         self.dead = 0
 
     def collide(self, id):
-        ent = self.parent.get_ent(id)
+        ent = self.parent[id]
         if self.parent.is_instance(id, "mob"):
             hit = ent.deal_damage(10)
 
@@ -36,7 +36,7 @@ class Mob(Entity):
             self.dead = 1
             id = self.parent.add_entity("item")
             self.parent.set_pos(id,self.parent.get_pos(self.id))
-            self.parent.get_ent(id).name = self.name + " corpse"
+            self.parent[id].name = self.name + " corpse"
             self.parent.set_parent(self.id,0)
 
     def update(self):
@@ -56,7 +56,7 @@ class Humanoid(Mob):
 
     def was_collided(self, id):
         success = super(Humanoid,self).was_collided(id)
-        ent = self.parent.get_ent(id)
+        ent = self.parent[id]
         if self.parent.is_instance(id, "mob"):
             success = self.check_damage()
         return success
@@ -78,7 +78,7 @@ class Humanoid(Mob):
         if ents:
             for id in self.parent.get_in(node):
                 if self.parent.is_instance(id, "wound"):
-                    ent = self.parent.get_ent(id)
+                    ent = self.parent[id]
                     total += ent.damage
         return total
 
@@ -99,7 +99,7 @@ class Humanoid(Mob):
     def add_node(self,name):
         ent_id = self.parent.add_entity('bodypart')
         self.parent.ent_equip(self.id, ent_id)
-        self.parent.get_ent(ent_id).name = name
+        self.parent[ent_id].name = name
         self.nodes[name] = ent_id
 
     def deal_damage(self, amount, target=None):
@@ -107,7 +107,7 @@ class Humanoid(Mob):
             target = random.choice(self.bodyparts)
         if not self.get_injury(target):
             wound = self.parent.add_entity('wound')
-            self.parent.get_ent(wound).set_damage(amount)
+            self.parent[wound].set_damage(amount)
             self.parent.set_parent(wound,self.get_node(target))
         else:
             wound = self.get_injury(target)
@@ -145,7 +145,7 @@ class Player(Humanoid):
             s = "You lift the "
             for ent in self.pickup_queue:
                 self.parent.set_parent(ent,self.inventory)
-                s += self.parent.get_ent(ent).name +', '
+                s += self.parent[ent].name +', '
             self.parent.post_message(s[:-2]+".")
             self.pickup_queue = [ ]
 
@@ -165,14 +165,13 @@ class Player(Humanoid):
     def finished_lifting(self, id, success_value):
         super(Player,self).finished_lifting(id, success_value)
         if self.parent.is_instance(id, "item"):
-            #ent = self.parent.get_ent(id)
             if self.can_lift():
                 self.add_pickup(id)
 
     def collide(self, id):
         super(Player,self).collide(id)
         if self.parent.is_instance(id, "mob"):
-            ent = self.parent.get_ent(id)
+            ent = self.parent[id]
             self.parent.post_message("You slice at the "+self.parent.get_name(id)+'.')
 
     def finished_colliding(self, id, success_value):

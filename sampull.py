@@ -39,7 +39,7 @@ class CustomApp(base.Application):
 
     def default_bindings(self):
         super(CustomApp,self).default_bindings()
-        player = self.get_ent(self.get_player())
+        player = self.entity_manager[self.player]
         if player is not None:
             self.add_binding('o', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
             self.add_binding('p', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
