@@ -21,7 +21,6 @@ class Mob(Entity):
         return False
 
     def deal_damage(self, amount, target=None):
-        # TODO: Add more return information than a boolean.
         self.die()
         return self.check_damage()
 

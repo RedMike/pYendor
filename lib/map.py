@@ -3,7 +3,6 @@
 import random
 import ConfigParser
 import os
-import data.libtcodpy as libtcod  # TODO: Modularise!
 
 # Generator creates a map, then gen_map returns it.
 #
@@ -72,7 +71,7 @@ class BasicGenerator(Generator):
 class BlockGenerator(Generator):
 
     def __init__(self,w,h):
-        super(BlockGenerator,self).__init__(w,h) # TODO: Fix me
+        super(BlockGenerator,self).__init__(w,h)
         self.block_walls = { }
         self.block_dirs = { }
         self.block_widths = { }

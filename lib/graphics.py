@@ -553,6 +553,11 @@ class MessageWindow(Window):
         self.clear()
         self.draw_messages(self.messages)
 
+    def update(self):
+        super(MessageWindow,self).update()
+        self.clear()
+        self.draw_messages(self.messages)
+
 
 class ChoiceWindow(MessageWindow):
     """Main menu type, single choice from multiple ones."""
@@ -611,7 +616,7 @@ class ChoiceWindow(MessageWindow):
         msgs += [' ']
         for id in range(len(self.choices)):
             choice = self.choices[id]
-            line = '  ' + str(id) + '.  ' + choice
+            line = "  " +  choice
             msgs.append(line)
         self.add_messages(msgs)
         y = self.get_msg_y(self.highlight+len(self.labels)+1)
@@ -804,11 +809,13 @@ class SwitchWindow(MessageWindow):
         super(SwitchWindow,self).__init__(w,h)
         self.switches = [ ]
         self.choices = [ ]
+        self.meta = [ ]
         self.highlight = 0
 
-    def set_switches(self, switches, choices):
+    def set_switches(self, switches, choices, meta):
         self.choices = list(choices)
         self.switches = list(switches)
+        self.meta = list(meta)
 
     def move_up(self):
         if self.highlight:
@@ -827,7 +834,7 @@ class SwitchWindow(MessageWindow):
             self.choices[self.highlight-1] = not self.choices[self.highlight-1]
             return None
         else:
-            ret = (self.switches, self.choices)
+            ret = (self.switches, self.choices, self.meta)
             self.highlight = 0
             return ret
 
@@ -835,23 +842,22 @@ class SwitchWindow(MessageWindow):
         self.clear()
         msgs = [ ]
         for id in range(len(self.switches)):
-            msg = ''
+            msg = '  '
             msg += self.switches[id]
             msg += ' ' * (self.width - 16 - len(self.switches[id]))
-            msg += 'OFF ['
+            msg += '    ['
             if self.choices[id]:
-                msg += ' |*] ON'
+                msg += 'X]'
             else:
-                msg += '*| ] ON'
+                msg += ' ]'
             msgs.append(msg)
-            msgs.append(" ")
         while len(msgs) < self.height - 5:
             msgs.append(" ")
         msgs.append("< Close >")
         self.messages = [ ]
         self.add_messages(msgs)
         if self.highlight <= len(self.switches):
-            self.reverse_line(self.highlight*2)
+            self.reverse_line(self.highlight+1)
         else:
             self.reverse_line(self.height-3)
         self.restore_border()

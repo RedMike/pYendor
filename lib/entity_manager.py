@@ -188,7 +188,7 @@ class EntityManager(object):
     def ent_drop(self, ent_id):
         ent = self[ent_id]
         ancestor = self.get_ancestor(ent_id)
-        ancestor.drop(ent_id)
+        self[ancestor].drop(ent_id)
         success = ent.was_dropped(ancestor)
         self[ancestor].finished_dropping(ent_id, success)
 

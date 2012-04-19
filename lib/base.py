@@ -129,6 +129,7 @@ class Application(object):
             window.highlight = 0
         self.keyboard.set_default_binding(callback, (window,))
 
+
     def _inventory_window_callback(self, mods, char, vk, window):
         """Callback for input when working with inventory windows.
 
@@ -183,6 +184,14 @@ class Application(object):
         self.clear_bindings()
         self.keyboard.set_default_binding(self._input_window_callback, (window,))
 
+    def _pickup_window_callback(self, ret):
+        options, switches, meta = ret() or (None, None, None)
+        if switches:
+            for i in range(len(options)):
+                if switches[i]:
+                    self.entity_manager.ent_lift(self.player, meta[i])
+            self.remove_menu()
+
     def _input_window_callback(self, mods, char, vk, window):
         """Default input window callback.
         Gets called while an input window is on the screen and a key is pressed.
@@ -226,29 +235,11 @@ class Application(object):
         """
         self.clear_bindings()
         temp = [ [self.keyboard.KEY_UP, [window.move_up,()]],
-               [self.keyboard.KEY_DOWN, [window.move_down,()]],
-               [self.keyboard.KEY_ENTER, [callback,(window.enter,)]]
-        ]
-        for set in temp:
-            key = set[0]
-            bind = set[1]
-            self.add_binding(key,bind)
-
-    def switch_bindings(self, window, callback):
-        """Bind default switch window keys.
-
-        Any custom bindings are cleared, and keys are bound for the window and callback you pass.
-
-        @type  window: L{graphics.Window}
-        @param window: Window to bind to as menu.
-        @type  callback: Function.
-        @param callback: Function that gets called on accept.
-        """
-        self.clear_bindings()
-        temp = [ [self.keyboard.KEY_UP, [window.move_up,()]],
-                 [self.keyboard.KEY_DOWN, [window.move_down,()]],
-                 [self.keyboard.KEY_ENTER, [callback,(window.enter,)]]
-        ]
+            ['w', [window.move_up,()]],
+            [self.keyboard.KEY_DOWN, [window.move_down,()]],
+            ['s', [window.move_down,()]],
+            [self.keyboard.KEY_ENTER, [callback,(window.enter,)]],
+            ['e', [callback,(window.enter,)]]]
         for set in temp:
             key = set[0]
             bind = set[1]
@@ -460,13 +451,15 @@ class Application(object):
         self.menu_bindings(win,callback)
         self.menu_stack.append([id,callback])
 
-    def add_switch_menu(self, switches, choices, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
+    def add_switch_menu(self, switches, choices, meta, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
         """Adds a single switches menu to the stack and sets it as active.
 
         @type  switches: tuple
         @param switches: Tuple of choices to list.
         @type  choices: tuple
         @param choices: Tuple of starting choice states.
+        @type  meta: tuple
+        @param meta: Tuple of information attached to each switch.
         @type  callback: method
         @param callback: Function that gets called with a function as a parameter, that returns the ID
                         of the choice selected, when called.
@@ -476,9 +469,9 @@ class Application(object):
         if not fgcol:
             fgcol = self.fgcol
         if not w:
-            w = 50
+            w = 40
         if not h:
-            h = 50
+            h = 20
         if not x:
             x = self.win_man.width/2 - w/2
         if not y:
@@ -488,8 +481,8 @@ class Application(object):
         win.highlight = 1
         win.bgcol = bgcol
         win.fgcol = fgcol
-        win.set_switches(switches,choices)
-        self.switch_bindings(win,callback)
+        win.set_switches(switches,choices,meta)
+        self.menu_bindings(win,callback)
         self.menu_stack.append([id,callback])
 
     def remove_menu(self):
@@ -656,13 +649,26 @@ class Application(object):
     def player_pickup(self):
         """Attempt to have the player pick up everything on the tile he's on.
 
-        Places items into r_hand by default.
+        Creates a switch menu listing everything on the tile.
         """
         pl = self.player
         x, y = self.get_ent_pos(pl)
-        for id in self.entity_manager[(x,y)]: # TODO: pickup menu
-            if id is not pl:
-                self.entity_manager.ent_lift(pl,id)
+        ents = self.entity_manager[(x,y)]
+        opts, switches, meta = [], [], []
+        valid_ents = [ ]
+        for ent in ents:
+            if ent is not pl and self.entity_manager[ent].listed:
+                valid_ents += [ent]
+        if len(valid_ents) > 1:
+            for ent in valid_ents:
+                if ent is not pl:
+                    opts.append(self.entity_manager[ent].get_name())
+                    switches.append(False)
+                    meta.append(ent)
+            opts, switches, meta = tuple(opts), tuple(switches), tuple(meta)
+            self.add_switch_menu(opts, switches, meta, self._pickup_window_callback)
+        elif len(valid_ents) == 1:
+            self.entity_manager.ent_lift(pl, valid_ents[0])
 
     def _inv_window_recurse(self,id,parents=None,names=None,meta=None,cur_id=1,parent_id=0):
         """Internal recursion method for inventory listing with default node window."""

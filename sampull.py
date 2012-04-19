@@ -25,15 +25,8 @@
 #of the authors and should not be interpreted as representing official policies,
 #either expressed or implied, of the FreeBSD Project.
 
-import struct
 import lib.base as base
 import lib.graphics as graphics
-
-def debug(fct):
-    switches, choices = fct() or (None, None)
-    if switches:
-        print zip(switches, choices)
-        app.remove_menu()
 
 class CustomApp(base.Application):
 
@@ -43,7 +36,6 @@ class CustomApp(base.Application):
         if player is not None:
             self.add_binding('o', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
             self.add_binding('p', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
-            self.add_binding('l', [self.add_switch_menu,(('Option 1', 'Longer Option 2', 'S O 3'),(False, True, False),debug),])
 
 WIDTH, HEIGHT = 80, 50
 MAP_WIDTH, MAP_HEIGHT = 100, 100
@@ -70,7 +62,7 @@ app.set_game_window(game_win)
 app.set_message_window(msg_win)
 app.set_inventory_window(inv_win)
 
-app.change_color_scheme(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)
+app.change_color_scheme(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)
 
 def menu_callback(fct):
     choice = fct()

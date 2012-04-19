@@ -41,7 +41,6 @@ class Entity(object):
     def set_meta_attribute(self,meta,val):
         setattr(self,meta,val)
 
-
     def drop(self, id):
         pass
 
@@ -53,13 +52,11 @@ class Entity(object):
 
     def finished_dropping(self, id, success_value):
         if success_value:
-            self.parent.set_pos(id,self.id)
-
+            self.parent.set_pos(id,self.parent.get_pos(self.id))
 
     def activated(self, id):
         """Callback for when entity is activated."""
         return self.get_attribute('usable')
-
 
     def equip(self, id):
         """Callback for when entity is attaching another entity to itself."""
@@ -78,7 +75,6 @@ class Entity(object):
         if success_value:
             self.parent.set_parent(id, self.id)
 
-
     def lift(self, id):
         """Callback for when entity picks up another entity."""
         pass
@@ -95,7 +91,6 @@ class Entity(object):
         """Callback for when the entity has finished trying to pick up another entity."""
         if success_value:
             self.parent.set_parent(id, self.id)
-
 
     def collide(self, id):
         """Callback for when entity moves I{into} another entity."""
