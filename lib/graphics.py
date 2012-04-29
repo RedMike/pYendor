@@ -10,6 +10,8 @@ import data.libtcodpy as libtcod
 #       +-ChoiceWindow
 #       |
 #       +-InputWindow
+#       | |
+#       | +-ConsoleWindow
 #       |
 #       +-NodeWindow
 #          +
@@ -64,6 +66,21 @@ class WindowManager(object):
         self.layers = { }
         self.visibilities = { }
 
+    def __len__(self):
+        return len(self.window_list)
+
+    def __getitem__(self, item):
+        if isinstance(item, int):
+            return self.window_list[item]
+        else:
+            return NotImplemented
+
+    def __iter__(self):
+        return self.window_list.itervalues()
+
+    def __contains__(self, item):
+        return item in self.window_list
+
     def specific_init(self):
         """Library-specific initialisation.
 
@@ -91,16 +108,17 @@ class WindowManager(object):
         @type  y: number
         @param y: Y coordinate of new window's top-left corner.
         @rtype:  number
-        @return: Created window's ID.
+        @return: Created window.
         """
         win = type(w,h)
         id = self.current_id
         self.window_list[id] = win
+        self.window_list[id].id = id
         self.positions[id] = (x,y)
         self.layers[id] = layer
         self.visibilities[id] = 1
         self.current_id += 1
-        return id
+        return win
 
     def get_window(self, id):
         """Looks up and returns a window object by ID.
@@ -703,6 +721,34 @@ class InputWindow(MessageWindow):
         msgs = [self.label + self.input]
         self.messages = []
         self.add_messages(msgs)
+        self.restore_border()
+
+
+class ConsoleWindow(InputWindow):
+    """Console-type window, basically an input window with a history."""
+
+    def __init__(self,w,h):
+        super(ConsoleWindow,self).__init__(w,h)
+        self.history = [ ]
+
+    def enter(self):
+        """Returns current input, adds command to history and clears input."""
+        if self.input:
+            self.history.append(self.input)
+        return super(ConsoleWindow,self).enter()
+
+    def update(self):
+        self.clear()
+        self.messages = []
+        self.add_messages([""])
+        if self.history:
+            self.history.reverse()
+            self.add_messages(self.history[:self.height-5])
+            self.history.reverse()
+        msgs = [(1,1,self.label + self.input)]
+        self.draw_messages(msgs)
+        self.reverse_rect(1,1,self.width-2,1)
+        self.specific_h_line(1,2,self.width-2)
         self.restore_border()
 
 class NodeWindow(MessageWindow):

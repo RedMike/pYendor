@@ -28,15 +28,6 @@
 import lib.base as base
 import lib.graphics as graphics
 
-class CustomApp(base.Application):
-
-    def default_bindings(self):
-        super(CustomApp,self).default_bindings()
-        player = self.entity_manager[self.player]
-        if player is not None:
-            self.add_binding('o', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
-            self.add_binding('p', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
-
 WIDTH, HEIGHT = 80, 50
 MAP_WIDTH, MAP_HEIGHT = 100, 100
 
@@ -51,18 +42,47 @@ COLGFOGFLOOR = "ACA7A6"
 COLGWALL = "E6E2DA"
 COLGWALL2 = "333230"
 
+class CustomApp(base.Application):
+
+    def create_windows(self):
+        self.game_win = self.add_window(0,graphics.LayeredGameWindow,30,35,25,0)
+        self.msg_win = self.add_window(0,graphics.MessageWindow,25,35,WIDTH-25,0)
+        self.inv_win = self.add_window(0,graphics.InventoryWindow,25,35,0,0)
+
+        self.comm_win = self.add_window(0,graphics.ConsoleWindow,WIDTH,15,0,35)
+        self.comm_win.set_label("> ")
+        self.comm_win.set_length(WIDTH-2)
+
+        self.change_color_scheme(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)
+
+    def console_callback(self,line):
+        try:
+            if line in ("quit", "n", "e", "s", "w", "north", "south", "east", "west", "get", "pickup"):
+                player = self.entity_manager[self.player]
+                if line == "quit":
+                    self.quit()
+                elif line == "n" or line == "north":
+                    player.move(0,-1)
+                elif line == "s" or line == "south":
+                    player.move(0,1)
+                elif line == "e" or line == "east":
+                    player.move(1,0)
+                elif line == "w" or line == "west":
+                    player.move(-1,0)
+                elif line == "get" or line == "pickup":
+                    self.player_pickup()
+            self.time_passing = True
+        except Exception as e:
+            self.add_messages((str(e),))
+
+    def default_bindings(self):
+        if self.comm_win:
+            self.input_bindings(self.comm_win,self.console_callback,False)
+        #self.add_binding('o', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
+        #self.add_binding('p', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
 
 app = CustomApp("Sam Pull RL",WIDTH,HEIGHT)
 
-game_win = app.add_window(0,graphics.LayeredGameWindow,WIDTH-30,HEIGHT-20,0,0)
-msg_win = app.add_window(0,graphics.MessageWindow,WIDTH,20,0,HEIGHT-20)
-inv_win = app.add_window(0,graphics.InventoryWindow,30,HEIGHT-20,WIDTH-30,0)
-
-app.set_game_window(game_win)
-app.set_message_window(msg_win)
-app.set_inventory_window(inv_win)
-
-app.change_color_scheme(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)
 
 def menu_callback(fct):
     choice = fct()
@@ -71,6 +91,8 @@ def menu_callback(fct):
         app.place_player(10)
         while app.menu_stack:
             app.remove_menu()
+        app.scheduler.tick()
+        app.update_game_window()
     elif choice == 1:
         app.quit()
 

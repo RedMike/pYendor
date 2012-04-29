@@ -50,14 +50,7 @@ class Application(object):
         
         # Initialise default windows with None.
         self.win_man = graphics.WindowManager(w,h,name)
-        self.game_win = None
-        self.msg_win = None
-        self.inv_win = None
-        self.bgcol = (0,0,0)
-        self.fgcol = (255,255,255)
-        self.floor_col = None
-        self.fog_floor_col = None
-        self.wall_col = None
+        self.create_windows()
 
         self.fov_map = fov.FovMap()
         
@@ -67,7 +60,7 @@ class Application(object):
         # Initialise menus.
         self.menu_stack = [ ]
 
-        self.time_passing = None
+        self.time_passing = True
 
     def change_color_scheme(self, bgcol, fgcol, game_wall_col, game_floor_col, game_fog_floor_col):
         self.bgcol = bgcol
@@ -75,18 +68,25 @@ class Application(object):
         self.floor_col = game_floor_col
         self.fog_floor_col = game_fog_floor_col
         self.wall_col = game_wall_col
+        for window in self.win_man:
+            window.bgcol = self.bgcol
+            window.fgcol = self.fgcol
+            window.clear()
         if self.game_win:
             self.game_win.bgcol = self.wall_col
-            self.game_win.fgcol = self.fgcol
             self.game_win.clear()
-        if self.inv_win:
-            self.inv_win.bgcol = self.bgcol
-            self.inv_win.fgcol = self.fgcol
-            self.inv_win.clear()
-        if self.msg_win:
-            self.msg_win.bgcol = self.bgcol
-            self.msg_win.fgcol = self.fgcol
-            self.msg_win.clear()
+
+    def create_windows(self):
+        """Create default windows; Subclass to easily set a different layout."""
+        bgcol = (0,0,0)
+        fgcol = (255,255,255)
+        wall_col = None
+        floor_col = None
+        fog_floor_col = None
+
+        #create windows here
+
+        self.change_color_scheme(bgcol,fgcol,wall_col,floor_col,fog_floor_col)
 
     def default_bindings(self):
         """Bind default game keys.
@@ -173,7 +173,7 @@ class Application(object):
             self.entity_manager.ent_activate(ent_id)
         self.update_inv_window()
 
-    def input_bindings(self, window):
+    def input_bindings(self, window, return_callback, remove=True):
         """Bind default input keys.
 
         Any custom bindings are cleared, and keys are bound for the window and callback you pass.
@@ -182,7 +182,7 @@ class Application(object):
         @param window: Window to bind to as menu.
         """
         self.clear_bindings()
-        self.keyboard.set_default_binding(self._input_window_callback, (window,))
+        self.keyboard.set_default_binding(self._input_window_callback, (window,return_callback,remove))
 
     def _pickup_window_callback(self, ret):
         options, switches, meta = ret() or (None, None, None)
@@ -192,7 +192,7 @@ class Application(object):
                     self.entity_manager.ent_lift(self.player, meta[i])
             self.remove_menu()
 
-    def _input_window_callback(self, mods, char, vk, window):
+    def _input_window_callback(self, mods, char, vk, window, enter_callback, remove=True):
         """Default input window callback.
         Gets called while an input window is on the screen and a key is pressed.
 
@@ -206,13 +206,11 @@ class Application(object):
         if vk == interface.KeyboardListener.KEY_BACKSPACE:
             window.backspace()
         elif vk == interface.KeyboardListener.KEY_ENTER:
-            #DEBUG ONLY!
-            try:
-                s = window.enter()
-                exec s
-            except Exception as e:
-                self.add_messages((str(e),))
-            self.remove_menu()
+            s = window.enter()
+            if s:
+                enter_callback(s)
+            if remove:
+                self.remove_menu()
         elif vk == interface.KeyboardListener.KEY_SPACE:
             window.add_char(' ')
         elif interface.KeyboardListener.KEY_0 <= vk <= interface.KeyboardListener.KEY_9:
@@ -309,7 +307,7 @@ class Application(object):
         return None
 
     def add_window(self,layer,type,w,h,x,y):
-        """Create a new window and return its ID.
+        """Create a new window and return it.
 
         @type  layer: number
         @param layer: Layer to place window on. Higher means drawn on top.
@@ -400,9 +398,9 @@ class Application(object):
     def get_menu_window(self):
         """Returns current menu window or None."""
         if len(self.menu_stack) > 0:
-            return self.win_man.get_window(self.menu_stack[-1][0])
+            return self.win_man[self.menu_stack[-1][0]]
 
-    def add_input_menu(self, label):
+    def add_input_menu(self, label, callback, remove=True):
         """Adds an input menu to the stack and sets it as active.
 
         Callback gets called with a method that returns the string that was in the list.
@@ -410,12 +408,11 @@ class Application(object):
         @type  label: string
         @param label: Text to display before input bar.
         """
-        id = self.add_window(6, graphics.InputWindow, self.win_man.width, 6, 0, self.win_man.height-6)
-        win = self.win_man.get_window(id)
+        win = self.add_window(6, graphics.InputWindow, self.win_man.width, 6, 0, self.win_man.height-6)
         win.set_label(label)
         win.set_length(self.win_man.width-6)
-        self.input_bindings(win)
-        self.menu_stack.append([id])
+        self.input_bindings(win, callback, remove)
+        self.menu_stack.append([win.id])
 
     def add_choice_menu(self, label, choices, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
         """Adds a single choice menu to the stack and sets it as active.
@@ -442,14 +439,13 @@ class Application(object):
             x = self.win_man.width/2 - w/2
         if not y:
             y = self.win_man.height/2 - h/2
-        id = self.add_window(2, graphics.ChoiceWindow, w, h, x, y)
-        win = self.win_man.get_window(id)
+        win = self.add_window(2, graphics.ChoiceWindow, w, h, x, y)
         win.bgcol = bgcol
         win.fgcol = fgcol
         win.set_label(label)
         win.set_choices(choices)
         self.menu_bindings(win,callback)
-        self.menu_stack.append([id,callback])
+        self.menu_stack.append([win.id,callback])
 
     def add_switch_menu(self, switches, choices, meta, callback, bgcol=None, fgcol=None, w=None, h=None, x=None, y=None):
         """Adds a single switches menu to the stack and sets it as active.
@@ -476,14 +472,13 @@ class Application(object):
             x = self.win_man.width/2 - w/2
         if not y:
             y = self.win_man.height/2 - h/2
-        id = self.add_window(2, graphics.SwitchWindow, w, h, x, y)
-        win = self.win_man.get_window(id)
+        win = self.add_window(2, graphics.SwitchWindow, w, h, x, y)
         win.highlight = 1
         win.bgcol = bgcol
         win.fgcol = fgcol
         win.set_switches(switches,choices,meta)
         self.menu_bindings(win,callback)
-        self.menu_stack.append([id,callback])
+        self.menu_stack.append([win.id,callback])
 
     def remove_menu(self):
         """Removes the last menu on the stack, and rebinds to the new active menu.
@@ -494,7 +489,7 @@ class Application(object):
         del self.menu_stack[-1]
         if self.menu_stack:
             id,callback = self.menu_stack[-1]
-            win = self.win_man.get_window(id)
+            win = self.win_man[id]
             if win == graphics.ChoiceWindow:
                 self.menu_bindings(win,callback)
             elif win == graphics.InputWindow:
@@ -776,16 +771,15 @@ class Application(object):
                     tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
             win.update_layer(5,tiles)
 
-
-
     def update(self):
         """Update function, called every update.
 
         Subclass and replace to add code to run every working update, or drawing calls.
         """
-        self.time_passing = True
+
         if self.time_passing:
             self.scheduler.tick()
+        self.time_passing = False
         self.update_game_window()
         self.update_inv_window()
         self.win_man.draw_all()
