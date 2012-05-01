@@ -57,7 +57,7 @@ class CustomApp(base.Application):
 
     def console_callback(self,line):
         try:
-            if line in ("quit", "n", "e", "s", "w", "north", "south", "east", "west", "get", "pickup"):
+            if line in ("quit", "n", "e", "s", "w", "north", "south", "east", "west", "get", "pickup", "i", "inventory"):
                 player = self.entity_manager[self.player]
                 if line == "quit":
                     self.quit()
@@ -71,6 +71,8 @@ class CustomApp(base.Application):
                     player.move(-1,0)
                 elif line == "get" or line == "pickup":
                     self.player_pickup()
+                elif line == "i" or line == "inventory":
+                    self.node_bindings(self.inv_win, self._inventory_window_callback)
             self.time_passing = True
         except Exception as e:
             self.add_messages((str(e),))
@@ -78,8 +80,14 @@ class CustomApp(base.Application):
     def default_bindings(self):
         if self.comm_win:
             self.input_bindings(self.comm_win,self.console_callback,False)
-        #self.add_binding('o', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
-        #self.add_binding('p', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
+        self.add_binding('F1', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
+        self.add_binding('F2', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
+        self.add_binding('escape', [self.quit, ()])
+        self.add_binding('arrow_left', [self.console_callback, ('west',)])
+        self.add_binding('arrow_right', [self.console_callback, ('east',)])
+        self.add_binding('arrow_up', [self.console_callback, ('north',)])
+        self.add_binding('arrow_down', [self.console_callback, ('south',)])
+
 
 app = CustomApp("Sam Pull RL",WIDTH,HEIGHT)
 
@@ -96,7 +104,8 @@ def menu_callback(fct):
     elif choice == 1:
         app.quit()
 
-app.add_choice_menu("Please report any bugs to mike@codingden.net.\n\nMain menu: ", ("Start Game", "Quit"), menu_callback, w=30, h=14)
+app.add_choice_menu("Please report any bugs to mike@codingden.net.\n\nMain menu: ", ("Start Game", "Quit"),
+        menu_callback, w=30, h=14)
 while not app.exit:
     app.update()
 

@@ -135,6 +135,7 @@ class Player(Humanoid):
         self.inventory = self.nodes['right hand']
         back_id = self.parent.add_entity("backpack")
         self.parent.set_parent(back_id, self.nodes["back"])
+        self.inventory = back_id
 
     def add_pickup(self, obj):
         self.pickup_queue.append(obj)
@@ -164,7 +165,7 @@ class Player(Humanoid):
     def finished_lifting(self, id, success_value):
         super(Player,self).finished_lifting(id, success_value)
         if self.parent.is_instance(id, "item"):
-            if self.can_lift():
+            if self.can_lift() and success_value:
                 self.add_pickup(id)
 
     def collide(self, id):

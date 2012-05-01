@@ -83,6 +83,6 @@ class Backpack(Container):
 
     def activated(self, interaction):
         self.parent.post_message("You dump the contents of the backpack onto the floor.")
-        for id in self.parent.get_in(self.id):
+        for id in self:
             self.parent.ent_drop(id)
         return True

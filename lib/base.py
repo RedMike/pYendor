@@ -102,15 +102,14 @@ class Application(object):
         self.clear_bindings()
         player = self.entity_manager[self.player]
         if player is not None:
-            temp = [ [self.keyboard.KEY_UP,[player.move,(0,-1)]],
-                     [self.keyboard.KEY_DOWN,[player.move,(0,1)]],
-                     [self.keyboard.KEY_LEFT,[player.move,(-1,0)]],
-                     [self.keyboard.KEY_RIGHT,[player.move,(1,0)]],
+            temp = [ ['arrow_up',[player.move,(0,-1)]],
+                     ['arrow_down',[player.move,(0,1)]],
+                     ['arrow_left',[player.move,(-1,0)]],
+                     ['arrow_right',[player.move,(1,0)]],
                      ['i',[self.node_bindings,(self.inv_win, self._inventory_window_callback)]],
                      ['e',[self.player_pickup,()]],
                      ['q',[self.quit,()]],
-                     [self.keyboard.KEY_ESCAPE, [self.quit, ()]],
-                     ['t',[self.add_input_menu,(">>> ",)]]]
+                     ['escape', [self.quit, ()]]]
             for set in temp:
                 key = set[0]
                 bind = set[1]
@@ -140,10 +139,10 @@ class Application(object):
         @type  vk: int
         @param vk: Keycode, check against L{interface.KeyboardListener}.KEY_*
         """
-        if vk == self.keyboard.KEY_UP:
+        if vk == self.keyboard.char_codes['arrow_up']:
             if window.highlight > 0:
                 window.highlight -= 1
-        elif vk == self.keyboard.KEY_DOWN:
+        elif vk == self.keyboard.char_codes['arrow_down']:
             if window.highlight < len(window.messages):
                 window.highlight += 1
         elif char == 'q':
@@ -189,7 +188,7 @@ class Application(object):
         if switches:
             for i in range(len(options)):
                 if switches[i]:
-                    self.entity_manager.ent_lift(self.player, meta[i])
+                    self.entity_manager.ent_lift(self.entity_manager[self.player].inventory, meta[i])
             self.remove_menu()
 
     def _input_window_callback(self, mods, char, vk, window, enter_callback, remove=True):
@@ -203,23 +202,30 @@ class Application(object):
         @type  vk: int
         @param vk: Keycode, check against L{interface.KeyboardListener}.KEY_*
         """
-        if vk == interface.KeyboardListener.KEY_BACKSPACE:
+        if vk == interface.KeyboardListener.char_codes['backspace']:
             window.backspace()
-        elif vk == interface.KeyboardListener.KEY_ENTER:
+        elif vk == interface.KeyboardListener.char_codes['enter']:
             s = window.enter()
             if s:
                 enter_callback(s)
             if remove:
                 self.remove_menu()
-        elif vk == interface.KeyboardListener.KEY_SPACE:
+        elif vk == interface.KeyboardListener.char_codes['space']:
             window.add_char(' ')
-        elif interface.KeyboardListener.KEY_0 <= vk <= interface.KeyboardListener.KEY_9:
+        elif interface.KeyboardListener.char_codes['zero'] <= vk <= interface.KeyboardListener.char_codes['nine']:
             window.add_char(char)
-        elif vk == interface.KeyboardListener.KEY_CHAR:
+        elif vk == interface.KeyboardListener.char_codes['char']:
             if mods['shift']:
                 window.add_char(char.upper())
             else:
                 window.add_char(char)
+
+    def _input_window_return_callback(self, line):
+        try:
+            exec line
+        except Exception as e:
+            self.add_messages((str(e),))
+        self.remove_menu()
 
     def menu_bindings(self, window, callback):
         """Bind default menu keys.
@@ -232,11 +238,11 @@ class Application(object):
         @param callback: Function that gets called on accept.
         """
         self.clear_bindings()
-        temp = [ [self.keyboard.KEY_UP, [window.move_up,()]],
+        temp = [ ['arrow_up', [window.move_up,()]],
             ['w', [window.move_up,()]],
-            [self.keyboard.KEY_DOWN, [window.move_down,()]],
+            ['arrow_down', [window.move_down,()]],
             ['s', [window.move_down,()]],
-            [self.keyboard.KEY_ENTER, [callback,(window.enter,)]],
+            ['enter', [callback,(window.enter,)]],
             ['e', [callback,(window.enter,)]]]
         for set in temp:
             key = set[0]
@@ -485,24 +491,27 @@ class Application(object):
 
         If no menus remain, rebinds the game.
         """
-        self.win_man.remove_window(self.menu_stack[-1][0])
-        del self.menu_stack[-1]
+        self.win_man.remove_window(self.menu_stack.pop()[0])
         if self.menu_stack:
             id,callback = self.menu_stack[-1]
             win = self.win_man[id]
             if win == graphics.ChoiceWindow:
                 self.menu_bindings(win,callback)
             elif win == graphics.InputWindow:
-                self.input_bindings(win)
+                self.input_bindings(win,self._input_window_return_callback)
         else:
             self.default_bindings()
 
     def add_binding(self,key,bind):
         """Add a key binding.
 
-        Convenience function, passes to L{interface module <interface.KeyboardListener>}.
+        If key is a string of length 1, it's treated as a direct key binding. If longer than length 1, it's treated
+        as a non-char binding. List of such bindings is in the keyboard module.
         """
-        self.keyboard.add_char_binding(key,bind)
+        if len(key) == 1:
+            self.keyboard.add_char_binding(key,bind)
+        else:
+            self.keyboard.add_keycode_binding(key,bind)
     
     def remove_binding(self,key):
         """Remove a key binding.
@@ -663,7 +672,7 @@ class Application(object):
             opts, switches, meta = tuple(opts), tuple(switches), tuple(meta)
             self.add_switch_menu(opts, switches, meta, self._pickup_window_callback)
         elif len(valid_ents) == 1:
-            self.entity_manager.ent_lift(pl, valid_ents[0])
+            self.entity_manager.ent_lift(self.entity_manager[pl].inventory, valid_ents[0])
 
     def _inv_window_recurse(self,id,parents=None,names=None,meta=None,cur_id=1,parent_id=0):
         """Internal recursion method for inventory listing with default node window."""

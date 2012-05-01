@@ -6,72 +6,74 @@ class KeyboardListener:
     List of key-codes copy-pasted from libtcod.
     """
 
-    KEY_NONE = 0
-    KEY_ESCAPE = 1
-    KEY_BACKSPACE = 2
-    KEY_TAB = 3
-    KEY_ENTER = 4
-    KEY_SHIFT = 5
-    KEY_CONTROL = 6
-    KEY_ALT = 7
-    KEY_PAUSE = 8
-    KEY_CAPSLOCK = 9
-    KEY_PAGEUP = 10
-    KEY_PAGEDOWN = 11
-    KEY_END = 12
-    KEY_HOME = 13
-    KEY_UP = 14
-    KEY_LEFT = 15
-    KEY_RIGHT = 16
-    KEY_DOWN = 17
-    KEY_PRINTSCREEN = 18
-    KEY_INSERT = 19
-    KEY_DELETE = 20
-    KEY_LWIN = 21
-    KEY_RWIN = 22
-    KEY_APPS = 23
-    KEY_0 = 24
-    KEY_1 = 25
-    KEY_2 = 26
-    KEY_3 = 27
-    KEY_4 = 28
-    KEY_5 = 29
-    KEY_6 = 30
-    KEY_7 = 31
-    KEY_8 = 32
-    KEY_9 = 33
-    KEY_KP0 = 34
-    KEY_KP1 = 35
-    KEY_KP2 = 36
-    KEY_KP3 = 37
-    KEY_KP4 = 38
-    KEY_KP5 = 39
-    KEY_KP6 = 40
-    KEY_KP7 = 41
-    KEY_KP8 = 42
-    KEY_KP9 = 43
-    KEY_KPADD = 44
-    KEY_KPSUB = 45
-    KEY_KPDIV = 46
-    KEY_KPMUL = 47
-    KEY_KPDEC = 48
-    KEY_KPENTER = 49
-    KEY_F1 = 50
-    KEY_F2 = 51
-    KEY_F3 = 52
-    KEY_F4 = 53
-    KEY_F5 = 54
-    KEY_F6 = 55
-    KEY_F7 = 56
-    KEY_F8 = 57
-    KEY_F9 = 58
-    KEY_F10 = 59
-    KEY_F11 = 60
-    KEY_F12 = 61
-    KEY_NUMLOCK = 62
-    KEY_SCROLLLOCK = 63
-    KEY_SPACE = 64
-    KEY_CHAR = 65
+    char_codes = {
+        'none' : 0,
+        'escape' : 1,
+        'backspace' : 2,
+        'tab' : 3,
+        'enter' : 4,
+        'shift' : 5,
+        'control' : 6,
+        'alt' : 7,
+        'pause' : 8,
+        'caps_lock' : 9,
+        'page_up' : 10,
+        'page_down' : 11,
+        'end' : 12,
+        'home' : 13,
+        'arrow_up' : 14,
+        'arrow_left' : 15,
+        'arrow_right' : 16,
+        'arrow_down' : 17,
+        'print_screen' : 18,
+        'insert' : 19,
+        'delete' : 20,
+        'left_win' : 21,
+        'right_win' : 22,
+        'apps' : 23,
+        'zero' : 24,
+        'one' : 25,
+        'two' : 26,
+        'three' : 27,
+        'four' : 28,
+        'five' : 29,
+        'six' : 30,
+        'seven' : 31,
+        'eight' : 32,
+        'nine' : 33,
+        'keypad_zero' : 34,
+        'keypad_one' : 35,
+        'keypad_two' : 36,
+        'keypad_three' : 37,
+        'keypad_four' : 38,
+        'keypad_five' : 39,
+        'keypad_six' : 40,
+        'keypad_seven' : 41,
+        'keypad_eight' : 42,
+        'keypad_nine' : 43,
+        'keypad_add' : 44,
+        'keypad_sub' : 45,
+        'keypad_div' : 46,
+        'keypad_mul' : 47,
+        'keypad_dec' : 48,
+        'keypad_enter' : 49,
+        'F1' : 50,
+        'F2' : 51,
+        'F3' : 52,
+        'F4' : 53,
+        'F5' : 54,
+        'F6' : 55,
+        'F7' : 56,
+        'F8' : 57,
+        'F9' : 58,
+        'F10' : 59,
+        'F11' : 60,
+        'F12' : 61,
+        'numlock' : 62,
+        'scroll_lock' : 63,
+        'space' : 64,
+        'char' : 65
+    }
 
     def __init__(self):
         self.bindings = { }
@@ -93,20 +95,18 @@ class KeyboardListener:
         self.default = fct
         self.default_params = params
 
-    def add_bindings(self,vk,bind):
+    def add_keycode_binding(self,key,bind):
         """Adds a keycode binding to the listener.
 
         Does nothing for CHAR or numbers.
 
-        @type  vk: int
-        @param vk: KEY_* keycode.
+        @type  key: str
+        @param key: key from X{self.non_char_binds}.
         @type  bind: tuple
         @param bind: Tuple of the form (fct, (param1, param2, ..)).
         """
-        if (vk < self.KEY_0 or vk > self.KEY_9) and vk != self.KEY_CHAR:
-            self.bindings[vk] = bind
-
-
+        if key not in ('zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'char'):
+            self.bindings[self.char_codes[key]] = bind
     
     def add_char_binding(self,key,bind):
         """Adds a character binding to the listener.
@@ -117,7 +117,7 @@ class KeyboardListener:
         @param bind: Tuple of the form (fct, (param1, param2, ..)).
         """
         self.bindings[key] = bind
-    
+
     def remove_binding(self,key):
         """Removes a binding.
 
