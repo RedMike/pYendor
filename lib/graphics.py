@@ -1,5 +1,5 @@
 import struct
-import data.libtcodpy as libtcod
+import data.libtctrout as libtctrout
 
 #    Window
 #    |
@@ -29,10 +29,8 @@ def convert(color):
     @rtype: libtcod.Color
     @return: Converted library-specific color.
     """
-    if not isinstance(color,libtcod.Color):
-        if isinstance(color, str):
-            color = tuple(struct.unpack('BBB', color.decode('hex')))
-        color = libtcod.Color(*color)
+    if isinstance(color, str):
+        color = tuple(struct.unpack('BBB', color.decode('hex')))
     return color
 
 class WindowManager(object):
@@ -43,7 +41,7 @@ class WindowManager(object):
     and visibility flag in I{visibilities}.
     """
 
-    def __init__(self,w,h,name,font='data/font.png'):
+    def __init__(self,w,h,name,font='data/main.font'):
         """Initialisation method.
 
         @type  w: number
@@ -86,9 +84,9 @@ class WindowManager(object):
 
         Subclass and replace to change graphical backend.
         """
-        libtcod.console_set_custom_font(self.font,
-                libtcod.FONT_TYPE_GREYSCALE | libtcod.FONT_LAYOUT_TCOD)
-        libtcod.console_init_root(self.width, self.height, self.name)
+        self.root = libtctrout.RootWindow(self.name, self.width,
+                        self.height, self.font)
+        self.root.clear()
 
     def add_window(self, layer, type, w, h, x, y):
         """Adds a new window.
@@ -110,7 +108,7 @@ class WindowManager(object):
         @rtype:  number
         @return: Created window.
         """
-        win = type(w,h)
+        win = type(w,h,self)
         id = self.current_id
         self.window_list[id] = win
         self.window_list[id].id = id
@@ -181,7 +179,8 @@ class WindowManager(object):
 
     def specific_flush(self):
         """Libtcod-specific flushing of console."""
-        libtcod.console_flush()
+        self.root.update()
+        self.root.tick()
 
     def specific_draw_window(self, id):
         """Libtcod-specific drawing.
@@ -191,7 +190,7 @@ class WindowManager(object):
         """
         x, y = self.positions[id]
         win = self.window_list[id]
-        libtcod.console_blit(win.con, 0, 0, win.width, win.height, 0, x, y)
+        self.root.blit(win.con, 0, 0, win.width, win.height, x, y)
 
     def draw_all(self):
         """Draw all the layers, in order.
@@ -216,7 +215,7 @@ class Window(object):
     console.
     """
     
-    def __init__(self,w,h):
+    def __init__(self,w,h,parent):
         """Initialisation method.
 
         @type  w: number
@@ -226,17 +225,18 @@ class Window(object):
         """
         self.width = w
         self.height = h
+        self.parent = parent
         self.bgcol = (255,0,0)
         self.fgcol = (255,255,255)
         self.border_tile = None
         self.specific_init()
 
     def specific_set_key(self,col):
-        libtcod.console_set_key_color(self.con,col)
+        pass
 
     def specific_init(self):
         """Library-specific console initialisation."""
-        self.con = libtcod.console_new(self.width,self.height)
+        self.con = self.parent.root.new_window(self.width,self.height)
 
     def specific_set_bg_col(self,x,y,bgcol):
         """Library-specific setting a position's background color.
@@ -248,8 +248,7 @@ class Window(object):
         @type  bgcol: libtcod.Color
         @param bgcol: Color to set the cell's background color to.
         """
-        libtcod.console_set_background_color(self.con,bgcol)
-        libtcod.console_set_back(self.con,x,y,bgcol)
+        self.con.set_col(x, y, bg=bgcol)
 
     def specific_set_fg_col(self,x,y,bgcol):
         """Library-specific setting a position's foreground color.
@@ -261,8 +260,7 @@ class Window(object):
         @type  bgcol: libtcod.Color
         @param bgcol: Color to set the cell's foreground color to.
         """
-        libtcod.console_set_foreground_color(self.con,bgcol)
-        libtcod.console_set_fore(self.con,x,y,bgcol)
+        self.con.set_col(x, y, fg=bgcol)
 
     def specific_get_bg_col(self,x,y):
         """Library-specific getting a position's background color.
@@ -272,7 +270,7 @@ class Window(object):
         @type  y: number
         @param y: Y coordinate.
         """
-        return libtcod.console_get_back(self.con,x,y)
+        return self.con.get_col(x,y)[0]
 
     def specific_get_fg_col(self,x,y):
         """Library-specific getting a position's foreground color.
@@ -282,7 +280,7 @@ class Window(object):
         @type  y: number
         @param y: Y coordinate.
         """
-        return libtcod.console_get_fore(self.con,x,y)
+        return self.con.get_col(x,y)[1]
 
     def specific_draw_char(self,x,y,char,bgcol,fgcol,bgset):
         """Library-specific drawing a character at a position with a specific color.
@@ -300,9 +298,9 @@ class Window(object):
         @type  bgset: bool
         @param bgset: If I{True}, fills background in, else, only the character itself is drawn.
         """
-        libtcod.console_set_background_color(self.con,bgcol)
-        libtcod.console_set_foreground_color(self.con,fgcol)
-        libtcod.console_put_char(self.con, x, y, char, bgset)
+        if not bgset:
+            bgcol = None
+        self.con.put_char(x, y, char, bg=bgcol, fg=fgcol)
 
     def specific_print_line_rect(self,bgcol,fgcol,x,y,w,h,msg):
         """Library-specific drawing a string inside a filled rectangle.
@@ -322,9 +320,7 @@ class Window(object):
         @type  msg: string
         @param msg: String to draw inside the rectangle.
         """
-        libtcod.console_set_background_color(self.con,bgcol)
-        libtcod.console_set_foreground_color(self.con,fgcol)
-        libtcod.console_print_left_rect(self.con,x,y,w,h,1,msg)
+        self.con.put_string(x,y,w,h,msg,bg=bgcol,fg=fgcol)
 
     def specific_get_line_height(self,x,y,w,h,msg):
         """Library-specific predicting height of a string inside a rect without drawing.
@@ -344,7 +340,7 @@ class Window(object):
         @rtype: number
         @return: Number of lines the string would end up being..
         """
-        return libtcod.console_height_left_rect(self.con,x,y,w,h,msg)
+        return self.con.test_string_height(x,y,w,h,msg)
 
     def specific_console_clear(self,bgcol,fgcol):
         """Library-specific clearing of console to a color.
@@ -354,33 +350,25 @@ class Window(object):
         @type  fgcol: libtcod.Color
         @param fgcol: Foreground libtcod-specific color to clear to.
         """
-        libtcod.console_set_background_color(self.con,bgcol)
-        libtcod.console_set_foreground_color(self.con,fgcol)
-        libtcod.console_clear(self.con)
+        self.con.clear(bg=bgcol,fg=fgcol)
 
     def specific_h_line(self, x, y, w):
         """Library-specific drawing of a horizontal line onto the console."""
         bgcol = convert(self.bgcol)
         fgcol = convert(self.fgcol)
-        libtcod.console_set_background_color(self.con, bgcol)
-        libtcod.console_set_foreground_color(self.con, fgcol)
-        libtcod.console_hline(self.con, x, y, w)
+        self.con.put_h_line(x,y,w,bg=bgcol,fg=fgcol)
 
     def specific_v_line(self, x, y, h):
         """Library-specific drawing of a vertical line onto the console."""
         bgcol = convert(self.bgcol)
         fgcol = convert(self.fgcol)
-        libtcod.console_set_background_color(self.con, bgcol)
-        libtcod.console_set_foreground_color(self.con, fgcol)
-        libtcod.console_vline(self.con, x, y, h)
+        self.con.put_v_line(x,y,h,bg=bgcol,fg=fgcol)
 
     def specific_frame(self, x, y, w, h):
         """Library-specific drawing of a frame onto the console."""
         bgcol = convert(self.bgcol)
         fgcol = convert(self.fgcol)
-        libtcod.console_set_background_color(self.con, bgcol)
-        libtcod.console_set_foreground_color(self.con, fgcol)
-        libtcod.console_print_frame(self.con, x, y, w, h, False, libtcod.BKGND_NONE, 0)
+        self.con.put_frame(x,y,w,h,bg=bgcol,fg=fgcol)
 
     def set_color_key(self,col):
         col = convert(col)
@@ -447,8 +435,6 @@ class Window(object):
             x, y, bgcol, char, fgcol, bgset = tile
             if 0 <= x < self.width:
                 if 0 <= y < self.height:
-                    bgcol = convert(bgcol)
-                    fgcol = convert(fgcol)
                     self.specific_draw_char(x,y,char,bgcol,fgcol,bgset)
 
     def draw_messages(self,msgs):
@@ -491,9 +477,9 @@ class Window(object):
 class LayeredGameWindow(Window):
     """Main game window, supports layers."""
     
-    def __init__(self,w,h):
+    def __init__(self,w,h,parent):
         """Initialisation method."""
-        super(LayeredGameWindow,self).__init__(w,h)
+        super(LayeredGameWindow,self).__init__(w,h,parent)
         self.layers = { }
     
     def update_layer(self,layer,tiles):
@@ -521,7 +507,7 @@ class MessageWindow(Window):
     Scrolls down when too many messages have been added, but dumps old messages.
     """
     
-    def __init__(self,w,h):
+    def __init__(self,w,h,parent):
         """Initialisation method.
 
         @type  w: number
@@ -529,7 +515,7 @@ class MessageWindow(Window):
         @type  h: number
         @param h: Height of window.
         """
-        super(MessageWindow,self).__init__(w,h)
+        super(MessageWindow,self).__init__(w,h,parent)
         self.messages = [ ]
 
     def get_msg_y(self,id):
@@ -580,9 +566,9 @@ class MessageWindow(Window):
 class ChoiceWindow(MessageWindow):
     """Main menu type, single choice from multiple ones."""
     
-    def __init__(self,w,h):
+    def __init__(self,w,h,parent):
         """Initialisation method."""
-        super(ChoiceWindow,self).__init__(w, h)
+        super(ChoiceWindow,self).__init__(w, h,parent)
         self.labels = [ ]
         self.choices = [ ]
         self.highlight = None
@@ -649,7 +635,7 @@ class InputWindow(MessageWindow):
     Used to obtain one line of text from the player.
     """
     
-    def __init__(self,w,h):
+    def __init__(self,w,h,parent):
         """Initialisation method.
 
         @type  w: number
@@ -657,7 +643,7 @@ class InputWindow(MessageWindow):
         @type  h: number
         @param h: Height of window.
         """
-        super(InputWindow,self).__init__(w, h)
+        super(InputWindow,self).__init__(w, h,parent)
         self.label = ""
         self.length = 5
         self.input = ""
@@ -727,8 +713,8 @@ class InputWindow(MessageWindow):
 class ConsoleWindow(InputWindow):
     """Console-type window, basically an input window with a history."""
 
-    def __init__(self,w,h):
-        super(ConsoleWindow,self).__init__(w,h)
+    def __init__(self,w,h,parent):
+        super(ConsoleWindow,self).__init__(w,h,parent)
         self.history = [ ]
 
     def enter(self):
@@ -740,10 +726,10 @@ class ConsoleWindow(InputWindow):
     def update(self):
         self.clear()
         self.messages = []
-        self.add_messages([""])
+        self.add_messages([" "])
         if self.history:
             self.history.reverse()
-            self.add_messages(self.history[:self.height-5])
+            self.add_messages(self.history[:self.height-6])
             self.history.reverse()
         msgs = [(1,1,self.label + self.input)]
         self.draw_messages(msgs)
@@ -754,9 +740,9 @@ class ConsoleWindow(InputWindow):
 class NodeWindow(MessageWindow):
     """Node-list window, like a tree view."""
 
-    def __init__(self,w,h):
+    def __init__(self,w,h,parent):
         """Initialisation method."""
-        super(NodeWindow,self).__init__(w,h)
+        super(NodeWindow,self).__init__(w,h,parent)
         self.node_list = { }
         self.node_parents = { }
         self.node_meta = { }
@@ -837,8 +823,8 @@ class NodeWindow(MessageWindow):
 
 class InventoryWindow(NodeWindow):
 
-    def __init__(self,w,h):
-        super(InventoryWindow,self).__init__(w,h)
+    def __init__(self,w,h,parent):
+        super(InventoryWindow,self).__init__(w,h,parent)
         self.activated_node = None
 
     def update(self):
@@ -851,7 +837,7 @@ class InventoryWindow(NodeWindow):
 
 class SwitchWindow(MessageWindow):
 
-    def __init__(self,w,h):
+    def __init__(self,w,h,parent):
         super(SwitchWindow,self).__init__(w,h)
         self.switches = [ ]
         self.choices = [ ]

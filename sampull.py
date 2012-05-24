@@ -28,7 +28,7 @@
 import lib.base as base
 import lib.graphics as graphics
 
-WIDTH, HEIGHT = 80, 50
+WIDTH, HEIGHT = 50, 30
 MAP_WIDTH, MAP_HEIGHT = 100, 100
 
 COLBG = "2C515D"
@@ -45,13 +45,14 @@ COLGWALL2 = "333230"
 class CustomApp(base.Application):
 
     def create_windows(self):
-        self.game_win = self.add_window(0,graphics.LayeredGameWindow,30,35,25,0)
-        self.msg_win = self.add_window(0,graphics.MessageWindow,25,35,WIDTH-25,0)
-        self.inv_win = self.add_window(0,graphics.InventoryWindow,25,35,0,0)
+        self.game_win = self.add_window(0,graphics.LayeredGameWindow,25,20,25,0)
+        self.inv_win = self.add_window(0,graphics.InventoryWindow,25,20,0,0)
 
-        self.comm_win = self.add_window(0,graphics.ConsoleWindow,WIDTH,15,0,35)
+        self.comm_win = self.add_window(0,graphics.ConsoleWindow,WIDTH,10,0,20)
         self.comm_win.set_label("> ")
         self.comm_win.set_length(WIDTH-2)
+
+        self.msg_win = self.comm_win
 
         self.change_color_scheme(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)
 
@@ -90,7 +91,7 @@ class CustomApp(base.Application):
 
 
 app = CustomApp("Sam Pull RL",WIDTH,HEIGHT)
-
+app.fov_map = None
 
 def menu_callback(fct):
     choice = fct()

@@ -128,7 +128,7 @@ class Player(Humanoid):
 
     def init(self):
         super(Player,self).init()
-        self.char = '@'
+        self.char = 'player'
         self.fgcol = (255,255,255)
         self.name = "Player"
         self.pickup_queue = [ ]

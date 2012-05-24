@@ -202,23 +202,20 @@ class Application(object):
         @type  vk: int
         @param vk: Keycode, check against L{interface.KeyboardListener}.KEY_*
         """
-        if vk == interface.KeyboardListener.char_codes['backspace']:
-            window.backspace()
-        elif vk == interface.KeyboardListener.char_codes['enter']:
-            s = window.enter()
-            if s:
-                enter_callback(s)
-            if remove:
-                self.remove_menu()
-        elif vk == interface.KeyboardListener.char_codes['space']:
-            window.add_char(' ')
-        elif interface.KeyboardListener.char_codes['zero'] <= vk <= interface.KeyboardListener.char_codes['nine']:
-            window.add_char(char)
-        elif vk == interface.KeyboardListener.char_codes['char']:
+        if char != '':
             if mods['shift']:
                 window.add_char(char.upper())
             else:
                 window.add_char(char)
+        else:
+            if vk == interface.KeyboardListener.char_codes['backspace']:
+                window.backspace()
+            elif vk == interface.KeyboardListener.char_codes['enter']:
+                s = window.enter()
+                if s:
+                    enter_callback(s)
+                if remove:
+                    self.remove_menu()
 
     def _input_window_return_callback(self, line):
         try:
@@ -508,10 +505,7 @@ class Application(object):
         If key is a string of length 1, it's treated as a direct key binding. If longer than length 1, it's treated
         as a non-char binding. List of such bindings is in the keyboard module.
         """
-        if len(key) == 1:
-            self.keyboard.add_char_binding(key,bind)
-        else:
-            self.keyboard.add_keycode_binding(key,bind)
+        self.keyboard.add_binding(key,bind)
     
     def remove_binding(self,key):
         """Remove a key binding.
@@ -561,7 +555,8 @@ class Application(object):
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         self.entity_manager.set_parent(cam, pid)
-        self.scheduler.add_schedule([self.fov_map.compute,(self.get_player_pos,),1])
+        if self.fov_map is not None:
+            self.scheduler.add_schedule([self.fov_map.compute,(self.get_player_pos,),1])
         self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
         self.player = pid
         self.camera = cam
@@ -733,21 +728,26 @@ class Application(object):
                                 col = self.floor_col
                                 if not col:
                                     col = (0,0,0)
-                                tiles.append([i, j, col, ' ', (0,0,0), 1])
+                                tiles.append([i, j, col, 'floor', (0,0,0), 1])
                                 self.fov_map.set_explored(x,y)
                         else:
                             if explored and not wall:
                                 col = self.fog_floor_col
                                 if not col:
                                     col = (255,255,255)
-                                tiles.append([i, j, col, ' ', (0,0,0), 1])
+                                tiles.append([i, j, col, 'carpet', (0,0,0), 1])
                     else:
                         wall = map[i][j][1]
                         if not wall:
                             col = self.floor_col
                             if not col:
                                 col = (0,0,0)
-                            tiles.append([i, j, col, ' ', (0,0,0), 1])
+                            tiles.append([i, j, col, 'carpet', None, 1])
+                        else:
+                            col = self.wall_col
+                            if not col:
+                                col = (255,255,255)
+                            tiles.append([i, j, col, 'wall', None, 1])
 
 
             win.update_layer(0,tiles)
@@ -764,7 +764,7 @@ class Application(object):
                                 drawn = False
                         if drawn:
                             ent = self.entity_manager[id]
-                            tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+                            tiles.append([tx-ox, ty-oy, 'carpet', ent.char, ent.fgcol, 1])
             win.update_layer(4,tiles)
 
             tiles = [ ]
@@ -777,7 +777,7 @@ class Application(object):
                         drawn = False
                 if drawn:
                     ent = self.entity_manager[self.player]
-                    tiles.append([tx-ox, ty-oy, (0,0,0), ent.char, ent.fgcol, 0])
+                    tiles.append([tx-ox, ty-oy, 'carpet', ent.char, ent.fgcol, 1])
             win.update_layer(5,tiles)
 
     def update(self):
