@@ -1,6 +1,6 @@
 import pygame
 from pygame.locals import *
-import json
+import json, sys
 
 black = (0,0,0)
 white = (255,255,255)
@@ -210,8 +210,6 @@ class RootWindow(OffWindow):
 
     def update(self):
         """Call in main loop, handles drawing."""
-        for event in pygame.event.get(QUIT):
-            pygame.quit()
         self.render()
         return 1
 
@@ -220,9 +218,15 @@ class RootWindow(OffWindow):
         self.clock.tick(fps)
 
 def get_key():
-    events = pygame.event.get(pygame.KEYDOWN)
-    while not events:
-        events = pygame.event.get(pygame.KEYDOWN)
+    events = pygame.event.get(KEYDOWN)
+    quit = []
+    while not events and not quit:
+        events = pygame.event.get(KEYDOWN)
+        quit = pygame.event.get(QUIT)
+    if quit:
+        pygame.quit()
+        sys.exit()
+    pygame.event.clear()
     ret = [ ]
     for event in events:
         ret.append(event)

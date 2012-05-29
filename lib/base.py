@@ -50,6 +50,9 @@ class Application(object):
         
         # Initialise default windows with None.
         self.win_man = graphics.WindowManager(w,h,name)
+        self.game_win = None
+        self.inv_win = None
+        self.msg_win = None
         self.create_windows()
 
         self.fov_map = fov.FovMap()
@@ -95,9 +98,9 @@ class Application(object):
         Basic keys are:
             - B{Movement}: W, A, S, D
             - B{Inventory}: I
-            - B{Actions}: E, R
-            - B{Application}: Q
-        Where E and R are pick up and drop, respectively, and Q sets L{exit} to I{true}.
+            - B{Actions}: E
+            - B{Application}: Q, Escape
+        Where E is pick up and Q sets L{exit} to I{true}.
         """
         self.clear_bindings()
         player = self.entity_manager[self.player]
