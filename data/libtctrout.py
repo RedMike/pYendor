@@ -18,31 +18,38 @@ class OffWindow(object):
         self.size = (w, h)
         self.tile_set = tile_set
         self.tiles = [ [(black, tile_set[' '], white) for i in range(h)] for j in range(w)]
+        self.dirty_tiles = { }
 
 
     def put_char(self, x, y, char, bg=None, fg=None):
         """Sets a tile to contain a certain char/string, and optionally, sets background/foreground color."""
         if 0 <= x < self.size[0] and 0 <= y < self.size[1]:
             tile = self.tiles[x][y]
+            if (x,y) in self.dirty_tiles:
+                tile = self.dirty_tiles[(x,y)]
             char = self.tile_set.get(char,self.tile_set[' '])
             tile = (tile[0], char, tile[2])
             if bg:
                 tile = (self.tile_set.get(bg,bg), tile[1], tile[2])
             if fg:
                 tile = (tile[0], tile[1], fg)
-            self.tiles[x][y] = tile
+            self.dirty_tiles[(x,y)] = tile
 
     def set_col(self, x, y, bg=None, fg=None):
         """Sets a tile's colors to a certain pair; Leave as None what you don't want to change."""
         tile = self.tiles[x][y]
+        if (x,y) in self.dirty_tiles:
+            tile = self.dirty_tiles[(x,y)]
         if bg:
             tile = (bg, tile[1], tile[2])
         if fg:
             tile = (tile[0], tile[1], fg)
-        self.tiles[x][y] = tile
+        self.dirty_tiles[(x,y)] = tile
 
     def get_col(self, x, y):
         """Gets a tile's colours as (bgcol, fgcol)."""
+        if (x,y) in self.dirty_tiles:
+            return self.dirty_tiles[(x,y)][0], self.dirty_tiles[(x,y)][2]
         return self.tiles[x][y][0], self.tiles[x][y][2]
 
     def put_string(self, x, y, w, h, msg, bg=None, fg=None):
@@ -96,7 +103,7 @@ class OffWindow(object):
             fg = white
         for i in range(self.size[0]):
             for j in range(self.size[1]):
-                self.tiles[i][j] = (bg, self.tile_set[' '], fg)
+                self.put_char(i, j, ' ', bg=bg, fg=fg)
 
     def put_h_line(self, x, y, w, bg=None, fg=None):
         """Draw a horizontal line."""
@@ -124,9 +131,9 @@ class OffWindow(object):
 
     def blit(self, src, src_x, src_y, src_w, src_h, x, y):
         """Blit another console onto this one."""
-        for i in range(src_x, src_x+src_w):
-            for j in range(src_y, src_y+src_h):
-                self.tiles[i-src_x+x][j-src_y+y] = src.tiles[i][j]
+        for dx, dy in dict(src.dirty_tiles):
+            src.tiles[dx][dy] = src.dirty_tiles.pop((dx,dy))
+            self.tiles[dx-src_x+x][dy-src_y+y] = src.tiles[dx][dy]
 
 
 
@@ -137,6 +144,7 @@ class RootWindow(OffWindow):
     def __init__(self, name, w, h, font, zoom=2.0):
         self.size = (w,h)
         self.tiles = [ [(black, ' ', white) for i in range(h)] for j in range(w) ]
+        self.dirty_tiles = { }
 
         self.tile_size = 8
         self.screen = pygame.display.set_mode((100,100)) # Initialise once, in order to be able to process font.

@@ -100,7 +100,7 @@ class Application(object):
             - B{Inventory}: I
             - B{Actions}: E
             - B{Application}: Q, Escape
-        Where E is pick up and Q sets L{exit} to I{true}.
+        Where E is pick up.
         """
         self.clear_bindings()
         player = self.entity_manager[self.player]
@@ -140,7 +140,7 @@ class Application(object):
         @type  char: char
         @param char: If vk is KEY_CHAR, this is the printable character
         @type  vk: int
-        @param vk: Keycode, check against L{interface.KeyboardListener}.KEY_*
+        @param vk: Keycode, check against L{interface.KeyboardListener}.char_codes
         """
         if vk == self.keyboard.char_codes['arrow_up']:
             if window.highlight > 0:

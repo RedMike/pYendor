@@ -361,10 +361,6 @@ class Window(object):
         fgcol = convert(self.fgcol)
         self.con.put_frame(x,y,w,h,bg=bgcol,fg=fgcol)
 
-    def set_color_key(self,col):
-        col = convert(col)
-        self.specific_set_key(col)
-
     def reverse_at(self,x,y):
         """Reverse the colors in a cell.
         
