@@ -353,6 +353,7 @@ class FovMap(object):
     def set_lit(self, x, y):
         if 0 < x < self.w and 0 < y < self.h:
             self.light_map[x][y] = 1
+            self.set_explored(x, y)
 
     def get_lit(self, x, y):
         if 0 < x < self.w and 0 < y < self.h:

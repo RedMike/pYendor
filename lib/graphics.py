@@ -118,15 +118,9 @@ class WindowManager(object):
         self.current_id += 1
         return win
 
-    def get_window(self, id):
-        """Looks up and returns a window object by ID.
-
-        @type  id: number
-        @param id: Window ID.
-        @rtype:  instance of L{Window} subclass.
-        @return: Window object.
-        """
-        return self.window_list[id]
+    def get_layers(self):
+        """Returns a list of the layers in the manager."""
+        return self.layers.values()
 
     def get_visible(self, id):
         """Returns a window's visibility flag.
@@ -203,7 +197,7 @@ class WindowManager(object):
         for layer in l:
             for id in self.layers:
                 if self.layers[id] == layer:
-                    self.get_window(id).update()
+                    self[id].update()
                     self.specific_draw_window(id)
         self.specific_flush()
 
@@ -230,9 +224,6 @@ class Window(object):
         self.fgcol = (255,255,255)
         self.border_tile = None
         self.specific_init()
-
-    def specific_set_key(self,col):
-        pass
 
     def specific_init(self):
         """Library-specific console initialisation."""

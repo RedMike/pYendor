@@ -249,7 +249,7 @@ class Application(object):
             bind = set[1]
             self.add_binding(key,bind)
 
-    def generate_map(self,w,h,set):
+    def generate_map(self,w,h,set,layout='test'):
         """Generates new map using BasicGenerator, then generates basic entities.
 
         @type  w: number
@@ -258,9 +258,11 @@ class Application(object):
         @param h: Height of map.
         @type  set: bool
         @param set: If true, sets map as active.
+        @type  layout: str
+        @param layout: Filename of layout file to use.
         """
         gen = map.BlockGenerator(w,h)
-        gen.set_layout('test')
+        gen.set_layout(layout)
         m = gen.gen_map()
         ents = gen.entities
         self.generate_ents(m,ents)
@@ -326,8 +328,8 @@ class Application(object):
         @param x: X coordinate of top-left corner.
         @type  y: number
         @param y: Y coordinate of top-left corner.
-        @rtype: number
-        @return: Window ID of created window; Use L{graphics.WindowManager.get_window} to get the object.
+        @rtype: X{graphics.Window} subclass
+        @return: Created window.
         """
         win = self.win_man.add_window(layer,type,w,h,x,y)
         return win
@@ -335,30 +337,6 @@ class Application(object):
     def clear_layer(self,layer):
         """Deletes all windows on a layer."""
         self.win_man.clear_layer(layer)
-
-    def set_game_window(self,w):
-        """Set game window to draw_tiles by default.
-
-        In order to draw_tiles several windows or use a different updating algorithm, leave this as
-        I{None} and roll your own updating algorithm following L{update_game_window}.
-        """
-        self.game_win = self.win_man.get_window(w)
-
-    def set_inventory_window(self,w):
-        """Set inventory window to use by default.
-
-        In order to draw_tiles several windows or use a different updating algorithm, leave this as
-        I{None} and roll your own updating algorithm following L{update_inv_window}.
-        """
-        self.inv_win = self.win_man.get_window(w)
-
-    def set_message_window(self,w):
-        """Set message window to use by default.
-
-        In order to draw_tiles several windows or use a different updating algorithm, leave this as
-        I{None} and roll your own updating algorithm following L{add_messages}.
-        """
-        self.msg_win = self.win_man.get_window(w)
 
     def add_messages(self,msgs):
         """Post messages to current message window, takes a list of strings.
@@ -386,20 +364,6 @@ class Application(object):
         else:
             self.win_man.show_window(window)
 
-    def hide_window(self,window):
-        """Hide a window.
-
-        Convenience function, calls L{window manager <graphics.WindowManager>} functions.
-        """
-        self.win_man.hide_window(window)
-
-    def show_window(self,window):
-        """Unhides a window.
-
-        Convenience function, calls L{window manager <graphics.WindowManager>} functions.
-        """
-        self.win_man.show_window(window)
-
     def get_menu_window(self):
         """Returns current menu window or None."""
         if len(self.menu_stack) > 0:
@@ -413,7 +377,8 @@ class Application(object):
         @type  label: string
         @param label: Text to display before input bar.
         """
-        win = self.add_window(6, graphics.InputWindow, self.win_man.width, 6, 0, self.win_man.height-6)
+        announce_layer = max(self.win_man.get_layers())+1
+        win = self.add_window(announce_layer, graphics.InputWindow, self.win_man.width, 6, 0, self.win_man.height-6)
         win.set_label(label)
         win.set_length(self.win_man.width-6)
         self.input_bindings(win, callback, remove)
@@ -444,7 +409,8 @@ class Application(object):
             x = self.win_man.width/2 - w/2
         if not y:
             y = self.win_man.height/2 - h/2
-        win = self.add_window(2, graphics.ChoiceWindow, w, h, x, y)
+        announce_layer = max(self.win_man.get_layers())+1
+        win = self.add_window(announce_layer, graphics.ChoiceWindow, w, h, x, y)
         win.bgcol = bgcol
         win.fgcol = fgcol
         win.set_label(label)
@@ -477,7 +443,8 @@ class Application(object):
             x = self.win_man.width/2 - w/2
         if not y:
             y = self.win_man.height/2 - h/2
-        win = self.add_window(2, graphics.SwitchWindow, w, h, x, y)
+        announce_layer = max(self.win_man.get_layers())+1
+        win = self.add_window(announce_layer, graphics.SwitchWindow, w, h, x, y)
         win.highlight = 1
         win.bgcol = bgcol
         win.fgcol = fgcol
@@ -701,98 +668,61 @@ class Application(object):
         parents, names, meta, cur_id = self._inv_window_recurse(player,parents,names,meta)
         self.inv_win.set_nodes(parents,names,meta)
 
-    def update_game_window(self):
-        """Default implementation of graphics updating, updates map and entities; doesn't redraw walls.
+    def update_game_window(self, fov_radius=10):
+        """Default implementation of graphics updating, updates map and entities.
 
         Subclass and replace to use a different format.
         """
-        if self.camera is not None and self.player is not None:
-            cam = self.camera
-            map_obj = self.get_map()
-            map_w, map_h = map_obj.width, map_obj.height
-            radius = 20
+
+        if self.camera:
+            camera_x, camera_y = self.entity_manager.get_abs_pos(self.camera)
+            map = self.get_map()
             win = self.game_win
-            pos = self.entity_manager.get_abs_pos(cam)
-            x, y = pos
-            cx, cy = win.width/2, win.height/2
-            ox, oy = x - cx, y - cy
-            map = map_obj.get_rect(ox, oy, win.width, win.height)
-            self.fov_map.clear_light()
-            fov.fieldOfView(x,y,map_w,map_h,radius,self.fov_map.set_lit,map_obj.get_blocking)
-            tiles = [ ]
+            center_x, center_y = win.width/2, win.height/2
+            offset_x, offset_y = camera_x - center_x, camera_y - center_y
+
+            # set up FOV map and compute FOV
+            if self.fov_map:
+                self.fov_map.clear_light()
+                fov.fieldOfView(camera_x, camera_y, map.width, map.height, fov_radius, self.fov_map.set_lit, map.get_blocking)
+
+            # make a list of the tiles to draw
+            # tiles of the form [x, y, fgcol, string, bgcol, set_background]
+            bg_tiles = [ ]
+            ent_tiles = [ ]
+
             for i in range(win.width):
                 for j in range(win.height):
-                    x, y = i+ox, j+oy
+                    x, y = i + offset_x, j + offset_y
+
+                    lit = False
+                    explored = False
                     if self.fov_map:
-                        lit = self.fov_map.get_lit(x,y)
-                        wall = map_obj.get_blocking(x,y)
-                        explored = self.fov_map.get_explored(x,y)
-                        if lit:
-                            if not wall:
-                                col = self.floor_col
-                                if not col:
-                                    col = (0,0,0)
-                                tiles.append([i, j, col, 'carpet', None, 1])
-                                self.fov_map.set_explored(x,y)
-                            else:
-                                col = self.wall_col
-                                if not col:
-                                    col = (0,0,0)
-                                tiles.append([i, j, col, 'wall', None, 1])
+                        lit = self.fov_map.get_lit(x, y)
+                        explored = self.fov_map.get_explored(x, y)
+                    blocks = map.get_blocking(x, y)
+
+                    if lit:
+                        if not blocks:
+                            bg_tiles.append([i, j, self.floor_col, 'floor', None, 1])
                         else:
-                            if not explored:
-                                col = self.wall_col
-                                if not col:
-                                    col = (255,255,255)
-                                tiles.append([i, j, col, 'dark_wall', None, 1])
-                            elif not wall:
-                                col = self.fog_floor_col
-                                if not col:
-                                    col = (255, 255, 255)
-                                tiles.append([i, j, col, 'dark_floor', None, 1])
+                            bg_tiles.append([i, j, self.wall_col, 'wall', None, 1])
                     else:
-                        wall = map[i][j][1]
-                        if not wall:
-                            col = self.floor_col
-                            if not col:
-                                col = (0,0,0)
-                            tiles.append([i, j, col, 'carpet', None, 1])
+                        if not blocks and explored:
+                            bg_tiles.append([i, j, self.floor_col, 'dark_floor', None, 1])
                         else:
-                            col = self.wall_col
-                            if not col:
-                                col = (255,255,255)
-                            tiles.append([i, j, col, 'wall', None, 1])
+                            bg_tiles.append([i, j, self.wall_col, 'dark_wall', None, 1])
 
+                    ents = self.entity_manager[(x, y)]
+                    for ent in ents:
+                        if lit and self.entity_manager.get_attribute(ent, 'visible'):
+                            bg = 'floor'
+                            if blocks:
+                                bg = 'wall'
+                            ent_tiles.append([i, j, bg, self.entity_manager[ent].char, None, 1])
+            win.update_layer(0,bg_tiles)
+            win.update_layer(1,ent_tiles)
 
-            win.update_layer(0,tiles)
-
-            tiles = [ ]
-            for id in self.entity_manager:
-                if self.entity_manager.get_attribute(id,'visible'):
-                    ret = self.get_ent_pos(id)
-                    if ret:
-                        tx, ty = ret
-                        drawn = True
-#                        if self.fov_map:
-#                            if not fov.fieldOfView(tx,ty,map_w,map_h,10,map_obj.get_blocking_light,map_obj.get_blocking_light):
-#                                drawn = False
-                        if drawn:
-                            ent = self.entity_manager[id]
-                            tiles.append([tx-ox, ty-oy, 'carpet', ent.char, ent.fgcol, 1])
-            win.update_layer(4,tiles)
-
-            tiles = [ ]
-            pl_pos = self.get_ent_pos(self.player)
-            if pl_pos:
-                tx, ty = pl_pos
-                drawn = True
-#                if self.fov_map:
-#                    if not fov.fieldOfView(tx,ty,map_w,map_h,10,map_obj.get_blocking_light,map_obj.get_blocking_light):
-#                        drawn = False
-                if drawn:
-                    ent = self.entity_manager[self.player]
-                    tiles.append([tx-ox, ty-oy, 'carpet', ent.char, ent.fgcol, 1])
-            win.update_layer(5,tiles)
 
     def update(self):
         """Update function, called every update.
