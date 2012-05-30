@@ -55,7 +55,7 @@ class Application(object):
         self.msg_win = None
         self.create_windows()
 
-        self.fov_map = fov.FovMap()
+        self.fov_map = True
         
         # Initialise keyboard interface.
         self.keyboard = interface.KeyboardListener()
@@ -297,14 +297,13 @@ class Application(object):
         elif file:
             pass
         if set:
+            self.fov_map = fov.FovMap(map.width,map.height)
             self.set_map(len(self.maps)-1)
 
     def set_map(self,id):
         """Set map as I{id}."""
         if id < len(self.maps):
             self.map = id
-            if self.fov_map is not None:
-                self.fov_map.process_map(self.maps[id])
     
     def get_map(self):
         """Returns current map, or I{None}."""
@@ -558,8 +557,6 @@ class Application(object):
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
         self.entity_manager.set_parent(cam, pid)
-        if self.fov_map is not None:
-            self.scheduler.add_schedule([self.fov_map.compute,(self.get_player_pos,),1])
         self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
         self.player = pid
         self.camera = cam
@@ -709,36 +706,50 @@ class Application(object):
 
         Subclass and replace to use a different format.
         """
-        if self.camera is not None and self.player is not None :
+        if self.camera is not None and self.player is not None:
             cam = self.camera
-            map = self.get_map()
+            map_obj = self.get_map()
+            map_w, map_h = map_obj.width, map_obj.height
+            radius = 20
             win = self.game_win
             pos = self.entity_manager.get_abs_pos(cam)
             x, y = pos
             cx, cy = win.width/2, win.height/2
             ox, oy = x - cx, y - cy
-            map = map.get_rect(ox, oy, win.width, win.height)
+            map = map_obj.get_rect(ox, oy, win.width, win.height)
+            self.fov_map.clear_light()
+            fov.fieldOfView(x,y,map_w,map_h,radius,self.fov_map.set_lit,map_obj.get_blocking)
             tiles = [ ]
             for i in range(win.width):
                 for j in range(win.height):
                     x, y = i+ox, j+oy
                     if self.fov_map:
-                        lit = self.fov_map.get_lit(x,y)[0]
-                        wall = self.fov_map.get_wall(x,y)
+                        lit = self.fov_map.get_lit(x,y)
+                        wall = map_obj.get_blocking(x,y)
                         explored = self.fov_map.get_explored(x,y)
                         if lit:
                             if not wall:
                                 col = self.floor_col
                                 if not col:
                                     col = (0,0,0)
-                                tiles.append([i, j, col, 'floor', (0,0,0), 1])
+                                tiles.append([i, j, col, 'carpet', None, 1])
                                 self.fov_map.set_explored(x,y)
+                            else:
+                                col = self.wall_col
+                                if not col:
+                                    col = (0,0,0)
+                                tiles.append([i, j, col, 'wall', None, 1])
                         else:
-                            if explored and not wall:
-                                col = self.fog_floor_col
+                            if not explored:
+                                col = self.wall_col
                                 if not col:
                                     col = (255,255,255)
-                                tiles.append([i, j, col, 'carpet', (0,0,0), 1])
+                                tiles.append([i, j, col, 'dark_wall', None, 1])
+                            elif not wall:
+                                col = self.fog_floor_col
+                                if not col:
+                                    col = (255, 255, 255)
+                                tiles.append([i, j, col, 'dark_floor', None, 1])
                     else:
                         wall = map[i][j][1]
                         if not wall:
@@ -762,9 +773,9 @@ class Application(object):
                     if ret:
                         tx, ty = ret
                         drawn = True
-                        if self.fov_map:
-                            if not self.fov_map.get_lit(tx,ty)[0]:
-                                drawn = False
+#                        if self.fov_map:
+#                            if not fov.fieldOfView(tx,ty,map_w,map_h,10,map_obj.get_blocking_light,map_obj.get_blocking_light):
+#                                drawn = False
                         if drawn:
                             ent = self.entity_manager[id]
                             tiles.append([tx-ox, ty-oy, 'carpet', ent.char, ent.fgcol, 1])
@@ -775,9 +786,9 @@ class Application(object):
             if pl_pos:
                 tx, ty = pl_pos
                 drawn = True
-                if self.fov_map:
-                    if not self.fov_map.get_lit(tx,ty)[0]:
-                        drawn = False
+#                if self.fov_map:
+#                    if not fov.fieldOfView(tx,ty,map_w,map_h,10,map_obj.get_blocking_light,map_obj.get_blocking_light):
+#                        drawn = False
                 if drawn:
                     ent = self.entity_manager[self.player]
                     tiles.append([tx-ox, ty-oy, 'carpet', ent.char, ent.fgcol, 1])

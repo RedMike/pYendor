@@ -91,7 +91,7 @@ class CustomApp(base.Application):
 
 
 app = CustomApp("Sam Pull RL",WIDTH,HEIGHT)
-app.fov_map = None
+#app.fov_map = None
 
 def menu_callback(fct):
     choice = fct()

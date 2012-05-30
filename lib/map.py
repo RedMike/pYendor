@@ -273,6 +273,14 @@ class Map:
             return self.tiles[x][y]
         return _WALL
 
+    def get_blocking_light(self,x,y):
+        """Returns True if the tile is blocking to light."""
+        return self.get_tile(x,y)[1]
+
+    def get_blocking(self,x,y):
+        """Returns True if the tile is blocking."""
+        return self.get_tile(x,y)[0]
+
     def clear(self):
         """Defaults everything to light-blocking walls."""
         self.tiles = [[_WALL for i in range(self.height)] for j in range(self.width)]
