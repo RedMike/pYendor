@@ -76,22 +76,22 @@ def fieldOfView(startX, startY, mapWidth, mapHeight, radius,
         maxExtentY = radius
 
     # Northeast quadrant
-    __checkQuadrant(visited, startX, startY, 1, 1,\
+    __checkQuadrant(visited, startX, startY, 1, 1,
         maxExtentX, maxExtentY,
         funcVisitTile, funcTileBlocked)
 
     # Southeast quadrant
-    __checkQuadrant(visited, startX, startY, 1, -1,\
+    __checkQuadrant(visited, startX, startY, 1, -1,
         maxExtentX, minExtentY,
         funcVisitTile, funcTileBlocked)
 
     # Southwest quadrant
-    __checkQuadrant(visited, startX, startY, -1, -1,\
+    __checkQuadrant(visited, startX, startY, -1, -1,
         minExtentX, minExtentY,
         funcVisitTile, funcTileBlocked)
 
     # Northwest quadrant
-    __checkQuadrant(visited, startX, startY, -1, 1,\
+    __checkQuadrant(visited, startX, startY, -1, 1,
         minExtentX, maxExtentY,
         funcVisitTile, funcTileBlocked)
 

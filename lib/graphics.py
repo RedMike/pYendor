@@ -825,7 +825,7 @@ class InventoryWindow(NodeWindow):
 class SwitchWindow(MessageWindow):
 
     def __init__(self,w,h,parent):
-        super(SwitchWindow,self).__init__(w,h)
+        super(SwitchWindow,self).__init__(w,h,parent)
         self.switches = [ ]
         self.choices = [ ]
         self.meta = [ ]

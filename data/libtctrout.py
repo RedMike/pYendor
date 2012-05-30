@@ -6,6 +6,7 @@ black = (0,0,0)
 white = (255,255,255)
 
 pygame.init()
+#noinspection PyUnresolvedReferences
 pygame.key.set_repeat(200, 100)
 
 
@@ -137,7 +138,7 @@ class OffWindow(object):
             self.tiles[dx-src_x+x][dy-src_y+y] = src.tiles[dx][dy]
 
 
-
+#noinspection PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences
 class RootWindow(OffWindow):
     """Root window; holds a Pygame window and handles drawing to itself, while abstractising from proper
     graphics down to tile-based."""
@@ -232,6 +233,7 @@ ignore_events = [
     VIDEOEXPOSE, VIDEORESIZE, USEREVENT
 ]
 
+#noinspection PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences
 def get_key():
     events = pygame.event.get(KEYDOWN)
     quit = []
