@@ -6,6 +6,7 @@ black = (0,0,0)
 white = (255,255,255)
 
 pygame.init()
+pygame.key.set_repeat(200, 100)
 
 
 class OffWindow(object):
@@ -225,6 +226,12 @@ class RootWindow(OffWindow):
         """Call in main loop for fps limiting."""
         self.clock.tick(fps)
 
+ignore_events = [
+    KEYUP, ACTIVEEVENT, MOUSEBUTTONDOWN, MOUSEBUTTONUP, MOUSEMOTION,
+    JOYAXISMOTION, JOYBALLMOTION, JOYBUTTONDOWN, JOYBUTTONUP, JOYHATMOTION,
+    VIDEOEXPOSE, VIDEORESIZE, USEREVENT
+]
+
 def get_key():
     events = pygame.event.get(KEYDOWN)
     quit = []
@@ -234,7 +241,7 @@ def get_key():
     if quit:
         pygame.quit()
         sys.exit()
-    pygame.event.clear()
+    pygame.event.clear(ignore_events)
     ret = [ ]
     for event in events:
         ret.append(event)
