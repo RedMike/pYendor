@@ -140,27 +140,28 @@ class BlockGenerator(Generator):
             self.parser.read('data/map/'+name+'.layout')
             self.accepted_sizes = set()
             for id in os.listdir('data/map/blocks/'):
-                id = id.replace('.block','')
-                # read in the blocks and add their data to the dicts
-                self.parser.read('data/map/blocks/'+id+'.block')
-                self.block_widths[id] = self.parser.getint(id,'width')
-                self.block_heights[id] = self.parser.getint(id,'height')
-                self.block_dirs[id] = { }
-                if self.parser.has_option('layout', id):
-                    self.block_bias[id] = self.parser.getfloat('layout', id)
-                elif self.parser.has_option('layout', id[-2]):
-                    self.block_bias[id] = self.parser.getfloat('layout', id)
-                else:
-                    self.block_bias[id] = 0.5
-                for dir in ('top', 'bottom', 'left', 'right'):
-                    s = self.parser.get(id,dir)
-                    # s is a offset, length
-                    self.block_dirs[id][dir] = tuple(map(int,s.split(',')))
-                self.block_walls[id] = [ ]
-                for i in range(self.block_heights[id]):
-                    line = self.parser.get(id, 'line' + str(i))
-                    self.block_walls[id].append(line)
-                self.accepted_sizes.add((self.block_widths[id],self.block_heights[id]))
+                if '.block' in id:
+                    id = id.replace('.block','')
+                    # read in the blocks and add their data to the dicts
+                    self.parser.read('data/map/blocks/'+id+'.block')
+                    self.block_widths[id] = self.parser.getint(id,'width')
+                    self.block_heights[id] = self.parser.getint(id,'height')
+                    self.block_dirs[id] = { }
+                    if self.parser.has_option('layout', id):
+                        self.block_bias[id] = self.parser.getfloat('layout', id)
+                    elif self.parser.has_option('layout', id[-2]):
+                        self.block_bias[id] = self.parser.getfloat('layout', id)
+                    else:
+                        self.block_bias[id] = 0.5
+                    for dir in ('top', 'bottom', 'left', 'right'):
+                        s = self.parser.get(id,dir)
+                        # s is a offset, length
+                        self.block_dirs[id][dir] = tuple(map(int,s.split(',')))
+                    self.block_walls[id] = [ ]
+                    for i in range(self.block_heights[id]):
+                        line = self.parser.get(id, 'line' + str(i))
+                        self.block_walls[id].append(line)
+                    self.accepted_sizes.add((self.block_widths[id],self.block_heights[id]))
 
     def choose_block(self, old_x, old_y, old_id, old_dir):
         new_dir = "bottom"
