@@ -20,14 +20,9 @@ import data.libtctrout as libtctrout
 
 
 def convert(color):
-    """Convert (r, g, b) color to libtcod.Color.
+    """Convert hex to tuple.
 
     Has to be replaced to change graphical back-end library.
-
-    @type  color: tuple
-    @param color: (r,g,b) formatted tuple describing a colour.
-    @rtype: libtcod.Color
-    @return: Converted library-specific color.
     """
     if isinstance(color, str):
         color = tuple(struct.unpack('BBB', color.decode('hex')))
@@ -221,7 +216,7 @@ class Window(object):
         self.height = h
         self.parent = parent
         self.bgcol = (255,0,0)
-        self.fgcol = (255,255,255)
+        self.fgcol = (255,0,0)
         self.border_tile = None
         self.specific_init()
 

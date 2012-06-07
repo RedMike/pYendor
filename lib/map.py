@@ -257,7 +257,7 @@ class Map:
 
     def get_tile(self,x,y):
         """Returns wall if tile not in map."""
-        if 0 < x < self.width+2 and 0 < y < self.height+2:
+        if 0 < x < self.width and 0 < y < self.height:
             return self.tiles[x+1][y+1]
         return _WALL
 

@@ -233,7 +233,6 @@ ignore_events = [
     VIDEOEXPOSE, VIDEORESIZE, USEREVENT
 ]
 
-#noinspection PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences
 def get_key():
     events = pygame.event.get(KEYDOWN)
     quit = []
