@@ -247,17 +247,23 @@ class Map:
     def add_tile(self, x, y, tile):
         """Replaces tile with given tuple."""
         if 0 < x < self.width and 0 < y < self.height:
-            self.tiles[x][y] = tile
+            self.tiles[x+1][y+1] = tile
     
     def add_rect(self, x, y, w, h, tile):
         """Draws a rectangle of starting at (x,y), (w,h) size."""
         for i in range(w):
             for j in range(h):
                 self.add_tile(x+i, y+j, tile)
-    
+
+    def get_tile(self,x,y):
+        """Returns wall if tile not in map."""
+        if 0 < x < self.width+2 and 0 < y < self.height+2:
+            return self.tiles[x+1][y+1]
+        return _WALL
+
     def get_tiles(self):
         """Returns the whole map."""
-        return self.tiles
+        return self.get_rect(0,0,self.width,self.height)
 
     def get_rect(self, x, y, w, h):
         """Returns a 2D array section of the original map, starting at (x,y) with size (w,h)."""
@@ -266,12 +272,6 @@ class Map:
             for j in range(h):
                 ret[i][j] = self.get_tile(x+i, y+j)
         return ret
-    
-    def get_tile(self,x,y):
-        """Returns wall if tile not in map."""
-        if 0 < x < self.width and 0 < y < self.height:
-            return self.tiles[x][y]
-        return _WALL
 
     def get_blocking_light(self,x,y):
         """Returns True if the tile is blocking to light."""
@@ -283,4 +283,4 @@ class Map:
 
     def clear(self):
         """Defaults everything to light-blocking walls."""
-        self.tiles = [[_WALL for i in range(self.height)] for j in range(self.width)]
+        self.tiles = [[_WALL for i in range(self.height+2)] for j in range(self.width+2)]

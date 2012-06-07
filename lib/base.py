@@ -33,8 +33,7 @@ class Application(object):
         """
         self.exit = 0
         
-        # One currently loaded map at any one time, referenced by the index it uses in self.maps.
-        self.maps = []
+        # One currently loaded map at any one time
         self.map = None
         
         # All entities are scheduled in one global scheduler.
@@ -266,7 +265,7 @@ class Application(object):
         m = gen.gen_map()
         ents = gen.entities
         self.generate_ents(m,ents)
-        self.add_map(map=m,set=set)
+        self.add_map(map=m)
 
     def generate_ents(self,map,list):
         """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),
@@ -284,34 +283,20 @@ class Application(object):
                     ent_obj.set_meta_attribute(att,val)
                 ent_obj.update()
 
-    def add_map(self,file=0,map=0,set=0):
+    def add_map(self,file=0,map=0):
         """Add map to stack from file or object.
 
         @type  file: string
         @param file: Path to file.
         @type  map: L{map.Map}
         @param map: Map object to add to stack.
-        @type  set: bool
-        @param set: If true, set as active.
         """
         if map:
-            self.maps += [map]
+            self.map = map
         elif file:
             pass
-        if set:
+        if self.fov_map:
             self.fov_map = fov.FovMap(map.width,map.height)
-            self.set_map(len(self.maps)-1)
-
-    def set_map(self,id):
-        """Set map as I{id}."""
-        if id < len(self.maps):
-            self.map = id
-    
-    def get_map(self):
-        """Returns current map, or I{None}."""
-        if self.map is not None:
-            return self.maps[self.map]
-        return None
 
     def add_window(self,layer,type,w,h,x,y):
         """Create a new window and return it.
@@ -513,10 +498,9 @@ class Application(object):
 
         Player is placed in the first available tile on the first 3 columns of the map.
         """
-        map = self.get_map()
-        if map is None:
+        if not self.map:
             raise NoMapError
-        tiles = map.get_rect(0,0,map.width,map.height)
+        tiles = self.map.get_rect(0,0,self.map.width,self.map.height)
         x, y = 0, 0
         for id in self.entity_manager:
             if self.entity_manager.get_name(id) == "player_spawn":
@@ -594,13 +578,13 @@ class Application(object):
         Raises NoMapError when map is not initialised yet.
         """
         can_move = True
-        if self.get_map() is not None:
+        if self.map:
             pos = self.get_ent_pos(id)
             if not pos:
                 return False
             ex, ey = pos
             # check for wall
-            if self.get_map().get_tile(x + ex, y + ey)[0]:
+            if self.map.get_tile(x + ex, y + ey)[0]:
                 can_move = False
             # check if we're blocking or not
             if self.entity_manager.get_attribute(id,'blocking'):
@@ -676,7 +660,6 @@ class Application(object):
 
         if self.camera:
             camera_x, camera_y = self.entity_manager.get_abs_pos(self.camera)
-            map = self.get_map()
             win = self.game_win
             center_x, center_y = win.width/2, win.height/2
             offset_x, offset_y = camera_x - center_x, camera_y - center_y
@@ -684,7 +667,8 @@ class Application(object):
             # set up FOV map and compute FOV
             if self.fov_map:
                 self.fov_map.clear_light()
-                fov.fieldOfView(camera_x, camera_y, map.width, map.height, fov_radius, self.fov_map.set_lit, map.get_blocking)
+                fov.fieldOfView(camera_x, camera_y, self.map.width, self.map.height, fov_radius,
+                        self.fov_map.set_lit, self.map.get_blocking)
 
             # make a list of the tiles to draw
             # tiles of the form [x, y, fgcol, string, bgcol, set_background]
@@ -700,7 +684,7 @@ class Application(object):
                     if self.fov_map:
                         lit = self.fov_map.get_lit(x, y)
                         explored = self.fov_map.get_explored(x, y)
-                    blocks = map.get_blocking(x, y)
+                    blocks = self.map.get_blocking(x, y)
 
                     if lit:
                         if not blocks:
