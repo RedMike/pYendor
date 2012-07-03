@@ -31,63 +31,22 @@ import lib.graphics as graphics
 WIDTH, HEIGHT = 50, 30
 MAP_WIDTH, MAP_HEIGHT = 100, 100
 
-COLBG = "2C515D"
-COLFG = "F2EFEC"
-
-COLGBG = "C88E7C"
-COLGBD = "E8DDB3"
-
-COLGFLOOR = "957C74"
-COLGFOGFLOOR = "ACA7A6"
-COLGWALL = "E6E2DA"
-COLGWALL2 = "333230"
 
 class CustomApp(base.Application):
 
     def create_windows(self):
-        self.game_win = self.add_window(0,graphics.LayeredGameWindow,25,20,25,0)
-        self.inv_win = self.add_window(0,graphics.InventoryWindow,25,20,0,0)
-
-        self.comm_win = self.add_window(0,graphics.ConsoleWindow,WIDTH,10,0,20)
-        self.comm_win.set_label("> ")
-        self.comm_win.set_length(WIDTH-2)
-
-        self.msg_win = self.comm_win
-
-        self.change_color_scheme(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)
-
-    def console_callback(self,line):
-        try:
-            if line in ("quit", "n", "e", "s", "w", "north", "south", "east", "west", "get", "pickup", "i", "inventory"):
-                player = self.entity_manager[self.player]
-                if line == "quit":
-                    self.quit()
-                elif line == "n" or line == "north":
-                    player.move(0,-1)
-                elif line == "s" or line == "south":
-                    player.move(0,1)
-                elif line == "e" or line == "east":
-                    player.move(1,0)
-                elif line == "w" or line == "west":
-                    player.move(-1,0)
-                elif line == "get" or line == "pickup":
-                    self.player_pickup()
-                elif line == "i" or line == "inventory":
-                    self.node_bindings(self.inv_win, self._inventory_window_callback)
-            self.time_passing = True
-        except Exception as e:
-            self.add_messages((str(e),))
+        self.game_win = self.add_window(0,graphics.LayeredGameWindow,WIDTH-25,HEIGHT,25,0)
+        self.inv_win = self.add_window(0,graphics.InventoryWindow,25,HEIGHT,0,0)
+        self.change_color_scheme("2C515D", "F2EFEC", "2C515D", "F2EFEC", "2C515D")
 
     def default_bindings(self):
-        if self.comm_win:
-            self.input_bindings(self.comm_win,self.console_callback,False)
-        self.add_binding('F1', [self.change_color_scheme,(COLBG, COLFG, COLGWALL, COLGFLOOR, COLGFOGFLOOR)])
-        self.add_binding('F2', [self.change_color_scheme,(COLBG, COLFG, COLGWALL2, COLGFLOOR, COLGFOGFLOOR)])
         self.add_binding('escape', [self.quit, ()])
-        self.add_binding('arrow_left', [self.console_callback, ('west',)])
-        self.add_binding('arrow_right', [self.console_callback, ('east',)])
-        self.add_binding('arrow_up', [self.console_callback, ('north',)])
-        self.add_binding('arrow_down', [self.console_callback, ('south',)])
+        self.add_binding('q', [self.quit, ()])
+        pl = self.entity_manager[self.player]
+        self.add_binding('arrow_left', [pl.move, (-1,0)])
+        self.add_binding('arrow_right', [pl.move, (1,0)])
+        self.add_binding('arrow_up', [pl.move, (0,-1)])
+        self.add_binding('arrow_down', [pl.move, (0,1)])
 
 
 app = CustomApp("Sam Pull RL",WIDTH,HEIGHT)
@@ -99,7 +58,6 @@ def menu_callback(fct):
         app.place_player(10)
         while app.menu_stack:
             app.remove_menu()
-        app.scheduler.tick()
         app.update_game_window()
     elif choice == 1:
         app.quit()

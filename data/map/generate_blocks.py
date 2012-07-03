@@ -59,7 +59,7 @@ def spin_dirs(dirs, w, h):
 def main():
     for name in os.listdir(path):
         if ".block" in name:
-            print ".", name
+            print(".", name)
             #get the basic block
             block_width = None
             block_height = 0

@@ -6,7 +6,6 @@ black = (0,0,0)
 white = (255,255,255)
 
 pygame.init()
-#noinspection PyUnresolvedReferences
 pygame.key.set_repeat(200, 100)
 
 
@@ -137,8 +136,6 @@ class OffWindow(object):
             src.tiles[dx][dy] = src.dirty_tiles.pop((dx,dy))
             self.tiles[dx-src_x+x][dy-src_y+y] = src.tiles[dx][dy]
 
-
-#noinspection PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences,PyUnresolvedReferences
 class RootWindow(OffWindow):
     """Root window; holds a Pygame window and handles drawing to itself, while abstractising from proper
     graphics down to tile-based."""

@@ -46,21 +46,26 @@ class Application(object):
         # OR players quite easily.
         self.player = None
         self.camera = None
-        
+        self.fov_map = True
+
         # Initialise default windows with None.
         self.win_man = graphics.WindowManager(w,h,name)
         self.game_win = None
         self.inv_win = None
         self.msg_win = None
+
+
+        # Initialise colors.
+        self.change_color_scheme((0,0,0), (255,255,255), (0,0,0), (255,255,255), (125, 125, 125))
+
         self.create_windows()
 
-        self.fov_map = True
-        
         # Initialise keyboard interface.
         self.keyboard = interface.KeyboardListener()
 
         # Initialise menus.
         self.menu_stack = [ ]
+
 
         self.time_passing = True
 
@@ -220,10 +225,6 @@ class Application(object):
                     self.remove_menu()
 
     def _input_window_return_callback(self, line):
-        try:
-            exec line
-        except Exception as e:
-            self.add_messages((str(e),))
         self.remove_menu()
 
     def menu_bindings(self, window, callback):
