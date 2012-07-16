@@ -56,13 +56,17 @@ def menu_callback(fct):
     if not choice:
         app.generate_map(MAP_WIDTH,MAP_HEIGHT,set=True)
         app.place_player(10)
-        while app.menu_stack:
-            app.remove_menu()
+        #while app.menu_stack:
+        #    app.remove_menu()
         app.update_game_window()
     elif choice == 1:
+        app.save_state("testing.save")
+    elif choice == 2:
+        pass
+    elif choice == 3:
         app.quit()
 
-app.add_choice_menu("Please report any bugs to mike@codingden.net.\n\nMain menu: ", ("Start Game", "Quit"),
+app.add_choice_menu("Please report any bugs to mike@codingden.net.\n\nMain menu: ", ("Generate Map", "Save Map", "Load Map", "Quit"),
         menu_callback, w=30, h=14)
 while not app.exit:
     app.update()

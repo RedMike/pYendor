@@ -54,10 +54,8 @@ class Application(object):
         self.inv_win = None
         self.msg_win = None
 
-
         # Initialise colors.
         self.change_color_scheme((0,0,0), (255,255,255), (0,0,0), (255,255,255), (125, 125, 125))
-
         self.create_windows()
 
         # Initialise keyboard interface.
@@ -65,7 +63,6 @@ class Application(object):
 
         # Initialise menus.
         self.menu_stack = [ ]
-
 
         self.time_passing = True
 
@@ -267,6 +264,25 @@ class Application(object):
         ents = gen.entities
         self.generate_ents(m,ents)
         self.add_map(map=m)
+
+    def save_state(self,file):
+        """Saves current game state to a file.
+
+        @type  file: string
+        @param file: Filename of save file.
+        """
+        if not self.map:
+            return
+        lines = ['{', '"map" : ']
+        lines += self.map.save()
+        lines += ['},', '"ents" : ']
+        lines += self.entity_manager.save()
+        lines += ['},', '"sched" : ']
+        lines += self.scheduler.save()
+        lines += ['}','}']
+        with open(file,'w+') as f:
+            for line in lines:
+                f.write(line+"\n")
 
     def generate_ents(self,map,list):
         """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),

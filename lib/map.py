@@ -281,6 +281,19 @@ class Map:
         """Returns True if the tile is blocking."""
         return self.get_tile(x,y)[0]
 
+    def save(self):
+        """Returns list of lines representing map in save format (JSON).
+
+        Only stores non (1,1) tiles, to reduce bloat.
+        """
+        lines = ["{"]
+        for i in range(self.width):
+            for j in range(self.height):
+                if self.get_tile(i,j) != _WALL:
+                    lines += ["({0},{1}) : ({2},{3}),".format(i, j, *self.get_tile(i,j))]
+        lines += ["}"]
+        return lines
+
     def clear(self):
         """Defaults everything to light-blocking walls."""
         self.tiles = [[_WALL for i in range(self.height+2)] for j in range(self.width+2)]

@@ -239,6 +239,9 @@ class EntityManager(object):
     def adjust_cur_id(self):
         self.cur_id += 1  # TODO: Make it so it fills back gaps in IDs by destroyed ents.
 
+    def save(self):
+        """Returns a list of strings representing save-format data."""
+        return ["Testing ents.", "Done."]
 
 
 
