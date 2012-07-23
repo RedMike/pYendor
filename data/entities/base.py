@@ -37,6 +37,8 @@ class Entity(object):
         self.fgcol = (255,255,255)
         self.acceptable_nodes = None
         self.listed = False
+        self.type = "generic"
+        self.delay = None
 
     def set_meta_attribute(self,meta,val):
         setattr(self,meta,val)
@@ -103,6 +105,17 @@ class Entity(object):
     def finished_colliding(self, id, success_value):
         """Callback for when the entity has finished trying to move I{into} another entity."""
         pass
+
+    def get_attributes(self):
+        """Return attributes in string of form 'FBVLU'."""
+        ret = ""
+        ret += str(self.attributes['fixed'])
+        ret += str(self.attributes['blocking'])
+        ret += str(self.attributes['visible'])
+        ret += str(self.attributes['liftable'])
+        ret += str(self.attributes['usable'])
+        return ret
+
 
     def get_attribute(self, att):
         """Return wanted attribute, or None."""

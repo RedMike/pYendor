@@ -287,11 +287,13 @@ class Map:
         Only stores non (1,1) tiles, to reduce bloat.
         """
         lines = ["{"]
+        lines += ['"size" : [{0},{1}],'.format(self.width,self.height)]
         for i in range(self.width):
             for j in range(self.height):
                 if self.get_tile(i,j) != _WALL:
-                    lines += ["({0},{1}) : ({2},{3}),".format(i, j, *self.get_tile(i,j))]
-        lines += ["}"]
+                    lines += ['"{0},{1}" : [{2},{3}],'.format(i, j, *self.get_tile(i,j))]
+        lines[-1] = lines[-1][:-1]
+        lines += ["},"]
         return lines
 
     def clear(self):

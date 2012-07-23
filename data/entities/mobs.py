@@ -96,6 +96,10 @@ class Humanoid(Mob):
         return self.nodes
 
     def add_node(self,name):
+        for ent in self:
+            if self.parent[ent].name == name:
+                self.nodes[name] = ent
+                return
         ent_id = self.parent.add_entity('bodypart')
         self.parent.ent_equip(self.id, ent_id)
         self.parent[ent_id].name = name
@@ -133,9 +137,6 @@ class Player(Humanoid):
         self.name = "Player"
         self.pickup_queue = [ ]
         self.inventory = self.nodes['right hand']
-        back_id = self.parent.add_entity("backpack")
-        self.parent.set_parent(back_id, self.nodes["back"])
-        self.inventory = back_id
 
     def add_pickup(self, obj):
         self.pickup_queue.append(obj)

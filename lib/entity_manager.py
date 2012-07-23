@@ -34,7 +34,7 @@ class EntityManager(object):
         elif isinstance(item, tuple) and len(item) == 2:
             return self.get_at(*item)
         else:
-            raise NotImplemented
+            return NotImplemented
 
     def __iter__(self):
         return self.lookup.iterkeys()
@@ -51,15 +51,33 @@ class EntityManager(object):
 
     def add_entity(self, type, delay=10):
         """Adds a new entity of type to entity_list, and returns its ID."""
-        id = self.cur_id
         self.adjust_cur_id()
-        type = self.class_lookup.get_class(type)
-        self.lookup[id] = type(self,id)
+        id = self.cur_id
+        cls = self.class_lookup.get_class(type)
+        self.lookup[id] = cls(self,id)
         self.lookup[id].init()
-        self.set_attribute(id, 'delay', delay)
+        self.lookup[id].type = type
+        self.lookup[id].delay = delay
         if delay is not None:
             self.schedule(self.scheduler, id)
         return id
+
+    def load_entity(self, id, type, pos, parent, atts, name, char, delay, fgcol):
+        cls = self.class_lookup.get_class(type)
+        self.lookup[id] = cls(self,id)
+        self.lookup[id].init()
+        self.lookup[id].type = type
+        self.lookup[id].delay = delay
+        self.lookup[id].fgcol = fgcol
+        self.lookup[id].set_attributes(atts)
+        self.lookup[id].char = char
+        self.lookup[id].name = name
+        if pos is not None:
+            self.set_pos(id,pos)
+        else:
+            self.set_parent(id,parent)
+        if delay is not None:
+            self.schedule(self.scheduler, id)
 
     def get_at(self,x,y):
         """Returns list of ids of entities at a position or an empty tuple."""
@@ -150,7 +168,7 @@ class EntityManager(object):
                 sched.cancel_schedule(self.schedules[id])
         if id not in self:
             raise IDNotFound
-        delay = self[id].get_attribute('delay')
+        delay = self[id].delay
         if delay is not None:
             self.schedules[id] = sched.add_schedule((self[id].update, (), delay))
 
@@ -224,25 +242,55 @@ class EntityManager(object):
 
     def set_pos(self, id, pos):
         """Sets the entity's position to the given tuple, unsetting parent."""
-        if id not in self:
-            raise IDNotFound
+        #if id not in self:
+        #    raise IDNotFound
         self.positions[id] = pos
         self.parents[id] = None
 
     def set_parent(self, id, parent_id):
         """Sets the entity's containing entity to the given ID, unsetting its position."""
-        if id not in self and parent_id not in self:
-            raise IDNotFound
+        #if id not in self and parent_id not in self:
+        #    raise IDNotFound
         self.positions[id] = None
         self.parents[id] = parent_id
 
     def adjust_cur_id(self):
-        self.cur_id += 1  # TODO: Make it so it fills back gaps in IDs by destroyed ents.
+        self.cur_id = 0
+        while self.cur_id in self.lookup:
+            self.cur_id += 1
 
     def save(self):
         """Returns a list of strings representing save-format data."""
-        return ["Testing ents.", "Done."]
-
+        ret = ["{"]
+        ret += ['"player" : '+str(self.parent.player)+',']
+        ret += ['"camera" : '+str(self.parent.camera)+',']
+        for id in self.positions:
+            obj = self.lookup[id]
+            pos = self.get_pos(id)
+            parent = self.get_parent(id)
+            print pos, parent
+            ret += ['"'+str(id)+'" : {']
+            ret += ['"type" : "'+obj.type+'",']
+            if pos is not None:
+                ret += ['"pos" : ['+str(pos[0])+','+str(pos[1])+'],']
+            else:
+                ret += ['"pos" : null,']
+            if parent is not None:
+                ret += ['"parent" : '+str(parent)+',']
+            else:
+                ret += ['"parent" : null,']
+            ret += ['"atts" : "'+obj.get_attributes()+'",']
+            ret += ['"name" : "'+obj.name+'",']
+            ret += ['"char" : "'+obj.char+'",']
+            if obj.delay:
+                ret += ['"delay" : '+str(obj.delay)+',']
+            else:
+                ret += ['"delay" : null,']
+            ret += ['"fgcol" : '+str(list(obj.fgcol))]
+            ret += ["},"]
+        ret[-1] = ret[-1][:-1]
+        ret += ["}"]
+        return ret
 
 
 class IDNotFound(Exception):

@@ -5,6 +5,7 @@ import lib.entity_manager as entity_man
 import lib.interface as interface
 import lib.time as time
 import lib.fov as fov
+import json
 
 
 class Application(object):
@@ -32,20 +33,12 @@ class Application(object):
         @param h: Main window height.
         """
         self.exit = 0
-        
+
         # One currently loaded map at any one time
         self.map = None
-        
-        # All entities are scheduled in one global scheduler.
-        self.scheduler = time.Scheduler()
 
-        # Entity management done by EntityManager.
-        self.entity_manager = entity_man.EntityManager(self)
+        self.init_ents()
 
-        # Player and camera entities are saved so that you could switch cameras
-        # OR players quite easily.
-        self.player = None
-        self.camera = None
         self.fov_map = True
 
         # Initialise default windows with None.
@@ -64,6 +57,17 @@ class Application(object):
         # Initialise menus.
         self.menu_stack = [ ]
 
+
+    def init_ents(self):
+        """Initialises entity systems."""
+        # All entities are scheduled in one global scheduler.
+        self.scheduler = time.Scheduler()
+        # Entity management done by EntityManager.
+        self.entity_manager = entity_man.EntityManager(self)
+        # Player and camera entities are saved so that you could switch cameras
+        # OR players quite easily.
+        self.player = None
+        self.camera = None
         self.time_passing = True
 
     def change_color_scheme(self, bgcol, fgcol, game_wall_col, game_floor_col, game_fog_floor_col):
@@ -275,14 +279,51 @@ class Application(object):
             return
         lines = ['{', '"map" : ']
         lines += self.map.save()
-        lines += ['},', '"ents" : ']
+        lines += ['"ents" : ']
         lines += self.entity_manager.save()
-        lines += ['},', '"sched" : ']
-        lines += self.scheduler.save()
-        lines += ['}','}']
+        lines += ['}']
         with open(file,'w+') as f:
             for line in lines:
                 f.write(line+"\n")
+
+    def load_state(self,file):
+        """Loads game state from file.
+
+        @type  file: string
+        @param file: Filename of save file.
+        """
+        self.destroy_ents()
+        self.map = None
+        data = {"map": {}, "ents": {}}
+        with open(file, 'r') as f:
+            data = json.load(f)
+
+        #map
+        new_map = map.Map(*data["map"]["size"])
+        for key in data["map"]:
+            if key != "size":
+                x, y = key.split(",",1)
+                x = int(x)
+                y = int(y)
+                new_map.add_tile(x,y,data["map"][key])
+        self.add_map(new_map)
+
+        #ents
+        for key in data["ents"]:
+            if key not in ("player", "camera"):
+                id = int(key)
+                ent = data["ents"][key]
+                type = ent["type"]
+                pos = ent["pos"]
+                parent = ent["parent"]
+                atts = ent["atts"]
+                name = ent["name"]
+                char = ent["char"]
+                delay = ent["delay"]
+                fgcol = ent["fgcol"]
+                self.entity_manager.load_entity(id, type, pos, parent, atts,
+                    name, char, delay, fgcol)
+        self.setup_player(data["ents"]["player"], data["ents"]["camera"])
 
     def generate_ents(self,map,list):
         """Populates map with entities, takes a list of (x, y, entity_lookup_name, chance),
@@ -300,18 +341,13 @@ class Application(object):
                     ent_obj.set_meta_attribute(att,val)
                 ent_obj.update()
 
-    def add_map(self,file=0,map=0):
-        """Add map to stack from file or object.
+    def add_map(self,map):
+        """Add map to stack from object.
 
-        @type  file: string
-        @param file: Path to file.
         @type  map: L{map.Map}
         @param map: Map object to add to stack.
         """
-        if map:
-            self.map = map
-        elif file:
-            pass
+        self.map = map
         if self.fov_map:
             self.fov_map = fov.FovMap(map.width,map.height)
 
@@ -517,13 +553,15 @@ class Application(object):
         """
         if not self.map:
             raise NoMapError
-        tiles = self.map.get_rect(0,0,self.map.width,self.map.height)
         x, y = 0, 0
         for id in self.entity_manager:
             if self.entity_manager.get_name(id) == "player_spawn":
                 x, y = self.entity_manager.get_abs_pos(id)
         pid = self.add_entity(x, y, 'player', delay)
         cam = self.add_entity(x, y, 'camera', None)
+        return self.setup_player(pid, cam)
+
+    def setup_player(self, pid, cam):
         self.entity_manager.set_parent(cam, pid)
         self.scheduler.set_dominant(self.entity_manager.get_sched(pid))
         self.player = pid
@@ -583,11 +621,9 @@ class Application(object):
         self.entity_manager.set_parent(id, parent_id)
 
     def destroy_ents(self):
-        """Destroy all entities.
-
-        Not yet implemented.
+        """Destroys all entities, and entity scheduling.
         """
-        pass
+        self.init_ents()
 
     def collision_check(self, id, x, y):
         """Checks collisions and restrictions in place, returns I{True} for able to move.

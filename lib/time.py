@@ -68,9 +68,4 @@ class Scheduler:
 
     def sleep(self,sec):
         time.sleep(sec)
-
-    def save(self):
-        """Returns save-format list of strings."""
-        return ["And now scheduler", "Done."]
-        
                 
